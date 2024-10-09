@@ -1,0 +1,527 @@
+import p5 from "p5";
+import { Vector } from "../vector-library/vector";
+import weapons from "./weapon-types";
+import enemyTypes from "./enemy-types";
+import levels from "./levels";
+import projectileTypes from "./projectile-types";
+
+const type = "3d"
+
+export var keys = {};
+"qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
+  keys[e] = false;
+});
+
+// global vars
+export var clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode = false;
+
+// setup base html
+
+setTimeout(() => startGame(0), 0);
+
+function startGame(level) {
+  currentLevel = levels[level];
+  let p5Inst = new p5(s);
+}
+
+var playerUpgrades = [
+  { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5 },
+  // { name: "", desc: "", func: () => {}, max: 0 }
+];
+playerUpgrades.forEach(e => e.times = 0);
+
+// ********************  p5  ******************** //
+const s = (sk) => {
+  sketch = sk;
+  enemies = [];
+  player = {
+    pos: new Vector(0, 0),
+    vel: new Vector(0, 0),
+    dir: 0,
+    weapons: [],
+    speed: 350,
+    xp: 100,
+    levelUp: 100,
+    hp: 100,
+    maxHp: 100,
+    shield: 0,
+    maxShield: 30,
+    shieldRegenTime: 10,
+    shieldRegenSpeed: 5,
+    shieldRegenTimeLeft: 0
+  };
+
+  if (!location.href.includes("https://cam0studios.github.io/")) {
+    window.playerLink = player;
+    devMode = true;
+  }
+
+  settings = {
+    toggleFire: false,
+    doScreenShake: true,
+    emojiMovie: false,
+  }
+  currentLevel.start.forEach(e => {
+    for (let i = 0; i < e.count; i++) new enemyTypes[e.type](new Vector(200 + Math.random() * currentLevel.size, 0).rotate(Math.random() * 2 * Math.PI), new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), e.size, false);
+  });
+  addWeapon("gun");
+  projectiles = [];
+  size = new Vector(innerWidth, innerHeight);
+  cam = new Vector(0, 0);
+  time = 0;
+  fpsTime = 0;
+  fps = 0;
+  nextFps = [];
+  screenshake = 0;
+  mouseDown = false;
+  cursorContract = 0;
+  sketch.setup = () => {
+    sketch.createCanvas(size.x, size.y);
+    sketch.frameRate(144);
+    document.getElementById("defaultCanvas0").focus();
+  }
+  sketch.draw = () => {
+    // ********************  vars  ******************** //
+    deltaTime = sketch.deltaTime / 1000;
+    clampTime = sketch.deltaTime;
+    if (clampTime > 100) clampTime = 100;
+    clampTime /= 1000;
+    time += clampTime;
+    cam["="](player.pos);
+    mouse = new Vector(sketch.mouseX, sketch.mouseY);
+    mouse["-="]((size)["/"](2));
+    if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
+    screenshake *= Math.pow(0.005, clampTime);
+    // cam["+="](mouse["/"](10));
+
+    // fps
+    if (fpsTime < 0) {
+      fps = 0;
+      nextFps.forEach(next => {
+        fps += next / nextFps.length;
+      });
+      nextFps = [];
+      fpsTime = 0.2;
+    } else {
+      fpsTime -= deltaTime;
+      nextFps.push(1 / deltaTime);
+    }
+
+    // waves
+    currentLevel.waves.forEach(wave => {
+      if (!("passed" in wave)) wave.passed = false;
+      if (!wave.passed) {
+        if (time > wave.time) {
+          wave.passed = true;
+          wave.enemies.forEach(e => {
+            for (let i = 0; i < e.count; i++) {
+              new enemyTypes[e.type](getRandomBox(currentLevel.size), new Vector(10 + Math.random() * e.speed, 0).rotate(Math.random() * 2 * Math.PI), e.size);
+            }
+          });
+        }
+      }
+    });
+
+    // ********************  physics  ******************** //
+    // player movement
+    player.pos["+="]((player.vel)["*"](clampTime));
+    let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
+    if (joy.mag > 1) joy.mag = 1;
+    joy["*="](player.speed * clampTime);
+    player.vel["+="](joy);
+    player.vel["*="](Math.pow(0.3, clampTime));
+    player.dir = mouse.heading;
+    applyBorder(player);
+    // level up
+    if (player.xp >= player.levelUp) {
+      sketch.noLoop();
+      player.xp -= player.levelUp;
+      player.levelUp *= 1.15;
+      document.getElementById("upgradeMenu").showModal();
+      let content = "";
+      let choices = [];
+      playerUpgrades.filter(e => e.times < e.max).forEach(e => choices.push({ type: 0, val: e }));
+      player.weapons.forEach((w, i) => {
+        w.upgrades.filter(e => e.times < e.max).forEach(e => choices.push({ type: 1, val: e, i }));
+      });
+
+      let choicesI = [...choices.keys()];
+      let chosenI = [];
+      for (let i = 0; i < 3; i++) if (choicesI.length > 0) chosenI.push(choicesI.splice(Math.floor(Math.random() * choicesI.length), 1)[0]);
+      if (chosenI.length == 0) chosenI.push(-1);
+      let chosen = [];
+      chosenI.forEach(e => {
+        let opt;
+        if (e == -1) opt = { type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 0, times: 0 } };
+        else opt = choices[e];
+        chosen.push(opt);
+      });
+      chosen.forEach((opt, i) => {
+        console.log(opt);
+        content += `<button id="option${i}"><h2>${opt.val.name}</h2><p>${opt.val.desc}</p><p>${opt.val.times}/${opt.val.max}</p></button>`;
+      });
+      document.getElementById("options").innerHTML = content;
+      chosen.forEach((opt, i) => {
+        document.getElementById(`option${i}`).addEventListener("click", () => {
+          opt.val.func(function () {
+            switch (opt.type) {
+              case 0: return player;
+              case 1: return player.weapons[opt.i]
+            }
+          }());
+          opt.val.times++;
+          document.getElementById("upgradeMenu").close();
+          sketch.loop();
+        });
+      });
+    }
+    // player shield
+    if (player.shield < player.maxShield) {
+      if (player.shieldRegenTimeLeft < player.shieldRegenTime) {
+        player.shieldRegenTimeLeft += clampTime;
+      } else {
+        player.shield += player.shieldRegenSpeed * clampTime;
+      }
+    } else if (player.shield > player.maxShield) {
+      player.shield = player.maxShield;
+    }
+    if (player.hp > player.maxHp) player.hp = player.maxHp;
+    // weapons
+    player.weapons.forEach(weapon => {
+      weapon.tick(weapon);
+    });
+    // projectiles
+    projectiles.forEach((projectile, i) => {
+      projectile.tick(i);
+    });
+    enemies.forEach((a, aI) => {
+      a.tick(aI);
+    });
+
+
+    // ********************  drawing  ******************** //
+    // background
+    sketch.background(10);
+    sketch.stroke(50);
+    sketch.strokeWeight(2);
+    sketch.strokeJoin("round");
+    let lineSize = 70;
+    let off = ((cam)["*"](-1))["%"](lineSize);
+    for (let x = 0; x < size.x + lineSize; x += lineSize) {
+      let rx = x + off.x;
+      sketch.line(rx, 0, rx, size.y);
+    }
+    for (let y = 0; y < size.y + lineSize; y += lineSize) {
+      let ry = y + off.y;
+      sketch.line(0, ry, size.x, ry);
+    }
+
+    sketch.push();
+    sketch.translate(size.x / 2, size.y / 2);
+
+    sketch.translate(-cam.x, -cam.y);
+
+    // world borders
+    if (true) {
+      sketch.push();
+      sketch.noStroke();
+      let num = 7;
+      let borderSize = 20;
+      let borderPow = 0.7;
+      let col = "5,5,6";
+      let outerSize = new Vector(size.x / 2 + currentLevel.size * 0.5, size.y / 2 + currentLevel.size * 0.5);
+      // right
+      if (cam.x > currentLevel.size - size.x / 2) {
+        for (let i = 0; i < num; i++) {
+          sketch.fill(`rgba(${col},${Math.pow((i + 1) / (num + 1), borderPow)})`);
+          sketch.rect(currentLevel.size + i * borderSize, cam.y - size.y / 2, borderSize, size.y);
+        }
+
+        sketch.fill(`rgb(${col})`);
+        sketch.rect(currentLevel.size + num * borderSize, cam.y - size.y / 2, outerSize.x / 2, size.y);
+      }
+      // left
+      if (cam.x < -currentLevel.size + size.x / 2) {
+        for (let i = 0; i < num; i++) {
+          sketch.fill(`rgba(${col},${Math.pow((i + 1) / (num + 1), borderPow)})`);
+          sketch.rect(-currentLevel.size - i * borderSize, cam.y - size.y / 2, -borderSize, size.y);
+        }
+
+        sketch.fill(`rgb(${col})`);
+        sketch.rect(-currentLevel.size - num * borderSize, cam.y - size.y / 2, -size.x / 2, size.y);
+      }
+      // bottom
+      if (cam.y > currentLevel.size - size.y / 2) {
+        for (let i = 0; i < num; i++) {
+          sketch.fill(`rgba(${col},${Math.pow((i + 1) / (num + 1), borderPow)})`);
+          sketch.rect(cam.x - size.x / 2, currentLevel.size + i * borderSize, size.x, borderSize);
+        }
+
+        sketch.fill(`rgb(${col})`);
+        sketch.rect(cam.x - size.x / 2, currentLevel.size + num * borderSize, size.x, size.y / 2);
+      }
+      // top
+      if (cam.y < -currentLevel.size + size.y / 2) {
+        for (let i = 0; i < num; i++) {
+          sketch.fill(`rgba(${col},${Math.pow((i + 1) / (num + 1), borderPow)})`);
+          sketch.rect(cam.x - size.x / 2, -currentLevel.size - i * borderSize, size.x, -borderSize);
+        }
+
+        sketch.fill(`rgb(${col})`);
+        sketch.rect(cam.x - size.x / 2, -currentLevel.size - num * borderSize, size.x, -size.y / 2);
+      }
+      sketch.pop();
+    }
+
+    // projectiles
+    projectiles.forEach(p => {
+      p.draw();
+    });
+
+    // enemies
+    enemies.forEach((a, i) => {
+      a.drawTick();
+    });
+
+    // player
+    sketch.push();
+    sketch.translate(player.pos.x, player.pos.y);
+    sketch.rotate(player.dir);
+    sketch.stroke(255);
+    sketch.strokeWeight(5);
+    sketch.fill(0);
+    if (settings.emojiMovie) {
+      sketch.textAlign("center", "center");
+      sketch.rotate(Math.PI / 4);
+      sketch.textSize(50);
+      sketch.text("🚀", 0, 0);
+    } else {
+      sketch.triangle(-15, -15, 20, 0, -15, 15);
+    }
+    sketch.pop();
+
+    sketch.pop();
+
+    // hud
+    sketch.push();
+    sketch.fill("rgba(0,0,0,0.5)");
+    sketch.noStroke();
+    sketch.rectMode("corners");
+    sketch.rect(12.5, 12.5, 137.5, 85, 12.5);
+    sketch.rect(size.x - 12.5, 12.5, size.x - 100, 85, 12.5);
+    sketch.pop();
+
+    // minimap
+    let minimapSize = 130;
+    let minimapBorder = 10
+    sketch.push();
+    sketch.fill(0);
+    sketch.stroke(255);
+    sketch.strokeWeight(5);
+    sketch.rect(size.x - minimapSize - 20 - minimapBorder / 2, size.y - minimapSize - 20 - minimapBorder / 2, minimapSize + minimapBorder, minimapSize + minimapBorder);
+    sketch.translate(size.x - 20 - minimapSize / 2, size.y - 20 - minimapSize / 2);
+    sketch.scale(130 / 2, 130 / 2);
+
+    // minimap content
+    sketch.stroke("rgb(200,50,0)");
+    enemies.forEach(a => {
+      sketch.strokeWeight(0.002 * a.size);
+      sketch.point(a.pos.x / currentLevel.size, a.pos.y / currentLevel.size);
+    });
+    sketch.strokeWeight(0.05);
+    sketch.stroke(255);
+    sketch.point(player.pos.x / currentLevel.size, player.pos.y / currentLevel.size);
+    sketch.pop();
+
+    // enemies left text
+    sketch.push();
+    sketch.textFont("monospace");
+    sketch.noStroke();
+    sketch.textSize(20);
+    sketch.fill(255);
+    sketch.textAlign("right", "bottom");
+    sketch.text(enemies.length, size.x - 50, 70);
+    sketch.text(Math.round(fps), size.x - 50, 40);
+    sketch.textAlign("left", "bottom");
+    sketch.text("💀", size.x - 45, 70);
+    sketch.textSize(15);
+    sketch.text("fps", size.x - 45, 40);
+    sketch.pop();
+
+    // time
+    sketch.textAlign("center", "top");
+    sketch.textFont("monospace");
+    sketch.fill(255);
+    sketch.noStroke();
+    sketch.textSize(35);
+    sketch.text(formatTime(time), size.x / 2, 10);
+
+    // cursor
+    sketch.push();
+    sketch.stroke(255);
+    sketch.strokeWeight(5);
+    sketch.translate(size.x / 2 + mouse.x, size.y / 2 + mouse.y);
+    sketch.scale(0.7);
+
+    let d1 = 14 - cursorContract * 3;
+    let d2 = 8 - cursorContract * 2;
+    sketch.line(d1, 0, d2, 0);
+    sketch.line(0, d1, 0, d2);
+    sketch.line(-d1, 0, -d2, 0);
+    sketch.line(0, -d1, 0, -d2);
+
+    d1 = 20;
+    d2 = 10;
+    sketch.line(-d1, -d2, -d2, -d1);
+    sketch.line(d2, -d1, d1, -d2);
+    sketch.line(d1, d2, d2, d1);
+    sketch.line(-d2, d1, -d1, d2);
+    sketch.pop();
+
+    // health, xp, shield
+    bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
+    bar(new Vector(25, 55), 100, player.xp / player.levelUp, "rgb(40,30,0)", "rgb(220,200,0)", 15);
+    bar(new Vector(25, 25), 100, player.shield / player.maxShield, "rgb(0,40,60)", "rgb(0,150,250)", 5);
+  }
+}
+
+// ********************  functions  ******************** //
+export function addWeapon(id) {
+  let weapon = weapons.find(e => e.id == id);
+  weapon.givePlayer();
+}
+export function calcBorder(obj) {
+  let vec = Vector.zero;
+  if (obj.pos.x > currentLevel.size) {
+    d = obj.pos.x - currentLevel.size;
+    vec["+="](-d, 0);
+  }
+  if (obj.pos.x < -currentLevel.size) {
+    d = -obj.pos.x - currentLevel.size;
+    vec["+="](d, 0);
+  }
+  if (obj.pos.y > currentLevel.size) {
+    d = obj.pos.y - currentLevel.size;
+    vec["+="](0, -d);
+  }
+  if (obj.pos.y < -currentLevel.size) {
+    d = -obj.pos.y - currentLevel.size;
+    vec["+="](0, d);
+  }
+  return vec;
+}
+export function applyBorder(obj) {
+  obj.vel["+="]((calcBorder(obj))["*"](0.1));
+}
+export function getRandomBox(size) {
+  let d = Math.floor(Math.random() * 4);
+  switch (d) {
+    case 0: // right
+      return new Vector(size, Math.random() * size * 2 - size);
+    case 1: // left
+      return new Vector(-size, Math.random() * size * 2 - size);
+    case 2: // bottom
+      return new Vector(Math.random() * size * 2 - size, size);
+    case 3: // top
+      return new Vector(Math.random() * size * 2 - size, -size);
+  }
+}
+export function formatTime(time = 0) {
+  let sec = Math.floor(time);
+  let min = Math.floor(time / 60);
+  sec -= min * 60;
+  let hr = Math.floor(time / 3600);
+  min -= hr * 60;
+  sec = sec.toString();
+  if (sec.length < 2) sec = "0" + sec;
+  if (hr > 0 && min.length < 2) min = "0" + min;
+  return `${hr > 0 ? hr + ":" : ""}${min}:${sec}`;
+}
+export function getOnScreen(pos, rad) {
+  if (pos.x - cam.x > size.x / 2 + rad) return false;
+  if (pos.x - cam.x < -size.x / 2 - rad) return false;
+  if (pos.y - cam.y > size.y / 2 + rad) return false;
+  if (pos.y - cam.y < -size.y / 2 - rad) return false;
+  return true;
+}
+function bar(p, w, val, bgCol, col, s) {
+  sketch.noStroke();
+  sketch.fill(bgCol);
+  sketch.rect(p.x, p.y, w, s, 5);
+  sketch.fill(col);
+  sketch.rect(p.x, p.y, w * val, s, 5);
+}
+export function set(prop, val) {
+  // window[prop] = val;
+  switch (prop) {
+    case "screenshake": return screenshake = val;
+    case "cursorContract": return cursorContract = val;
+  }
+}
+export function get(prop) {
+  // return window[prop];
+  switch (prop) {
+    case "screenshake": return screenshake;
+    case "cursorContract": return cursorContract;
+  }
+}
+export function damagePlayer(amt) {
+  player.shieldRegenTimeLeft = 0;
+  if (player.shield > amt) {
+    player.shield -= amt;
+    return;
+  }
+  amt -= player.shield;
+  player.shield = 0;
+  player.hp -= amt;
+}
+
+// ********************  event listeners  ******************** //
+document.addEventListener("keydown", (key) => setKey(key, true));
+document.addEventListener("keyup", (key) => setKey(key, false));
+document.addEventListener("mousedown", () => mouseDown = true);
+document.addEventListener("mouseup", () => mouseDown = false);
+document.addEventListener("click", () => mouseDown = false);
+document.getElementById("upgradeMenu").addEventListener("cancel", e => e.preventDefault());
+addEventListener("resize", () => { size["="](innerWidth, innerHeight); sketch.resizeCanvas(size.x, size.y) });
+function setKey(ev, val) {
+  keys[ev.key] = val;
+
+  //extra keybinds
+  if (ev.key == "z" && val) {
+    settings.toggleFire = !settings.toggleFire
+  }
+
+
+  if (val && devMode) {
+    const mousePos = new Vector(mouse.x + player.pos.x, player.pos.y + mouse.y);
+    switch (ev.key) {
+      case "x":
+        enemies.forEach(e => e.hp = 0);
+        break;
+
+      case "c":
+        enemies.forEach(e => {
+          e.pos.x = mousePos.x
+          e.pos.y = mousePos.y
+        });
+        break;
+
+      case "v":
+        player.pos.x = mousePos.x
+        player.pos.y = mousePos.y
+        break;
+      case "b":
+        settings.emojiMovie = !settings.emojiMovie;
+        break;
+      default:
+        if ("1234567890".split("").includes(ev.key)) {
+          if (enemyTypes[parseInt(ev.key)]) new enemyTypes[parseInt(ev.key)](mousePos, new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), 60, false);
+
+        }
+        break;
+    }
+
+
+  }
+}

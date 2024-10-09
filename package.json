@@ -1,0 +1,23 @@
+{
+  "name": "asteroids-v2",
+  "version": "1.0.0",
+  "description": "Asteroids but newer",
+  "main": "main.js",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --outdir=./dist --watch --sourcemap",
+    "dev": "esbuild src/main.js --bundle --outdir=./dist --watch --sourcemap --serve --servedir=./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cam0studios/asteroids-v2.git"
+  },
+  "author": "cam0studios",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cam0studios/asteroids-v2/issues"
+  },
+  "homepage": "https://github.com/cam0studios/asteroids-v2#readme",
+  "dependencies": {
+    "p5": "^1.10.0"
+  }
+}
