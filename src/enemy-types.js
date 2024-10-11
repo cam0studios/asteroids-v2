@@ -43,7 +43,12 @@ const enemyTypes = [
               new enemyTypes[0](this.pos, (this.vel)["+"](new Vector(50, 0).rotate(this.hitDir + r)), this.size * 2 / 3, false);
             }
           }
-          set("screenshake", get("screenshake") + (this.size > 15 ? 5 : 3) / ((this.pos)["-"](player.pos).mag / 500 + 1));
+          let newScreenshake = (this.size > 20 ? 15 : 7) / ((this.pos)["-"](player.pos).mag / 500 + 1);
+          if (get("screenshake") < newScreenshake) {
+            set("screenshake", newScreenshake);
+          } else {
+            set("screenshake", get("screenshake") + newScreenshake / 5);
+          }
           player.xp += this.size > 15 ? 5 : 3;
         }
       }

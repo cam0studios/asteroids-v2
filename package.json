@@ -4,7 +4,7 @@
   "description": "Asteroids but newer",
   "main": "main.js",
   "scripts": {
-    "build": "esbuild src/main.js --bundle --outdir=./dist --watch --sourcemap",
+    "build": "esbuild src/main.js --bundle --outdir=./dist --sourcemap",
     "dev": "esbuild src/main.js --bundle --outdir=./dist --watch --sourcemap --serve --servedir=./"
   },
   "repository": {

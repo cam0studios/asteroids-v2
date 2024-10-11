@@ -8,14 +8,11 @@ class Weapon {
     this.id = data.id;
     this.props = data.props;
     this.tick = data.tick;
-    this.projectileTick = data.projectileTick;
-    this.drawTick = data.drawTick;
-    this.enemyTick = data.enemyTick;
     this.upgrades = data.upgrades;
   }
 
   givePlayer() {
-    let w = this;
+    let w = { ...this };
     for (let prop in w.props) {
       w[prop] = w.props[prop];
     }

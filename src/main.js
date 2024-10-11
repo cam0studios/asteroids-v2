@@ -5,8 +5,6 @@ import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes from "./projectile-types";
 
-const type = "3d"
-
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
   keys[e] = false;
@@ -17,18 +15,21 @@ export var clampTime, enemies, player, projectiles, sketch, size, cam, currentLe
 
 // setup base html
 
-setTimeout(() => startGame(0), 0);
+setTimeout(() => startGame(0), 100);
 
 function startGame(level) {
   currentLevel = levels[level];
   let p5Inst = new p5(s);
+}
+function stopGame() {
+  sketch.noLoop();
+  document.getElementById("defaultCanvas0").remove();
 }
 
 var playerUpgrades = [
   { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5 },
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
-playerUpgrades.forEach(e => e.times = 0);
 
 // ********************  p5  ******************** //
 const s = (sk) => {
@@ -40,19 +41,22 @@ const s = (sk) => {
     dir: 0,
     weapons: [],
     speed: 350,
-    xp: 100,
-    levelUp: 100,
+    xp: 200,
+    levelUp: 200,
     hp: 100,
     maxHp: 100,
     shield: 0,
     maxShield: 30,
     shieldRegenTime: 10,
     shieldRegenSpeed: 5,
-    shieldRegenTimeLeft: 0
+    shieldRegenTimeLeft: 0,
+    level: -1
   };
+  playerUpgrades.forEach(e => e.times = 0);
 
   if (!location.href.includes("https://cam0studios.github.io/")) {
     window.playerLink = player;
+    window.timeLink = time;
     devMode = true;
   }
 
@@ -124,72 +128,78 @@ const s = (sk) => {
 
     // ********************  physics  ******************** //
     // player movement
-    player.pos["+="]((player.vel)["*"](clampTime));
-    let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
-    if (joy.mag > 1) joy.mag = 1;
-    joy["*="](player.speed * clampTime);
-    player.vel["+="](joy);
-    player.vel["*="](Math.pow(0.3, clampTime));
-    player.dir = mouse.heading;
-    applyBorder(player);
-    // level up
-    if (player.xp >= player.levelUp) {
-      sketch.noLoop();
-      player.xp -= player.levelUp;
-      player.levelUp *= 1.15;
-      document.getElementById("upgradeMenu").showModal();
-      let content = "";
-      let choices = [];
-      playerUpgrades.filter(e => e.times < e.max).forEach(e => choices.push({ type: 0, val: e }));
-      player.weapons.forEach((w, i) => {
-        w.upgrades.filter(e => e.times < e.max).forEach(e => choices.push({ type: 1, val: e, i }));
-      });
-
-      let choicesI = [...choices.keys()];
-      let chosenI = [];
-      for (let i = 0; i < 3; i++) if (choicesI.length > 0) chosenI.push(choicesI.splice(Math.floor(Math.random() * choicesI.length), 1)[0]);
-      if (chosenI.length == 0) chosenI.push(-1);
-      let chosen = [];
-      chosenI.forEach(e => {
-        let opt;
-        if (e == -1) opt = { type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 0, times: 0 } };
-        else opt = choices[e];
-        chosen.push(opt);
-      });
-      chosen.forEach((opt, i) => {
-        console.log(opt);
-        content += `<button id="option${i}"><h2>${opt.val.name}</h2><p>${opt.val.desc}</p><p>${opt.val.times}/${opt.val.max}</p></button>`;
-      });
-      document.getElementById("options").innerHTML = content;
-      chosen.forEach((opt, i) => {
-        document.getElementById(`option${i}`).addEventListener("click", () => {
-          opt.val.func(function () {
-            switch (opt.type) {
-              case 0: return player;
-              case 1: return player.weapons[opt.i]
-            }
-          }());
-          opt.val.times++;
-          document.getElementById("upgradeMenu").close();
-          sketch.loop();
+    if (player.hp > 0) {
+      player.pos["+="]((player.vel)["*"](clampTime));
+      let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
+      if (joy.mag > 1) joy.mag = 1;
+      joy["*="](player.speed * clampTime);
+      player.vel["+="](joy);
+      player.vel["*="](Math.pow(0.3, clampTime));
+      player.dir = mouse.heading;
+      applyBorder(player);
+      // level up
+      if (player.xp >= player.levelUp) {
+        player.level++;
+        sketch.noLoop();
+        player.xp -= player.levelUp;
+        player.levelUp *= 1.2;
+        document.getElementById("upgradeMenu").showModal();
+        let content = "";
+        let choices = [];
+        playerUpgrades.filter(e => e.times < e.max).forEach(e => choices.push({ type: 0, val: e }));
+        player.weapons.forEach((w, i) => {
+          w.upgrades.filter(e => e.times < e.max).forEach(e => choices.push({ type: 1, val: e, i }));
         });
-      });
-    }
-    // player shield
-    if (player.shield < player.maxShield) {
-      if (player.shieldRegenTimeLeft < player.shieldRegenTime) {
-        player.shieldRegenTimeLeft += clampTime;
-      } else {
-        player.shield += player.shieldRegenSpeed * clampTime;
+
+        let choicesI = [...choices.keys()];
+        let chosenI = [];
+        for (let i = 0; i < 3; i++) if (choicesI.length > 0) chosenI.push(choicesI.splice(Math.floor(Math.random() * choicesI.length), 1)[0]);
+        if (chosenI.length == 0) chosenI.push(-1);
+        let chosen = [];
+        chosenI.forEach(e => {
+          let opt;
+          if (e == -1) opt = { type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 0, times: 0 } };
+          else opt = choices[e];
+          chosen.push(opt);
+        });
+        chosen.forEach((opt, i) => {
+          console.log(opt);
+          content += `<button id="option${i}"><h2>${opt.val.name}</h2><p>${opt.val.desc}</p><p>${opt.val.times}/${opt.val.max}</p></button>`;
+        });
+        document.getElementById("options").innerHTML = content;
+        chosen.forEach((opt, i) => {
+          document.getElementById(`option${i}`).addEventListener("click", () => {
+            opt.val.func(function () {
+              switch (opt.type) {
+                case 0: return player;
+                case 1: return player.weapons[opt.i]
+              }
+            }());
+            opt.val.times++;
+            document.getElementById("upgradeMenu").close();
+            sketch.loop();
+          });
+        });
       }
-    } else if (player.shield > player.maxShield) {
-      player.shield = player.maxShield;
+      // player shield
+      if (player.shield < player.maxShield) {
+        if (player.shieldRegenTimeLeft < player.shieldRegenTime) {
+          player.shieldRegenTimeLeft += clampTime;
+        } else {
+          player.shield += player.shieldRegenSpeed * clampTime;
+        }
+      } else if (player.shield > player.maxShield) {
+        player.shield = player.maxShield;
+      }
+      if (player.hp > player.maxHp) player.hp = player.maxHp;
+      // weapons
+      player.weapons.forEach(weapon => {
+        weapon.tick(weapon);
+      });
+    } else {
+      player.hp = 0;
+      document.getElementById("gameOver").showModal();
     }
-    if (player.hp > player.maxHp) player.hp = player.maxHp;
-    // weapons
-    player.weapons.forEach(weapon => {
-      weapon.tick(weapon);
-    });
     // projectiles
     projectiles.forEach((projectile, i) => {
       projectile.tick(i);
@@ -284,21 +294,23 @@ const s = (sk) => {
     });
 
     // player
-    sketch.push();
-    sketch.translate(player.pos.x, player.pos.y);
-    sketch.rotate(player.dir);
-    sketch.stroke(255);
-    sketch.strokeWeight(5);
-    sketch.fill(0);
-    if (settings.emojiMovie) {
-      sketch.textAlign("center", "center");
-      sketch.rotate(Math.PI / 4);
-      sketch.textSize(50);
-      sketch.text("🚀", 0, 0);
-    } else {
-      sketch.triangle(-15, -15, 20, 0, -15, 15);
+    if (player.hp > 0) {
+      sketch.push();
+      sketch.translate(player.pos.x, player.pos.y);
+      sketch.rotate(player.dir);
+      sketch.stroke(255);
+      sketch.strokeWeight(5);
+      sketch.fill(0);
+      if (settings.emojiMovie) {
+        sketch.textAlign("center", "center");
+        sketch.rotate(Math.PI / 4);
+        sketch.textSize(50);
+        sketch.text("🚀", 0, 0);
+      } else {
+        sketch.triangle(-15, -15, 20, 0, -15, 15);
+      }
+      sketch.pop();
     }
-    sketch.pop();
 
     sketch.pop();
 
@@ -482,7 +494,14 @@ document.addEventListener("keyup", (key) => setKey(key, false));
 document.addEventListener("mousedown", () => mouseDown = true);
 document.addEventListener("mouseup", () => mouseDown = false);
 document.addEventListener("click", () => mouseDown = false);
-document.getElementById("upgradeMenu").addEventListener("cancel", e => e.preventDefault());
+[...document.querySelectorAll(".noClose")].forEach(elem => {
+  elem.addEventListener("cancel", ev => ev.preventDefault());
+});
+document.getElementById("restart").addEventListener("click", () => {
+  stopGame();
+  startGame(0);
+  document.getElementById("gameOver").close();
+});
 addEventListener("resize", () => { size["="](innerWidth, innerHeight); sketch.resizeCanvas(size.x, size.y) });
 function setKey(ev, val) {
   keys[ev.key] = val;
@@ -521,7 +540,5 @@ function setKey(ev, val) {
         }
         break;
     }
-
-
   }
 }

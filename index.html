@@ -8,13 +8,24 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/eruda" onload="eruda.init()"></script>
   <script src="./dist/main.js" defer></script>
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="manifest" href="site.webmanifest">
 </head>
 
 <body>
-  <dialog id="upgradeMenu">
+  <dialog id="upgradeMenu" class="noClose menu">
     <h1>Level up!</h1>
-    <div id="options">
-      
+    <div id="options" class="centered">
+
+    </div>
+  </dialog>
+  <dialog id="gameOver" class="noClose menu">
+    <div class="centered">
+      <h1>Game Over</h1>
+      <!--<p>Score: <span id="score">0</span></p>-->
+      <button id="restart">
+        <h2>Restart</h2>
+      </button>
     </div>
   </dialog>
 </body>
