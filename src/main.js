@@ -11,7 +11,7 @@ export var keys = {};
 });
 
 // global vars
-export var clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode = false;
+export var clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode = false, paused;
 
 // setup base html
 
@@ -50,13 +50,14 @@ const s = (sk) => {
     shieldRegenTime: 10,
     shieldRegenSpeed: 5,
     shieldRegenTimeLeft: 0,
-    level: -1
+    level: -1,
+    kills: 0
   };
+  paused = false;
   playerUpgrades.forEach(e => e.times = 0);
 
   if (!location.href.includes("https://cam0studios.github.io/")) {
     window.playerLink = player;
-    window.timeLink = time;
     devMode = true;
   }
 
@@ -163,7 +164,6 @@ const s = (sk) => {
           chosen.push(opt);
         });
         chosen.forEach((opt, i) => {
-          console.log(opt);
           content += `<button id="option${i}"><h2>${opt.val.name}</h2><p>${opt.val.desc}</p><p>${opt.val.times}/${opt.val.max}</p></button>`;
         });
         document.getElementById("options").innerHTML = content;
@@ -320,7 +320,7 @@ const s = (sk) => {
     sketch.noStroke();
     sketch.rectMode("corners");
     sketch.rect(12.5, 12.5, 137.5, 85, 12.5);
-    sketch.rect(size.x - 12.5, 12.5, size.x - 100, 85, 12.5);
+    sketch.rect(size.x - 12.5, 12.5, size.x - 100, 110, 12.5);
     sketch.pop();
 
     // minimap
@@ -352,12 +352,15 @@ const s = (sk) => {
     sketch.textSize(20);
     sketch.fill(255);
     sketch.textAlign("right", "bottom");
-    sketch.text(enemies.length, size.x - 50, 70);
-    sketch.text(Math.round(fps), size.x - 50, 40);
+    let xPos = size.x - 50;
+    sketch.text(player.kills, xPos, 70);
+    sketch.text(Math.round(fps), xPos, 40);
+    sketch.text(enemies.length, xPos, 100);
     sketch.textAlign("left", "bottom");
-    sketch.text("💀", size.x - 45, 70);
+    sketch.text("💀", xPos + 5, 70);
+    sketch.text("⚔️", xPos + 5, 100);
     sketch.textSize(15);
-    sketch.text("fps", size.x - 45, 40);
+    sketch.text("fps", xPos + 5, 40);
     sketch.pop();
 
     // time
@@ -489,20 +492,35 @@ export function damagePlayer(amt) {
 }
 
 // ********************  event listeners  ******************** //
+[...document.querySelectorAll(".noClose")].forEach(elem => {
+  elem.addEventListener("cancel", ev => ev.preventDefault());
+});
+
 document.addEventListener("keydown", (key) => setKey(key, true));
 document.addEventListener("keyup", (key) => setKey(key, false));
 document.addEventListener("mousedown", () => mouseDown = true);
 document.addEventListener("mouseup", () => mouseDown = false);
 document.addEventListener("click", () => mouseDown = false);
-[...document.querySelectorAll(".noClose")].forEach(elem => {
-  elem.addEventListener("cancel", ev => ev.preventDefault());
-});
+
 document.getElementById("restart").addEventListener("click", () => {
   stopGame();
   startGame(0);
   document.getElementById("gameOver").close();
 });
+
+document.getElementById("pause").addEventListener("cancel", () => {
+  sketch.loop();
+  document.getElementById("pause").close();
+  paused = false;
+});
+document.getElementById("resume").addEventListener("click", () => {
+  sketch.loop();
+  document.getElementById("pause").close();
+  paused = false;
+});
+
 addEventListener("resize", () => { size["="](innerWidth, innerHeight); sketch.resizeCanvas(size.x, size.y) });
+
 function setKey(ev, val) {
   keys[ev.key] = val;
 
@@ -511,6 +529,13 @@ function setKey(ev, val) {
     settings.toggleFire = !settings.toggleFire
   }
 
+  if (ev.key == "Escape" && val && !paused) {
+    setTimeout(() => {
+      document.getElementById("pause").showModal();
+      sketch.noLoop();
+      paused = true;
+    }, 100);
+  }
 
   if (val && devMode) {
     const mousePos = new Vector(mouse.x + player.pos.x, player.pos.y + mouse.y);

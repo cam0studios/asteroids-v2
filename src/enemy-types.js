@@ -38,6 +38,7 @@ const enemyTypes = [
         if (this.hp <= 0) {
           enemies.splice(i, 1);
           i--;
+          player.kills++;
           if (this.size > 10) {
             for (let r = -1; r <= 1; r += 1) {
               new enemyTypes[0](this.pos, (this.vel)["+"](new Vector(50, 0).rotate(this.hitDir + r)), this.size * 2 / 3, false);
