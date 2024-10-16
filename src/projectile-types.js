@@ -1,5 +1,5 @@
 import { Vector } from "../vector-library/vector";
-import { projectiles, clampTime, calcBorder, sketch, settings } from "./main";
+import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer } from "./main";
 
 const projectileTypes = [
   class {
@@ -13,7 +13,7 @@ const projectileTypes = [
 
     tick(i) {
       this.pos["+="](new Vector(this.speed * clampTime, 0).rotate(this.dir));
-      
+
       if (calcBorder(this).mag > 100) {
         projectiles.splice(i, 1);
         i--;
@@ -24,9 +24,10 @@ const projectileTypes = [
       let lastPos = this.pos.copy;
       lastPos["+="](new Vector(20, 0).rotate(this.dir));
 
-      
+    
       sketch.stroke(255);
       sketch.strokeWeight(5);
+      sketch.fill(0);
       if (settings.emojiMovie) {
         sketch.textAlign(sketch.CENTER, sketch.CENTER);
         sketch.textSize(10);
@@ -36,7 +37,7 @@ const projectileTypes = [
       }
     }
 
-    enemyTick(i,enemy,enemyI) {
+    enemyTick(i, enemy, enemyI) {
       if ((this.pos)["-"](enemy.pos).mag < enemy.size + 10) {
         enemy.hp -= this.damage;
         enemy.hitDir = this.dir;

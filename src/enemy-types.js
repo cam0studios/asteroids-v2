@@ -44,22 +44,20 @@ const enemyTypes = [
               new enemyTypes[0](this.pos, (this.vel)["+"](new Vector(50, 0).rotate(this.hitDir + r)), this.size * 2 / 3, false);
             }
           }
-          let newScreenshake = (this.size > 20 ? 15 : 7) / ((this.pos)["-"](player.pos).mag / 500 + 1);
+          let newScreenshake = (this.size > 20 ? 12 : 7) / ((this.pos)["-"](player.pos).mag / 500 + 1);
           if (get("screenshake") < newScreenshake) {
             set("screenshake", newScreenshake);
           } else {
             set("screenshake", get("screenshake") + newScreenshake / 5);
           }
           player.xp += this.size > 15 ? 5 : 3;
+          player.score += this.size > 15 ? 5 : this.size > 10 ? 3 : 1;
         }
       }
     }
     drawTick() {
       if (getOnScreen(this.pos, this.size)) {
         if (this.time > 1 || !this.spawn) {
-          sketch.fill(0);
-          sketch.stroke(255);
-          sketch.strokeWeight(5);
           if (settings.emojiMovie) {
             sketch.push();
             sketch.textAlign(sketch.CENTER, sketch.CENTER);
@@ -69,6 +67,9 @@ const enemyTypes = [
             sketch.text("⭐", 0, 0);
             sketch.pop();
           } else {
+            sketch.fill(0);
+            sketch.stroke(255);
+            sketch.strokeWeight(5);
             sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
           }
         } else {

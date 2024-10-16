@@ -6,12 +6,12 @@ import levels from "./levels";
 import projectileTypes from "./projectile-types";
 
 export var keys = {};
-"qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
+"qwertyuiopasdfghjklzxcvbnm " .split("").forEach(e => {
   keys[e] = false;
 });
 
 // global vars
-export var clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode = false, paused;
+export var clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode = false, paused, score;
 
 // setup base html
 
@@ -54,6 +54,7 @@ const s = (sk) => {
     kills: 0
   };
   paused = false;
+  score = 0;
   playerUpgrades.forEach(e => e.times = 0);
 
   if (!location.href.includes("https://cam0studios.github.io/")) {
@@ -96,7 +97,7 @@ const s = (sk) => {
     mouse = new Vector(sketch.mouseX, sketch.mouseY);
     mouse["-="]((size)["/"](2));
     if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
-    screenshake *= Math.pow(0.005, clampTime);
+    screenshake *= Math.pow(0.00005, clampTime);
     // cam["+="](mouse["/"](10));
 
     // fps
@@ -426,6 +427,7 @@ export function calcBorder(obj) {
   return vec;
 }
 export function applyBorder(obj) {
+  if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15);
   obj.vel["+="]((calcBorder(obj))["*"](0.1));
 }
 export function getRandomBox(size) {
