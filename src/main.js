@@ -6,7 +6,7 @@ import levels from "./levels";
 import projectileTypes from "./projectile-types";
 
 export var keys = {};
-"qwertyuiopasdfghjklzxcvbnm " .split("").forEach(e => {
+"qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
   keys[e] = false;
 });
 
@@ -483,7 +483,7 @@ export function get(prop) {
   }
 }
 export function damagePlayer(amt) {
-  player.shieldRegenTimeLeft = 0;
+  if (amt > 0) player.shieldRegenTimeLeft = 0;
   if (player.shield > amt) {
     player.shield -= amt;
     return;
