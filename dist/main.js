@@ -17796,7 +17796,7 @@
     }
   }
   function damagePlayer(amt) {
-    player.shieldRegenTimeLeft = 0;
+    if (amt > 0) player.shieldRegenTimeLeft = 0;
     if (player.shield > amt) {
       player.shield -= amt;
       return;
@@ -17813,24 +17813,32 @@
   document.addEventListener("mousedown", () => mouseDown = true);
   document.addEventListener("mouseup", () => mouseDown = false);
   document.addEventListener("click", () => mouseDown = false);
-  document.getElementById("restart").addEventListener("click", () => {
+  document.getElementById("restart").addEventListener("click", restart);
+  document.getElementById("pause").addEventListener("cancel", unpause);
+  document.getElementById("resume").addEventListener("click", unpause);
+  function pause() {
+    setTimeout(() => {
+      document.getElementById("pause").showModal();
+      sketch.noLoop();
+      paused = true;
+    }, 100);
+  }
+  function unpause() {
+    sketch.loop();
+    document.getElementById("pause").close();
+    paused = false;
+  }
+  function restart() {
     stopGame();
     startGame(0);
     document.getElementById("gameOver").close();
-  });
-  document.getElementById("pause").addEventListener("cancel", () => {
-    sketch.loop();
-    document.getElementById("pause").close();
-    paused = false;
-  });
-  document.getElementById("resume").addEventListener("click", () => {
-    sketch.loop();
-    document.getElementById("pause").close();
-    paused = false;
-  });
+  }
   addEventListener("resize", () => {
     size["="](innerWidth, innerHeight);
     sketch.resizeCanvas(size.x, size.y);
+  });
+  addEventListener("blur", () => {
+    pause();
   });
   function setKey(ev, val) {
     keys[ev.key] = val;
@@ -17838,11 +17846,7 @@
       settings.toggleFire = !settings.toggleFire;
     }
     if (ev.key == "Escape" && val && !paused) {
-      setTimeout(() => {
-        document.getElementById("pause").showModal();
-        sketch.noLoop();
-        paused = true;
-      }, 100);
+      pause();
     }
     if (val && devMode) {
       const mousePos = new Vector(mouse.x + player.pos.x, player.pos.y + mouse.y);

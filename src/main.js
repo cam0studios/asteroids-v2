@@ -5,6 +5,8 @@ import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes from "./projectile-types";
 
+const version = "v0.2.3";
+
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
   keys[e] = false;
@@ -504,24 +506,30 @@ document.addEventListener("mousedown", () => mouseDown = true);
 document.addEventListener("mouseup", () => mouseDown = false);
 document.addEventListener("click", () => mouseDown = false);
 
-document.getElementById("restart").addEventListener("click", () => {
+document.getElementById("restart").addEventListener("click", restart);
+
+document.getElementById("pause").addEventListener("cancel", unpause);
+document.getElementById("resume").addEventListener("click", unpause);
+function pause() {
+  setTimeout(() => {
+    document.getElementById("pause").showModal();
+    sketch.noLoop();
+    paused = true;
+  }, 100);
+}
+function unpause() {
+  sketch.loop();
+  document.getElementById("pause").close();
+  paused = false;
+}
+function restart() {
   stopGame();
   startGame(0);
   document.getElementById("gameOver").close();
-});
-
-document.getElementById("pause").addEventListener("cancel", () => {
-  sketch.loop();
-  document.getElementById("pause").close();
-  paused = false;
-});
-document.getElementById("resume").addEventListener("click", () => {
-  sketch.loop();
-  document.getElementById("pause").close();
-  paused = false;
-});
+}
 
 addEventListener("resize", () => { size["="](innerWidth, innerHeight); sketch.resizeCanvas(size.x, size.y) });
+addEventListener("blur", () => { pause() });
 
 function setKey(ev, val) {
   keys[ev.key] = val;
@@ -532,11 +540,7 @@ function setKey(ev, val) {
   }
 
   if (ev.key == "Escape" && val && !paused) {
-    setTimeout(() => {
-      document.getElementById("pause").showModal();
-      sketch.noLoop();
-      paused = true;
-    }, 100);
+    pause();
   }
 
   if (val && devMode) {
