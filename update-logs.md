@@ -2,6 +2,10 @@
 
 ## v0.2
 
+### v0.2.4
+- Fix pausing issues
+- Add upgrade weights
+
 ### v0.2.3
 - Add version variable
 - Add update logs file

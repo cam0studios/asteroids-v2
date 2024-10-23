@@ -5,7 +5,7 @@ import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes from "./projectile-types";
 
-const version = "v0.2.3";
+const version = "v0.2.4";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {

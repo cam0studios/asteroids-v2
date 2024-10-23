@@ -17395,7 +17395,7 @@
     document.getElementById("defaultCanvas0").remove();
   }
   var playerUpgrades = [
-    { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5 }
+    { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5, weight: 1 }
     // { name: "", desc: "", func: () => {}, max: 0 }
   ];
   var s = (sk) => {
@@ -17504,18 +17504,17 @@
           let content = "";
           let choices = [];
           playerUpgrades.filter((e2) => e2.times < e2.max).forEach((e2) => {
-            for (let n = 0; n < e2.max; n += 0.05) choices.push({ type: 0, val: e2 });
+            for (let n = 0; n < e2.weight; n += 0.05) choices.push({ type: 0, val: e2 });
           });
           player.weapons.forEach((w, i) => {
             w.upgrades.filter((e2) => e2.times < e2.max).forEach((e2) => {
-              for (let n = 0; n < e2.max; n += 0.05) choices.push({ type: 1, val: e2, i });
+              for (let n = 0; n < e2.weight; n += 0.05) choices.push({ type: 1, val: e2, i });
             });
           });
           let chosen = [];
           for (let i = 0; i < 3; i++) {
             if (choices.length > 0) {
               let r = Math.floor(Math.random() * choices.length);
-              console.log(choices[r]);
               chosen.push(choices[r]);
             }
           }
