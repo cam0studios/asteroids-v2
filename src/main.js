@@ -29,7 +29,7 @@ function stopGame() {
 }
 
 var playerUpgrades = [
-  { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5 },
+  { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5, weight: 1 },
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
 
@@ -145,27 +145,25 @@ const s = (sk) => {
       if (player.xp >= player.levelUp) {
         player.level++;
         sketch.noLoop();
+        paused = true;
         player.xp -= player.levelUp;
         player.levelUp *= 1.2;
         document.getElementById("upgradeMenu").showModal();
         let content = "";
         let choices = [];
-        playerUpgrades.filter(e => e.times < e.max).forEach(e => choices.push({ type: 0, val: e }));
+        playerUpgrades.filter(e => e.times < e.max).forEach(e => { for (let n = 0; n < e.weight; n += 0.05) choices.push({ type: 0, val: e }) });
         player.weapons.forEach((w, i) => {
-          w.upgrades.filter(e => e.times < e.max).forEach(e => choices.push({ type: 1, val: e, i }));
+          w.upgrades.filter(e => e.times < e.max).forEach(e => { for (let n = 0; n < e.weight; n += 0.05) choices.push({ type: 1, val: e, i }) });
         });
 
-        let choicesI = [...choices.keys()];
-        let chosenI = [];
-        for (let i = 0; i < 3; i++) if (choicesI.length > 0) chosenI.push(choicesI.splice(Math.floor(Math.random() * choicesI.length), 1)[0]);
-        if (chosenI.length == 0) chosenI.push(-1);
         let chosen = [];
-        chosenI.forEach(e => {
-          let opt;
-          if (e == -1) opt = { type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 0, times: 0 } };
-          else opt = choices[e];
-          chosen.push(opt);
-        });
+        for (let i = 0; i < 3; i++) {
+          if (choices.length > 0) {
+            let r = Math.floor(Math.random() * choices.length);
+            chosen.push(choices[r]);
+          }
+        }
+        if (chosen.length == 0) chosen.push({ type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 0, times: 0 } });
         chosen.forEach((opt, i) => {
           content += `<button id="option${i}"><h2>${opt.val.name}</h2><p>${opt.val.desc}</p><p>${opt.val.times}/${opt.val.max}</p></button>`;
         });
@@ -181,6 +179,7 @@ const s = (sk) => {
             opt.val.times++;
             document.getElementById("upgradeMenu").close();
             sketch.loop();
+            paused = false;
           });
         });
       }
@@ -511,16 +510,20 @@ document.getElementById("restart").addEventListener("click", restart);
 document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
 function pause() {
-  setTimeout(() => {
-    document.getElementById("pause").showModal();
-    sketch.noLoop();
-    paused = true;
-  }, 100);
+  if (!paused) {
+    setTimeout(() => {
+      document.getElementById("pause").showModal();
+      sketch.noLoop();
+      paused = true;
+    }, 100);
+  }
 }
 function unpause() {
-  sketch.loop();
-  document.getElementById("pause").close();
-  paused = false;
+  if (paused) {
+    sketch.loop();
+    document.getElementById("pause").close();
+    paused = false;
+  }
 }
 function restart() {
   stopGame();
@@ -529,7 +532,7 @@ function restart() {
 }
 
 addEventListener("resize", () => { size["="](innerWidth, innerHeight); sketch.resizeCanvas(size.x, size.y) });
-addEventListener("blur", () => { pause() });
+addEventListener("blur", pause);
 
 function setKey(ev, val) {
   keys[ev.key] = val;

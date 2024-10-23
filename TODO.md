@@ -1,4 +1,5 @@
 ## Todo
+ - Add health and shield upgrades
  - Add more weapons
  - Add more enemy types
  - Make screenshake better

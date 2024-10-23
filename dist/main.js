@@ -17497,26 +17497,29 @@
         if (player.xp >= player.levelUp) {
           player.level++;
           sketch.noLoop();
+          paused = true;
           player.xp -= player.levelUp;
           player.levelUp *= 1.2;
           document.getElementById("upgradeMenu").showModal();
           let content = "";
           let choices = [];
-          playerUpgrades.filter((e2) => e2.times < e2.max).forEach((e2) => choices.push({ type: 0, val: e2 }));
+          playerUpgrades.filter((e2) => e2.times < e2.max).forEach((e2) => {
+            for (let n = 0; n < e2.max; n += 0.05) choices.push({ type: 0, val: e2 });
+          });
           player.weapons.forEach((w, i) => {
-            w.upgrades.filter((e2) => e2.times < e2.max).forEach((e2) => choices.push({ type: 1, val: e2, i }));
+            w.upgrades.filter((e2) => e2.times < e2.max).forEach((e2) => {
+              for (let n = 0; n < e2.max; n += 0.05) choices.push({ type: 1, val: e2, i });
+            });
           });
-          let choicesI = [...choices.keys()];
-          let chosenI = [];
-          for (let i = 0; i < 3; i++) if (choicesI.length > 0) chosenI.push(choicesI.splice(Math.floor(Math.random() * choicesI.length), 1)[0]);
-          if (chosenI.length == 0) chosenI.push(-1);
           let chosen = [];
-          chosenI.forEach((e2) => {
-            let opt;
-            if (e2 == -1) opt = { type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 0, times: 0 } };
-            else opt = choices[e2];
-            chosen.push(opt);
-          });
+          for (let i = 0; i < 3; i++) {
+            if (choices.length > 0) {
+              let r = Math.floor(Math.random() * choices.length);
+              console.log(choices[r]);
+              chosen.push(choices[r]);
+            }
+          }
+          if (chosen.length == 0) chosen.push({ type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 0, times: 0 } });
           chosen.forEach((opt, i) => {
             content += `<button id="option${i}"><h2>${opt.val.name}</h2><p>${opt.val.desc}</p><p>${opt.val.times}/${opt.val.max}</p></button>`;
           });
@@ -17534,6 +17537,7 @@
               opt.val.times++;
               document.getElementById("upgradeMenu").close();
               sketch.loop();
+              paused = false;
             });
           });
         }
@@ -17817,16 +17821,20 @@
   document.getElementById("pause").addEventListener("cancel", unpause);
   document.getElementById("resume").addEventListener("click", unpause);
   function pause() {
-    setTimeout(() => {
-      document.getElementById("pause").showModal();
-      sketch.noLoop();
-      paused = true;
-    }, 100);
+    if (!paused) {
+      setTimeout(() => {
+        document.getElementById("pause").showModal();
+        sketch.noLoop();
+        paused = true;
+      }, 100);
+    }
   }
   function unpause() {
-    sketch.loop();
-    document.getElementById("pause").close();
-    paused = false;
+    if (paused) {
+      sketch.loop();
+      document.getElementById("pause").close();
+      paused = false;
+    }
   }
   function restart() {
     stopGame();
@@ -17837,9 +17845,7 @@
     size["="](innerWidth, innerHeight);
     sketch.resizeCanvas(size.x, size.y);
   });
-  addEventListener("blur", () => {
-    pause();
-  });
+  addEventListener("blur", pause);
   function setKey(ev, val) {
     keys[ev.key] = val;
     if (ev.key == "z" && val) {
