@@ -17395,7 +17395,16 @@
     document.getElementById("defaultCanvas0").remove();
   }
   var playerUpgrades = [
-    { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5, weight: 1 }
+    { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5, weight: 1 },
+    { name: "Health", desc: "Increase max health", func: () => {
+      player.maxHp *= 1.15;
+      player.hp += 20;
+    }, max: 5, weight: 0.8 },
+    { name: "Shield", desc: "Make shield better", func: () => {
+      player.maxShield += 10;
+      player.shieldRegenTime--;
+      player.shieldRegenSpeed++;
+    }, max: 5, weight: 0.8 }
     // { name: "", desc: "", func: () => {}, max: 0 }
   ];
   var s = (sk) => {
@@ -17525,6 +17534,7 @@
           document.getElementById("options").innerHTML = content;
           chosen.forEach((opt, i) => {
             document.getElementById(`option${i}`).addEventListener("click", () => {
+              player.hp += 15;
               opt.val.func(function() {
                 switch (opt.type) {
                   case 0:

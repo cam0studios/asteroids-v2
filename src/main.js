@@ -5,7 +5,7 @@ import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes from "./projectile-types";
 
-const version = "v0.2.4";
+const version = "v0.2.5";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
@@ -30,6 +30,8 @@ function stopGame() {
 
 var playerUpgrades = [
   { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5, weight: 1 },
+  { name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.15; player.hp += 20 }, max: 5, weight: 0.8 },
+  { name: "Shield", desc: "Make shield better", func: () => { player.maxShield += 10; player.shieldRegenTime--; player.shieldRegenSpeed++ }, max: 5, weight: 0.8 },
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
 
@@ -161,6 +163,7 @@ const s = (sk) => {
           if (choices.length > 0) {
             let r = Math.floor(Math.random() * choices.length);
             chosen.push(choices[r]);
+            choices = choices.filter(e => JSON.stringify(e) != JSON.stringify(choices[r]));
           }
         }
         if (chosen.length == 0) chosen.push({ type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 0, times: 0 } });
@@ -170,6 +173,7 @@ const s = (sk) => {
         document.getElementById("options").innerHTML = content;
         chosen.forEach((opt, i) => {
           document.getElementById(`option${i}`).addEventListener("click", () => {
+            player.hp += 15;
             opt.val.func(function () {
               switch (opt.type) {
                 case 0: return player;

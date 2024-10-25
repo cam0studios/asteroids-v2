@@ -2,6 +2,9 @@
 
 ## v0.2
 
+## v0.2.5
+- Add player health and shield upgrades
+
 ### v0.2.4
 - Fix pausing issues
 - Add upgrade weights
