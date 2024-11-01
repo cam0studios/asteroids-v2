@@ -4,8 +4,9 @@ import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes from "./projectile-types";
+import signOut, { pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle } from "./pocketbase";
 
-const version = "v0.2.5";
+const version = "v0.3.0";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
@@ -13,7 +14,7 @@ export var keys = {};
 });
 
 // global vars
-export var clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode = false, paused, score;
+export var clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode = false, paused, score, posted;
 
 // setup base html
 
@@ -39,6 +40,7 @@ var playerUpgrades = [
 const s = (sk) => {
   sketch = sk;
   enemies = [];
+  posted = false;
   player = {
     pos: new Vector(0, 0),
     vel: new Vector(0, 0),
@@ -55,7 +57,9 @@ const s = (sk) => {
     shieldRegenSpeed: 5,
     shieldRegenTimeLeft: 0,
     level: -1,
-    kills: 0
+    kills: 0,
+    score: 0,
+    died: false
   };
   paused = false;
   score = 0;
@@ -96,7 +100,7 @@ const s = (sk) => {
     clampTime = sketch.deltaTime;
     if (clampTime > 100) clampTime = 100;
     clampTime /= 1000;
-    time += clampTime;
+    if (!player.died) time += clampTime;
     cam["="](player.pos);
     mouse = new Vector(sketch.mouseX, sketch.mouseY);
     mouse["-="]((size)["/"](2));
@@ -204,7 +208,11 @@ const s = (sk) => {
       });
     } else {
       player.hp = 0;
-      document.getElementById("gameOver").showModal();
+      if (!player.died) {
+        player.died = true;
+        die();
+        document.getElementById("gameOver").showModal();
+      }
     }
     // projectiles
     projectiles.forEach((projectile, i) => {
@@ -326,7 +334,7 @@ const s = (sk) => {
     sketch.noStroke();
     sketch.rectMode("corners");
     sketch.rect(12.5, 12.5, 137.5, 85, 12.5);
-    sketch.rect(size.x - 12.5, 12.5, size.x - 100, 110, 12.5);
+    sketch.rect(size.x - 12.5, 12.5, size.x - 100, 140, 12.5);
     sketch.pop();
 
     // minimap
@@ -359,12 +367,14 @@ const s = (sk) => {
     sketch.fill(255);
     sketch.textAlign("right", "bottom");
     let xPos = size.x - 50;
-    sketch.text(player.kills, xPos, 70);
     sketch.text(Math.round(fps), xPos, 40);
+    sketch.text(player.kills, xPos, 70);
     sketch.text(enemies.length, xPos, 100);
+    sketch.text(player.score, xPos, 130);
     sketch.textAlign("left", "bottom");
     sketch.text("💀", xPos + 5, 70);
     sketch.text("⚔️", xPos + 5, 100);
+    sketch.text("🌟", xPos + 5, 130);
     sketch.textSize(15);
     sketch.text("fps", xPos + 5, 40);
     sketch.pop();
@@ -431,6 +441,56 @@ export function calcBorder(obj) {
   }
   return vec;
 }
+
+async function die() {
+  paused = true;
+  document.getElementById("score").innerText = player.score;
+  document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
+  if (signedIn) {
+    document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${user.name} </b> </p> <button id="signOutBtn"> Sign out </button>`;
+    setTimeout(() => {
+      document.getElementById("signOutBtn").addEventListener("click", () => {
+        signOut();
+        die();
+      });
+    }, 100);
+    if (!posted) {
+      await postFeed({
+        type: "death",
+        data: {
+          score: player.score,
+          time: Math.round(time),
+          dev: devMode
+        },
+        user: user.id
+      });
+
+      if (player.score > 150 && time > 10) {
+        await postScore(player.score, Math.round(time), devMode);
+      }
+
+      posted = true;
+    }
+  } else {
+    document.getElementById("signInDiv").innerHTML = `<p> <b> Sign in to save score </b> </p> <button id="signInBtn"> Sign in </button> <!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
+    // await new Promise(setTimout(()=>{}, 1000));
+    setTimeout(() => {
+      document.getElementById("signInBtn").addEventListener("click", async () => {
+        let res = await signIn();
+        if (res) {
+          die();
+        } else {
+          document.getElementById("signInDiv").querySelector("b").innerText = "Sign in failed";
+        }
+      });
+      // document.getElementById("signInWithGoogleButton").addEventListener("click", async () => await signInWithGoogle());
+    }, 100);
+  }
+
+  let scores = await getScores();
+  document.getElementById("scores").innerHTML = scores.sort((a, b) => b.score - a.score).map((score, scoreI) => `<p> ${scoreI + 1} <b> ${score.expand.user.name} </b> - ${score.score} ${score.version ? ` (${score.version})` : ""} (${score.time > 0 ? formatTime(score.time) : "no time"}) </p>`).join("");
+}
+
 export function applyBorder(obj) {
   if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15);
   obj.vel["+="]((calcBorder(obj))["*"](0.1));

@@ -1,8 +1,13 @@
 # Update Logs
 
+## v0.3
+
+### v0.3.1
+- Add Pocketbase sign in and leaderboard
+
 ## v0.2
 
-## v0.2.5
+### v0.2.5
 - Add player health and shield upgrades
 
 ### v0.2.4

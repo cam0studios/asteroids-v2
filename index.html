@@ -6,7 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asteroids</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/eruda" onload="eruda.init()"></script>
+  <script src="https://cdn.jsdelivr.net/npm/eruda"
+    onload="if (localStorage.getItem('noeruda') !== 'yes') eruda.init()"></script>
   <script src="./dist/main.js" defer></script>
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="manifest" href="site.webmanifest">
@@ -22,10 +23,13 @@
   <dialog id="gameOver" class="noClose menu">
     <div class="centered">
       <h1>Game Over</h1>
-      <!--<p>Score: <span id="score">0</span></p>-->
+      <h2>Score: <span id="score">0</span></h2>
       <button id="restart">
         <h2>Restart</h2>
       </button>
+      <div id="signInDiv"></div>
+      <h2>Leaderboard:</h2>
+      <div id="scores"></div>
     </div>
   </dialog>
   <dialog id="pause" class="menu">
@@ -35,6 +39,16 @@
         <h2>Resume</h2>
       </button>
     </div>
+  </dialog>
+  <dialog id="username">
+    <h2>Enter your username:</h2>
+    <input type="text" id="usernameIn" class="prompt">
+    <button>Continue</button>
+  </dialog>
+  <dialog id="password">
+    <h2>Enter your password:</h2>
+    <input type="password" id="passwordIn" class="prompt">
+    <button>Continue</button>
   </dialog>
 </body>
 

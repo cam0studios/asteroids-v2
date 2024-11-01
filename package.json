@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/cam0studios/asteroids-v2#readme",
   "dependencies": {
-    "p5": "^1.10.0"
+    "p5": "^1.10.0",
+    "pocketbase": "^0.21.5"
   }
 }
