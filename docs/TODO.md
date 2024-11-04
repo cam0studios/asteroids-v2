@@ -1,4 +1,4 @@
-## Todo
+## To-do
 - Add more weapons
 - Add more enemy types
 - Add different levels/level select
