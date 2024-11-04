@@ -1,4 +1,7 @@
+[README](README.md)
+
 ## To-do
+- Player stats
 - Add more weapons
 - Add more enemy types
 - Add different levels/level select
