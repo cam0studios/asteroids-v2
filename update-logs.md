@@ -2,7 +2,7 @@
 
 ## v0.3
 
-### v0.3.1
+### v0.3.0
 - Add Pocketbase sign in and leaderboard
 
 ## v0.2

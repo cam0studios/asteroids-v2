@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "build": "esbuild src/main.js --bundle --outdir=./dist --sourcemap",
-    "dev": "esbuild src/main.js --bundle --outdir=./dist --watch --sourcemap --serve --servedir=./"
+    "build-watch": "esbuild src/main.js --bundle --outdir=./dist --watch --sourcemap",
+    "dev": "concurrently \"esbuild --serve --servedir=./\" \"npm run build-watch\""
   },
   "repository": {
     "type": "git",

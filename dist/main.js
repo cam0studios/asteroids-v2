@@ -18219,25 +18219,27 @@
     user = pb.authStore.model;
     signedIn = true;
   }
-  async function postScore(score2, time2) {
+  async function postScore(score2, time2, dev) {
     return await pb.collection("scores").create({
       user: user.id,
       score: score2,
-      time: time2
+      time: time2,
+      dev
     });
   }
   async function postFeed(event) {
     return await pb.collection("feed").create({
       user: user.id,
       data: event.data,
-      type: event.type
+      type: event.type,
+      dev: event.dev
     });
   }
   async function getUsers() {
     return await pb.collection("users").getFullList({});
   }
   async function getScores() {
-    let scores = await pb.collection("scores").getFullList({ expand: "user" });
+    let scores = (await pb.collection("scores").getFullList({ expand: "user" })).filter((e3) => !e3.dev || devMode);
     return scores;
   }
   async function signIn() {
@@ -18280,12 +18282,12 @@
     return new Promise((res, rej) => {
       dialog.querySelector(".prompt").addEventListener("keypress", (ev) => {
         if (ev.key !== "Enter") return;
-        let username = ev.currentTarget.value;
+        let username = ev.currentTarget.value.toLowerCase();
         res(username);
         dialog.close();
       });
       dialog.querySelector("button").addEventListener("click", () => {
-        let username = dialog.querySelector(".prompt").value;
+        let username = dialog.querySelector(".prompt").value.toLowerCase();
         res(username);
         dialog.close();
       });
@@ -18341,6 +18343,7 @@
   var devMode = false;
   var paused;
   var score;
+  var posted;
   setTimeout(() => startGame(0), 100);
   function startGame(level) {
     currentLevel = levels_default[level];
@@ -18366,6 +18369,7 @@
   var s2 = (sk) => {
     sketch = sk;
     enemies = [];
+    posted = false;
     player = {
       pos: new Vector(0, 0),
       vel: new Vector(0, 0),
@@ -18727,16 +18731,20 @@
           die();
         });
       }, 100);
-      await postFeed({
-        type: "death",
-        data: {
-          "score": player.score,
-          "time": Math.round(time)
-        },
-        user: user.id
-      });
-      if (player.score > 50 && time > 10) {
-        await postScore(player.score, Math.round(time));
+      if (!posted) {
+        await postFeed({
+          type: "death",
+          data: {
+            score: player.score,
+            time: Math.round(time),
+            dev: devMode
+          },
+          user: user.id
+        });
+        if (player.score > 150 && time > 10) {
+          await postScore(player.score, Math.round(time), devMode);
+        }
+        posted = true;
       }
     } else {
       document.getElementById("signInDiv").innerHTML = `<p> <b> Sign in to save score </b> </p> <button id="signInBtn"> Sign in </button> <!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
@@ -18752,7 +18760,7 @@
       }, 100);
     }
     let scores = await getScores();
-    document.getElementById("scores").innerHTML = scores.sort((a, b) => b.score - a.score).map((score2) => `<p> <b> ${score2.expand.user.name} </b> - ${score2.score} ${score2.version ? ` (${score2.version})` : ""} (${score2.time > 0 ? formatTime(score2.time) : "no time"}) </p>`).join("");
+    document.getElementById("scores").innerHTML = scores.sort((a, b) => b.score - a.score).map((score2, scoreI) => `<p> ${scoreI + 1} <b> ${score2.expand.user.name} </b> - ${score2.score} ${score2.version ? ` (${score2.version})` : ""} (${score2.time > 0 ? formatTime(score2.time) : "no time"}) </p>`).join("");
   }
   function applyBorder(obj) {
     if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15);
