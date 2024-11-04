@@ -9,5 +9,5 @@ its a video game
 - Z for toggle shoot
 
 ## Resources
-- [To-do](/docs/TODO.md)
-- [Update logs](/docs/UPDATES.md)
+- [To-do](TODO.md)
+- [Update logs](UPDATES.md)
