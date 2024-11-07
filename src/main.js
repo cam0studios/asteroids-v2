@@ -6,7 +6,7 @@ import levels from "./levels";
 import projectileTypes from "./projectile-types";
 import signOut, { pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle } from "./pocketbase";
 
-const version = "v0.3.0";
+const version = "v0.3.1";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
@@ -570,6 +570,7 @@ document.addEventListener("mouseup", () => mouseDown = false);
 document.addEventListener("click", () => mouseDown = false);
 
 document.getElementById("restart").addEventListener("click", restart);
+document.getElementById("quit").addEventListener("click", restart);
 
 document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
@@ -579,6 +580,10 @@ function pause() {
       document.getElementById("pause").showModal();
       sketch.noLoop();
       paused = true;
+      document.getElementById("currentUpgrades").innerHTML = [
+        `<p> Player Upgrades </p> <div> ${playerUpgrades.map(e => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`).join("")} </div>`,
+        ...player.weapons.map(w => `<p> ${w.name} </p> <div>  ${w.upgrades.map(e => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`).join("")} </div>`).join("")
+      ].join("");
     }, 100);
   }
 }
@@ -590,6 +595,7 @@ function unpause() {
   }
 }
 function restart() {
+  unpause();
   stopGame();
   startGame(0);
   document.getElementById("gameOver").close();

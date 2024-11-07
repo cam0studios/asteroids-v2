@@ -78,3 +78,46 @@ button {
     font-size: 15px;
   }
 }
+
+#currentUpgrades {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  border: 2px solid rgb(200, 200, 200);
+  padding: 5px;
+  background-color: black;
+
+  &>p {
+    margin: 7px;
+    font-weight: 600;
+  }
+
+  &>div {
+    padding: 5px;
+    padding-left: 15px;
+    margin: 0;
+
+    &>p {
+      padding: 3px;
+      margin: 0;
+      display: flex;
+      justify-content: space-between;
+
+      &>span {
+        font-weight: 500;
+        margin-left: 10px;
+      }
+    }
+  }
+
+  text-align: left;
+}
+
+#quit {
+  background-color: rgb(130, 20, 0);
+  border-color: rgb(180, 140, 130);
+
+  &:hover {
+    background-color: rgb(150, 30, 10);
+  }
+}

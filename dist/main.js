@@ -18839,6 +18839,7 @@
   document.addEventListener("mouseup", () => mouseDown = false);
   document.addEventListener("click", () => mouseDown = false);
   document.getElementById("restart").addEventListener("click", restart);
+  document.getElementById("quit").addEventListener("click", restart);
   document.getElementById("pause").addEventListener("cancel", unpause);
   document.getElementById("resume").addEventListener("click", unpause);
   function pause() {
@@ -18847,6 +18848,10 @@
         document.getElementById("pause").showModal();
         sketch.noLoop();
         paused = true;
+        document.getElementById("currentUpgrades").innerHTML = [
+          `<p> Player Upgrades </p> <div> ${playerUpgrades.map((e3) => `<p> ${e3.name} <span> ${e3.times}/${e3.max} </span> </p>`).join("")} </div>`,
+          ...player.weapons.map((w) => `<p> ${w.name} </p> <div>  ${w.upgrades.map((e3) => `<p> ${e3.name} <span> ${e3.times}/${e3.max} </span> </p>`).join("")} </div>`).join("")
+        ].join("");
       }, 100);
     }
   }
@@ -18858,6 +18863,7 @@
     }
   }
   function restart() {
+    unpause();
     stopGame();
     startGame(0);
     document.getElementById("gameOver").close();

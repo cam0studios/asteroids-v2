@@ -4,6 +4,10 @@
 
 ## v0.3
 
+### v0.3.1
+- Add pause menu upgrades list
+- Add quit button
+
 ### v0.3.0
 - Add Pocketbase sign in and leaderboard
 
