@@ -127,7 +127,7 @@ export async function getPassword(prompt) {
   });
 }
 
-export default function signOut() {
+export function signOut() {
   pb.authStore.clear();
   signedIn = false;
   user = null;

@@ -1,4 +1,5 @@
 import { Vector } from "../vector-library/vector";
+import { rumble } from "./gamepad";
 import { enemies, clampTime, applyBorder, projectiles, player, getOnScreen, sketch, get, set, settings, damagePlayer } from "./main";
 
 const enemyTypes = [
@@ -52,6 +53,7 @@ const enemyTypes = [
           }
           player.xp += this.size > 15 ? 5 : 3;
           player.score += this.size > 15 ? 5 : this.size > 10 ? 3 : 1;
+          rumble(this.size > 15 ? 0.15 : this.size > 10 ? 0.1 : 0.05, this.size > 15 ? 0.5 : this.size > 10 ? 0.4 : 0.3);
         }
       }
     }

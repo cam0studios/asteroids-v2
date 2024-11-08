@@ -1,6 +1,7 @@
 [README](README.md)
 
 ## To-do
+- Make controller work for non-Xbox controllers
 - Player stats
 - Add more weapons
 - Add more enemy types

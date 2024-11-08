@@ -17146,6 +17146,118 @@
     }
   };
 
+  // src/gamepad.js
+  var gamepads = [];
+  var gamepadConnected = false;
+  var gamepad = {
+    leftStick: Vector.zero,
+    rightStick: Vector.zero,
+    leftPause: false,
+    rightPause: false,
+    leftStickPressed: false,
+    rightStickPressed: false,
+    leftTrigger: false,
+    rightTrigger: false,
+    leftBumper: false,
+    rightBumper: false,
+    top: false,
+    bottom: false,
+    left: false,
+    right: false,
+    dpadUp: false,
+    dpadDown: false,
+    dppadLeft: false,
+    dpadRight: false
+  };
+  var lastGamepad = { ...gamepad };
+  var gamepadControls = {
+    leftPause: 8,
+    rightPause: 9,
+    leftStickPressed: 10,
+    rightStickPressed: 11,
+    leftTrigger: 6,
+    rightTrigger: 7,
+    leftBumper: 4,
+    rightBumper: 5,
+    top: 3,
+    bottom: 0,
+    left: 2,
+    right: 1,
+    dpadUp: 12,
+    dpadDown: 13,
+    dpadLeft: 14,
+    dpadRight: 15
+  };
+  var gamepadSticks = {
+    left: (g) => new Vector(g.axes[0], g.axes[1]),
+    right: (g) => new Vector(g.axes[2], g.axes[3])
+  };
+  function updateGamepad() {
+    try {
+      if (gamepadConnected) {
+        lastGamepad = { ...gamepad };
+        gamepads = navigator.getGamepads();
+        gamepad.leftStick = getStick("left");
+        gamepad.rightStick = getStick("right");
+        gamepad.leftPause = getControl("leftPause");
+        gamepad.rightPause = getControl("rightPause");
+        gamepad.leftStickPressed = getControl("leftStickPressed");
+        gamepad.rightStickPressed = getControl("rightStickPressed");
+        gamepad.leftTrigger = getControl("leftTrigger");
+        gamepad.rightTrigger = getControl("rightTrigger");
+        gamepad.leftBumper = getControl("leftBumper");
+        gamepad.rightBumper = getControl("rightBumper");
+        gamepad.top = getControl("top");
+        gamepad.bottom = getControl("bottom");
+        gamepad.left = getControl("left");
+        gamepad.right = getControl("right");
+        gamepad.dpadUp = getControl("dpadUp");
+        gamepad.dpadDown = getControl("dpadDown");
+        gamepad.dpadLeft = getControl("dpadLeft");
+        gamepad.dpadRight = getControl("dpadRight");
+        for (let control in gamepad) {
+          if (gamepad[control] && !lastGamepad[control]) {
+            onGamepadButton(control, gamepad[control]);
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    requestAnimationFrame(updateGamepad);
+  }
+  addEventListener("gamepadconnected", (e3) => {
+    console.log("connect");
+    gamepadConnected = true;
+  });
+  addEventListener("gamepaddisconnected", (e3) => {
+    console.log("disconnect");
+    gamepadConnected = false;
+  });
+  function getControl(control) {
+    if (!gamepadConnected) return;
+    return gamepads[0].buttons[gamepadControls[control]].pressed;
+  }
+  function getStick(stick) {
+    if (!gamepadConnected) return;
+    let res = gamepadSticks[stick](gamepads[0]);
+    if (res.mag < 0.1) return Vector.zero;
+    return res;
+  }
+  function rumble(duration, strength) {
+    if (!gamepadConnected) return;
+    if ("hapticActuators" in gamepads[0] && gamepads[0].hapticActuators.length > 0) {
+      gamepads[0].hapticActuators[0].pulse(strength, duration * 1e3);
+    } else if ("vibrationActuator" in gamepads[0]) {
+      gamepads[0].vibrationActuator.playEffect("dual-rumble", {
+        startDelay: 0,
+        duration: duration * 1e3,
+        weakMagnitude: strength,
+        strongMagnitude: strength
+      });
+    }
+  }
+
   // src/projectile-types.js
   var projectileTypes = [
     class {
@@ -17240,7 +17352,7 @@
       tick: (weapon) => {
         let contract = get("cursorContract") || 0;
         let pow = 1 - Math.pow(1e-6, clampTime);
-        if ((keys[" "] || mouseDown) != settings.toggleFire) {
+        if ((keys[" "] || mouseDown || gamepad.rightTrigger) != settings.toggleFire) {
           contract += (1 - contract) * pow;
           if (weapon.reload <= 0) {
             weapon.reload = 1 / weapon.fireRate;
@@ -17310,6 +17422,7 @@
             }
             player.xp += this.size > 15 ? 5 : 3;
             player.score += this.size > 15 ? 5 : this.size > 10 ? 3 : 1;
+            rumble(this.size > 15 ? 0.15 : this.size > 10 ? 0.1 : 0.05, this.size > 15 ? 0.5 : this.size > 10 ? 0.4 : 0.3);
           }
         }
       }
@@ -18327,7 +18440,7 @@
   var player;
   var projectiles;
   var sketch;
-  var size;
+  var size = new Vector(innerWidth, innerHeight);
   var cam;
   var currentLevel;
   var settings;
@@ -18337,7 +18450,7 @@
   var fps;
   var nextFps;
   var deltaTime;
-  var mouse;
+  var mouse = Vector.zero;
   var screenshake;
   var cursorContract;
   var devMode = false;
@@ -18428,8 +18541,6 @@
       clampTime /= 1e3;
       if (!player.died) time += clampTime;
       cam["="](player.pos);
-      mouse = new Vector(sketch.mouseX, sketch.mouseY);
-      mouse["-="](size["/"](2));
       if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
       screenshake *= Math.pow(5e-5, clampTime);
       if (fpsTime < 0) {
@@ -18459,10 +18570,18 @@
       if (player.hp > 0) {
         player.pos["+="](player.vel["*"](clampTime));
         let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
+        joy["+="](gamepad.leftStick);
         if (joy.mag > 1) joy.mag = 1;
         joy["*="](player.speed * clampTime);
         player.vel["+="](joy);
         player.vel["*="](Math.pow(0.3, clampTime));
+        if (gamepadConnected) {
+          if (gamepad.rightStick.mag > 0.1) {
+            let dir = gamepad.rightStick.copy;
+            dir.mag = innerHeight * 1 / 8;
+            mouse["="](dir);
+          }
+        }
         player.dir = mouse.heading;
         applyBorder(player);
         if (player.xp >= player.levelUp) {
@@ -18495,6 +18614,7 @@
             content += `<button id="option${i2}"><h2>${opt.val.name}</h2><p>${opt.val.desc}</p><p>${opt.val.times}/${opt.val.max}</p></button>`;
           });
           document.getElementById("options").innerHTML = content;
+          document.getElementById("options").querySelector("button").focus();
           chosen.forEach((opt, i2) => {
             document.getElementById(`option${i2}`).addEventListener("click", () => {
               player.hp += 15;
@@ -18721,6 +18841,7 @@
   }
   async function die() {
     paused = true;
+    rumble(1, 1);
     document.getElementById("score").innerText = player.score;
     document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
     if (signedIn) {
@@ -18821,14 +18942,19 @@
     }
   }
   function damagePlayer(amt) {
-    if (amt > 0) player.shieldRegenTimeLeft = 0;
+    if (amt <= 0) return;
+    player.shieldRegenTimeLeft = 0;
     if (player.shield > amt) {
+      rumble(0.15, 0.35);
       player.shield -= amt;
       return;
     }
     amt -= player.shield;
     player.shield = 0;
     player.hp -= amt;
+    if (player.hp > 0) {
+      rumble(0.2, 0.5);
+    }
   }
   [...document.querySelectorAll(".noClose")].forEach((elem) => {
     elem.addEventListener("cancel", (ev) => ev.preventDefault());
@@ -18838,6 +18964,10 @@
   document.addEventListener("mousedown", () => mouseDown = true);
   document.addEventListener("mouseup", () => mouseDown = false);
   document.addEventListener("click", () => mouseDown = false);
+  document.addEventListener("mousemove", (e3) => {
+    mouse = new Vector(e3.clientX, e3.clientY);
+    mouse["-="](size["/"](2));
+  });
   document.getElementById("restart").addEventListener("click", restart);
   document.getElementById("quit").addEventListener("click", restart);
   document.getElementById("pause").addEventListener("cancel", unpause);
@@ -18908,6 +19038,43 @@
       }
     }
   }
+  function onGamepadButton(button, val) {
+    if (button == "rightPause" && val) {
+      if (paused) unpause();
+      else pause();
+    }
+    if (button == "dpadUp" && val) {
+      let btns = [...document.querySelector("dialog[open]").querySelectorAll("button")];
+      let activeI = btns.indexOf(document.activeElement);
+      if (activeI == -1) activeI = 0;
+      else {
+        activeI--;
+        if (activeI < 0) {
+          activeI = btns.length - 1;
+        }
+      }
+      btns[activeI].focus();
+    }
+    if (button == "dpadDown" && val) {
+      let btns = [...document.querySelector("dialog[open]").querySelectorAll("button")];
+      let activeI = btns.indexOf(document.activeElement);
+      if (activeI == -1) activeI = 0;
+      else {
+        activeI++;
+        if (activeI > btns.length - 1) {
+          activeI = 0;
+        }
+      }
+      btns[activeI].focus();
+    }
+    if (button == "bottom" && val) {
+      document.activeElement.click();
+    }
+    if (button == "rightBumper" && val) {
+      settings.toggleFire = !settings.toggleFire;
+    }
+  }
+  requestAnimationFrame(updateGamepad);
 })();
 /*! Bundled license information:
 

@@ -1,4 +1,5 @@
 import { Vector } from "../vector-library/vector";
+import { gamepad } from "./gamepad";
 import { player, keys, mouseDown, settings, projectiles, calcBorder, sketch, clampTime, get, set } from "./main";
 import projectileTypes from "./projectile-types";
 
@@ -47,7 +48,7 @@ const weapons = [
     tick: (weapon) => {
       let contract = get("cursorContract") || 0;
       let pow = 1 - Math.pow(1e-6, clampTime);
-      if ((keys[" "] || mouseDown) != settings.toggleFire) { // either but not both
+      if ((keys[" "] || mouseDown || gamepad.rightTrigger) != settings.toggleFire) { // either but not both
         contract += (1 - contract) * pow;
         if (weapon.reload <= 0) {
           weapon.reload = 1 / weapon.fireRate;

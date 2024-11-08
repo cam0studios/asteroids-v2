@@ -4,9 +4,10 @@ import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes from "./projectile-types";
-import signOut, { pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle } from "./pocketbase";
+import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle } from "./pocketbase";
+import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 
-const version = "v0.3.1";
+const version = "v0.3.2";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
@@ -14,7 +15,7 @@ export var keys = {};
 });
 
 // global vars
-export var clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode = false, paused, score, posted;
+export var clampTime, enemies, player, projectiles, sketch, size = new Vector(innerWidth, innerHeight), cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse = Vector.zero, screenshake, cursorContract, devMode = false, paused, score, posted;
 
 // setup base html
 
@@ -102,8 +103,6 @@ const s = (sk) => {
     clampTime /= 1000;
     if (!player.died) time += clampTime;
     cam["="](player.pos);
-    mouse = new Vector(sketch.mouseX, sketch.mouseY);
-    mouse["-="]((size)["/"](2));
     if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
     screenshake *= Math.pow(0.00005, clampTime);
     // cam["+="](mouse["/"](10));
@@ -141,10 +140,18 @@ const s = (sk) => {
     if (player.hp > 0) {
       player.pos["+="]((player.vel)["*"](clampTime));
       let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
+      joy["+="](gamepad.leftStick);
       if (joy.mag > 1) joy.mag = 1;
       joy["*="](player.speed * clampTime);
       player.vel["+="](joy);
       player.vel["*="](Math.pow(0.3, clampTime));
+      if (gamepadConnected) {
+        if (gamepad.rightStick.mag > 0.1) {
+          let dir = gamepad.rightStick.copy;
+          dir.mag = innerHeight * 1 / 8;
+          mouse["="](dir);
+        }
+      }
       player.dir = mouse.heading;
       applyBorder(player);
       // level up
@@ -171,10 +178,15 @@ const s = (sk) => {
           }
         }
         if (chosen.length == 0) chosen.push({ type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 0, times: 0 } });
+
         chosen.forEach((opt, i) => {
           content += `<button id="option${i}"><h2>${opt.val.name}</h2><p>${opt.val.desc}</p><p>${opt.val.times}/${opt.val.max}</p></button>`;
         });
+
         document.getElementById("options").innerHTML = content;
+
+        document.getElementById("options").querySelector("button").focus();
+
         chosen.forEach((opt, i) => {
           document.getElementById(`option${i}`).addEventListener("click", () => {
             player.hp += 15;
@@ -296,6 +308,7 @@ const s = (sk) => {
       }
       sketch.pop();
     }
+
 
     // projectiles
     projectiles.forEach(p => {
@@ -444,6 +457,8 @@ export function calcBorder(obj) {
 
 async function die() {
   paused = true;
+  rumble(1, 1);
+
   document.getElementById("score").innerText = player.score;
   document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
   if (signedIn) {
@@ -548,14 +563,19 @@ export function get(prop) {
   }
 }
 export function damagePlayer(amt) {
-  if (amt > 0) player.shieldRegenTimeLeft = 0;
+  if (amt <= 0) return;
+  player.shieldRegenTimeLeft = 0;
   if (player.shield > amt) {
+    rumble(0.15, 0.35);
     player.shield -= amt;
     return;
   }
   amt -= player.shield;
   player.shield = 0;
   player.hp -= amt;
+  if (player.hp > 0) {
+    rumble(0.2, 0.5);
+  }
 }
 
 // ********************  event listeners  ******************** //
@@ -568,12 +588,17 @@ document.addEventListener("keyup", (key) => setKey(key, false));
 document.addEventListener("mousedown", () => mouseDown = true);
 document.addEventListener("mouseup", () => mouseDown = false);
 document.addEventListener("click", () => mouseDown = false);
+document.addEventListener("mousemove", (e) => {
+  mouse = new Vector(e.clientX, e.clientY);
+  mouse["-="]((size)["/"](2));
+});
 
 document.getElementById("restart").addEventListener("click", restart);
 document.getElementById("quit").addEventListener("click", restart);
 
 document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
+
 function pause() {
   if (!paused) {
     setTimeout(() => {
@@ -646,3 +671,44 @@ function setKey(ev, val) {
     }
   }
 }
+
+export function onGamepadButton(button, val) {
+  if (button == "rightPause" && val) {
+    if (paused) unpause();
+    else pause();
+  }
+
+  if (button == "dpadUp" && val) {
+    let btns = [...document.querySelector("dialog[open]").querySelectorAll("button")];
+    let activeI = btns.indexOf(document.activeElement);
+    if (activeI == -1) activeI = 0;
+    else {
+      activeI--;
+      if (activeI < 0) {
+        activeI = btns.length - 1;
+      }
+    }
+    btns[activeI].focus();
+  }
+  if (button == "dpadDown" && val) {
+    let btns = [...document.querySelector("dialog[open]").querySelectorAll("button")];
+    let activeI = btns.indexOf(document.activeElement);
+    if (activeI == -1) activeI = 0;
+    else {
+      activeI++;
+      if (activeI > btns.length - 1) {
+        activeI = 0;
+      }
+    }
+    btns[activeI].focus();
+  }
+  if (button == "bottom" && val) {
+    document.activeElement.click();
+  }
+
+  if (button == "rightBumper" && val) {
+    settings.toggleFire = !settings.toggleFire;
+  }
+}
+
+requestAnimationFrame(updateGamepad);
