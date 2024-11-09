@@ -1,6 +1,7 @@
 import { Vector } from "../vector-library/vector";
 import { rumble } from "./gamepad";
 import { enemies, clampTime, applyBorder, projectiles, player, getOnScreen, sketch, get, set, settings, damagePlayer } from "./main";
+import { explode } from "./projectile-types";
 
 const enemyTypes = [
   class {
@@ -54,6 +55,7 @@ const enemyTypes = [
           player.xp += this.size > 15 ? 5 : 3;
           player.score += this.size > 15 ? 5 : this.size > 10 ? 3 : 1;
           rumble(this.size > 15 ? 0.15 : this.size > 10 ? 0.1 : 0.05, this.size > 15 ? 0.5 : this.size > 10 ? 0.4 : 0.3);
+          explode(this.pos, this.size > 15 ? 30 : this.size > 10 ? 20 : 10);
         }
       }
     }

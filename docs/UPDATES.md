@@ -4,6 +4,10 @@
 
 ## v0.3
 
+## v0.3.3
+- Add player stats
+- Add explosion effect
+
 ### v0.3.2
 - Add controller support
 

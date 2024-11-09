@@ -3,8 +3,8 @@ import { Vector } from "../vector-library/vector";
 import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
-import projectileTypes from "./projectile-types";
-import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle } from "./pocketbase";
+import projectileTypes, { explode } from "./projectile-types";
+import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 
 const version = "v0.3.2";
@@ -458,6 +458,7 @@ export function calcBorder(obj) {
 async function die() {
   paused = true;
   rumble(1, 1);
+  explode(player.pos, 100);
 
   document.getElementById("score").innerText = player.score;
   document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
@@ -483,6 +484,8 @@ async function die() {
       if (player.score > 150 && time > 10) {
         await postScore(player.score, Math.round(time), devMode);
       }
+
+      if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills });
 
       posted = true;
     }

@@ -33,6 +33,15 @@ export async function postScore(score, time, dev) {
   });
 }
 
+export async function updateStats({ score, level, kills }) {
+  return await pb.collection("users").update(user.id, {
+    deaths: (user.deaths || 0) + 1,
+    score: (user.score || 0) + score,
+    levelups: (user.levelups || 0) + level,
+    kills: (user.kills || 0) + kills
+  });
+}
+
 export async function postFeed(event) {
   return await pb.collection("feed").create({
     user: user.id,

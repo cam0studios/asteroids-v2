@@ -17297,9 +17297,48 @@
           i2--;
         }
       }
+    },
+    class {
+      constructor(data) {
+        this.pos = data.pos;
+        this.size = data.size;
+        this.maxSize = data.maxSize;
+        projectiles.push(this);
+      }
+      tick(i2) {
+        if (this.size > this.maxSize) {
+          projectiles.splice(i2, 1);
+          i2--;
+        } else {
+          this.size += clampTime * 30 * Math.sqrt(this.maxSize);
+        }
+      }
+      draw() {
+        if (settings.emojiMovie) {
+          sketch.textAlign(sketch.CENTER, sketch.CENTER);
+          sketch.textSize(10);
+          sketch.noStroke();
+          sketch.fill(255);
+          sketch.text("", this.pos.x, this.pos.y);
+        } else {
+          sketch.fill(250);
+          sketch.stroke(200);
+          sketch.strokeWeight(this.maxSize * 0.5);
+          sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
+        }
+      }
+      enemyTick(i2, enemy, enemyI) {
+      }
     }
   ];
   var projectile_types_default = projectileTypes;
+  function explode(pos, size2) {
+    new projectileTypes[1]({
+      pos,
+      size: 0,
+      maxSize: size2
+    });
+  }
 
   // src/weapon-types.js
   var Weapon = class {
@@ -17423,6 +17462,7 @@
             player.xp += this.size > 15 ? 5 : 3;
             player.score += this.size > 15 ? 5 : this.size > 10 ? 3 : 1;
             rumble(this.size > 15 ? 0.15 : this.size > 10 ? 0.1 : 0.05, this.size > 15 ? 0.5 : this.size > 10 ? 0.4 : 0.3);
+            explode(this.pos, this.size > 15 ? 30 : this.size > 10 ? 20 : 10);
           }
         }
       }
@@ -18340,6 +18380,14 @@
       dev
     });
   }
+  async function updateStats({ score: score2, level, kills }) {
+    return await pb.collection("users").update(user.id, {
+      deaths: (user.deaths || 0) + 1,
+      score: (user.score || 0) + score2,
+      levelups: (user.levelups || 0) + level,
+      kills: (user.kills || 0) + kills
+    });
+  }
   async function postFeed(event) {
     return await pb.collection("feed").create({
       user: user.id,
@@ -18842,6 +18890,7 @@
   async function die() {
     paused = true;
     rumble(1, 1);
+    explode(player.pos, 100);
     document.getElementById("score").innerText = player.score;
     document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
     if (signedIn) {
@@ -18865,6 +18914,7 @@
         if (player.score > 150 && time > 10) {
           await postScore(player.score, Math.round(time), devMode);
         }
+        if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills });
         posted = true;
       }
     } else {
