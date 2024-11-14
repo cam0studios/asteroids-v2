@@ -48,9 +48,9 @@ const weapons = [
     tick: (weapon) => {
       let contract = get("cursorContract") || 0;
       let pow = 1 - Math.pow(1e-6, clampTime);
-      if ((keys[" "] || mouseDown || gamepad.rightTrigger) != settings.toggleFire) { // either but not both
+      if ((mouseDown || gamepad.rightTrigger) != settings.toggleFire) { // either but not both
         contract += (1 - contract) * pow;
-        if (weapon.reload <= 0) {
+        if (weapon.reload <= 0 && player.dodgeCooldown <= 0) {
           weapon.reload = 1 / weapon.fireRate;
           for (let i = 0; i < weapon.multishot; i++) {
             new projectileTypes[0]({ pos: player.pos.copy, dir: player.dir + weapon.spread * (i - (weapon.multishot - 1) / 2), damage: weapon.damage, speed: weapon.speed });

@@ -1,12 +1,12 @@
 {
   "name": "asteroids-v2",
-  "version": "1.0.0",
+  "version": "0.4.0",
   "description": "Asteroids but newer",
   "main": "main.js",
   "scripts": {
     "build": "esbuild src/main.js --bundle --outdir=./dist --sourcemap",
     "build-watch": "esbuild src/main.js --bundle --outdir=./dist --watch --sourcemap",
-    "dev": "concurrently \"esbuild --serve --servedir=./\" \"npm run build-watch\""
+    "dev": "concurrently \"esbuild --serve --servedir=./\" \"bun run build-watch\""
   },
   "repository": {
     "type": "git",

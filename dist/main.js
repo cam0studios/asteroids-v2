@@ -17258,9 +17258,31 @@
     }
   }
 
+  // vector-library/intersection.js
+  var intersections = {
+    linePointCollision: function(l1, l2, p) {
+      let d1 = l1["-"](p);
+      let d2 = l2["-"](p);
+      let l = l2["-"](l1);
+      return d1 + d2 > l - 0.1 && d1 + d2 < l + 0.1;
+    },
+    lineClosestPoint: function(l1, l2, p) {
+      let dif = l2["-"](l1);
+      let dot = p["-"](l1).dot(dif) / dif.magSq;
+      return l1["+"](dif["*"](dot));
+    },
+    lineCircleCollision: function(l1, l2, c, r) {
+      if (l1["-"](c) < r || l2["-"](c) < r) return true;
+      let closest = this.lineClosestPoint(l1, l2, c);
+      if (!this.linePointCollision(l1, l2, closest)) return false;
+      return closest["-"](c) < r;
+    }
+  };
+
   // src/projectile-types.js
   var projectileTypes = [
     class {
+      // player bullet
       constructor(data) {
         this.pos = data.pos;
         this.dir = data.dir;
@@ -17282,7 +17304,7 @@
         sketch.strokeWeight(5);
         sketch.fill(0);
         if (settings.emojiMovie) {
-          sketch.textAlign(sketch.CENTER, sketch.CENTER);
+          sketch.textAlign("center", "center");
           sketch.textSize(10);
           sketch.text("\u26AA", this.pos.x, this.pos.y);
         } else {
@@ -17299,6 +17321,7 @@
       }
     },
     class {
+      // explosion
       constructor(data) {
         this.pos = data.pos;
         this.size = data.size;
@@ -17315,7 +17338,7 @@
       }
       draw() {
         if (settings.emojiMovie) {
-          sketch.textAlign(sketch.CENTER, sketch.CENTER);
+          sketch.textAlign("center", "center");
           sketch.textSize(10);
           sketch.noStroke();
           sketch.fill(255);
@@ -17325,6 +17348,116 @@
           sketch.stroke(200);
           sketch.strokeWeight(this.maxSize * 0.5);
           sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
+        }
+      }
+      enemyTick(i2, enemy, enemyI) {
+      }
+    },
+    class {
+      // enemy laser
+      constructor(data) {
+        this.pos = data.pos;
+        this.dir = data.dir;
+        this.cooldown = 0.5;
+        this.firing = 0;
+        this.dirV = new Vector(1, 0).rotate(this.dir);
+        this.link = data.link || -1;
+        this.len = 0;
+        this.maxLen = currentLevel.size * 2;
+        projectiles.push(this);
+      }
+      tick(i2) {
+        let linked = enemies.find((e3) => e3.id === this.link);
+        if (linked) {
+          this.pos = linked.pos.copy;
+        }
+        this.dirV = new Vector(1, 0).rotate(this.dir);
+        if (this.cooldown > 0) {
+          this.cooldown -= clampTime;
+          if (this.cooldown <= 0) {
+            this.firing = 0;
+            this.cooldown = 0;
+          }
+        } else {
+          this.firing += clampTime;
+          this.len += clampTime * this.maxLen * 1.5;
+          if (this.len > this.maxLen) this.len = this.maxLen;
+          let int = intersections.lineCircleCollision(this.pos, this.pos["+"](this.dirV["*"](this.len)), player.pos, 25);
+          if (int) {
+            let point = intersections.lineClosestPoint(this.pos, this.pos["+"](this.dirV["*"](this.len)), player.pos);
+            explode(point["+"](new Vector(Math.random() * 15, 0).rotate(Math.random() * 2 * Math.PI))["-"](this.dirV["*"](20)), 15);
+            damagePlayer(clampTime * 10);
+            player.vel["+="](point["-"](player.pos).normalized["*"](clampTime * 500));
+            player.vel["+="](this.dirV["*"](clampTime * 1e3));
+          }
+          if (this.firing >= 1) {
+            projectiles.splice(i2, 1);
+            i2--;
+          }
+        }
+      }
+      draw() {
+        if (settings.emojiMovie) {
+          sketch.textAlign("center", "center");
+          sketch.textSize(10);
+          sketch.noStroke();
+          sketch.fill(255);
+          sketch.text("", this.pos.x, this.pos.y);
+        } else {
+          if (this.cooldown > 0) {
+            sketch.noFill();
+            sketch.stroke("rgba(255, 0, 0, 0.5)");
+            sketch.strokeWeight(2);
+            sketch.translate(this.pos.x, this.pos.y);
+            sketch.line(0, 0, this.maxLen * this.dirV.x, this.maxLen * this.dirV.y);
+          } else {
+            sketch.noFill();
+            sketch.stroke("rgb(200, 230, 255)");
+            let thick = 10;
+            if (this.firing < 0.1) {
+              thick *= this.firing * 10;
+            }
+            if (this.firing > 0.8) {
+              thick *= (1 - this.firing) * 5;
+            }
+            sketch.strokeWeight(thick);
+            sketch.translate(this.pos.x, this.pos.y);
+            sketch.line(0, 0, this.len * this.dirV.x, this.len * this.dirV.y);
+          }
+        }
+      }
+      enemyTick(i2, enemy, enemyI) {
+      }
+    },
+    class {
+      // dash effect
+      constructor(data) {
+        this.pos = data.pos;
+        this.progress = 0;
+        projectiles.push(this);
+      }
+      tick(i2) {
+        this.progress += clampTime * 5;
+        if (this.progress >= 1) {
+          projectiles.splice(i2, 1);
+          i2--;
+        }
+      }
+      draw() {
+        if (settings.emojiMovie) {
+          sketch.textAlign("center", "center");
+          sketch.textSize(10);
+          sketch.noStroke();
+          sketch.fill(255);
+          sketch.text("", this.pos.x, this.pos.y);
+        } else {
+          let alpha = (1 - this.progress) * 0.2;
+          if (alpha < 0) alpha = 0;
+          if (alpha > 1) alpha = 1;
+          alpha = Math.round(alpha * 100) / 100;
+          sketch.fill(`rgba(150, 150, 150, ${alpha})`);
+          sketch.noStroke();
+          sketch.circle(this.pos.x, this.pos.y, 30 + this.progress * 40);
         }
       }
       enemyTick(i2, enemy, enemyI) {
@@ -17391,9 +17524,9 @@
       tick: (weapon) => {
         let contract = get("cursorContract") || 0;
         let pow = 1 - Math.pow(1e-6, clampTime);
-        if ((keys[" "] || mouseDown || gamepad.rightTrigger) != settings.toggleFire) {
+        if ((mouseDown || gamepad.rightTrigger) != settings.toggleFire) {
           contract += (1 - contract) * pow;
-          if (weapon.reload <= 0) {
+          if (weapon.reload <= 0 && player.dodgeCooldown <= 0) {
             weapon.reload = 1 / weapon.fireRate;
             for (let i2 = 0; i2 < weapon.multishot; i2++) {
               new projectile_types_default[0]({ pos: player.pos.copy, dir: player.dir + weapon.spread * (i2 - (weapon.multishot - 1) / 2), damage: weapon.damage, speed: weapon.speed });
@@ -17412,14 +17545,30 @@
   // src/enemy-types.js
   var enemyTypes = [
     class {
-      constructor(pos, vel, size2, spawn = true, hp = size2 > 15 ? 3 : size2 > 10 ? 2 : 1) {
+      //asteroid
+      constructor({ mode, pos, vel, size: size2, spawn, hp, speed }) {
+        if (mode == 0) {
+          if (pos == void 0) pos = getPosAroundPlayer();
+          if (speed == void 0) speed = 10 + Math.random() * 30;
+          if (vel == void 0) vel = new Vector(speed, 0).rotate(Math.random() * 2 * Math.PI);
+          if (spawn == void 0) spawn = false;
+        } else if (mode == 1) {
+          if (pos == void 0) pos = getRandomBox(currentLevel.size);
+          if (speed == void 0) speed = 10 + Math.random() * 30;
+          if (vel == void 0) vel = new Vector(speed, 0).rotate(Math.random() * 2 * Math.PI);
+          if (spawn == void 0) spawn = true;
+        }
+        if (hp == void 0) hp = size2 > 30 ? 5 : size2 > 15 ? 3 : size2 > 10 ? 2 : 1;
         this.pos = pos.copy;
         this.vel = vel.copy;
         this.size = size2;
         this.hp = hp;
+        this.maxHp = hp;
         this.hitDir = Math.random() * 2 * Math.PI;
         this.time = 0;
         this.spawn = spawn;
+        this.type = 0;
+        this.id = Math.floor(Math.random() * 1e6);
         enemies.push(this);
       }
       tick(i2) {
@@ -17431,7 +17580,7 @@
             p.enemyTick(pI, this, i2);
           });
           let dif = this.pos["-"](player.pos);
-          if (dif.mag < this.size + 25) {
+          if (dif.mag < this.size + 25 && player.dodgeTime <= 0) {
             let hitStr = player.vel["-"](this.vel).mag;
             this.hp--;
             this.pos["-="](player.pos);
@@ -17450,7 +17599,7 @@
             player.kills++;
             if (this.size > 10) {
               for (let r = -1; r <= 1; r += 1) {
-                new enemyTypes[0](this.pos, this.vel["+"](new Vector(50, 0).rotate(this.hitDir + r)), this.size * 2 / 3, false);
+                new enemyTypes[0]({ pos: this.pos, vel: this.vel["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });
               }
             }
             let newScreenshake = (this.size > 20 ? 12 : 7) / (this.pos["-"](player.pos).mag / 500 + 1);
@@ -17466,12 +17615,27 @@
           }
         }
       }
-      drawTick() {
+      beforeDraw() {
+        if (getOnScreen(this.pos, this.size)) {
+          if (this.time > 1 || !this.spawn) {
+            if (settings.emojiMovie) {
+            } else {
+            }
+          } else {
+            sketch.fill(`rgba(150,50,0,${this.time * 0.5})`);
+            sketch.stroke(`rgba(200,50,0,${this.time * 1})`);
+            sketch.strokeWeight(5);
+            let s3 = this.size * 2;
+            sketch.ellipse(this.pos.x, this.pos.y, s3, s3);
+          }
+        }
+      }
+      afterDraw() {
         if (getOnScreen(this.pos, this.size)) {
           if (this.time > 1 || !this.spawn) {
             if (settings.emojiMovie) {
               sketch.push();
-              sketch.textAlign(sketch.CENTER, sketch.CENTER);
+              sketch.textAlign("center", "center");
               sketch.textSize(this.size * 2);
               sketch.translate(this.pos.x, this.pos.y);
               sketch.rotate(this.vel.heading);
@@ -17484,6 +17648,109 @@
               sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
             }
           } else {
+          }
+        }
+      }
+    },
+    //turret
+    class {
+      constructor({ mode, pos, vel, spawn, hp, index, max }) {
+        if (mode == 0) {
+          if (pos == void 0) pos = getPosAroundPlayer();
+          if (vel == void 0) vel = new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI);
+          if (spawn == void 0) spawn = false;
+        } else if (mode == 1) {
+          if (pos == void 0) pos = getRandomBox(currentLevel.size);
+          if (vel == void 0) vel = new Vector(10 + Math.random() * e.speed, 0).rotate(Math.random() * 2 * Math.PI);
+          if (spawn == void 0) spawn = true;
+        }
+        if (hp == void 0) hp = 15;
+        this.pos = pos.copy;
+        this.vel = vel.copy;
+        this.size = 20;
+        this.hp = hp;
+        this.maxHp = hp;
+        this.hitDir = Math.random() * 2 * Math.PI;
+        this.time = 0;
+        this.reloadTime = 5;
+        this.cooldown = 0;
+        this.cooldownTime = 1.3;
+        this.reload = ((index + (Math.random() - 0.5) * 0.5) * 2 + 1) / (max * 2) * (this.reloadTime + this.cooldownTime);
+        this.spawn = spawn;
+        this.type = 1;
+        this.dir = 0;
+        this.aiming = Vector.zero;
+        this.id = Math.floor(Math.random() * 1e6 + 1e6);
+        enemies.push(this);
+      }
+      tick(i2) {
+        this.time += clampTime;
+        if (this.time > 1 || !this.spawn) {
+          projectiles.forEach((p, pI) => {
+            p.enemyTick(pI, this, i2);
+          });
+          let dif = this.pos["-"](player.pos);
+          if (dif.mag < this.size + 25 && player.dodgeTime <= 0) {
+            let hitStr = player.vel["-"](this.vel).mag;
+            this.hp--;
+            this.pos["-="](player.pos);
+            this.pos.mag = this.size + 30;
+            this.pos["+="](player.pos);
+            let d2 = dif.copy;
+            d2.mag = hitStr;
+            this.vel["+="](d2);
+            player.vel["-="](d2);
+            this.hitDir = dif.heading;
+            damagePlayer((this.size > 10 ? 25 : 15) * (hitStr / 250 + 0.5));
+          }
+          if (this.cooldown > 0) {
+            this.cooldown -= clampTime;
+          } else {
+            this.reload -= clampTime;
+            let d2 = player.pos["-"](this.pos);
+            d2["+="](player.vel["*"](0.7));
+            d2.mag = 1;
+            this.aiming["*="](Math.pow(1e-3, clampTime));
+            this.aiming["+="](d2);
+            this.dir = this.aiming.heading;
+            if (this.reload <= 0) {
+              this.reload = this.reloadTime;
+              this.cooldown = this.cooldownTime;
+              new projectile_types_default[2]({ pos: this.pos.copy, dir: this.dir, link: this.id });
+            }
+          }
+          if (this.hp <= 0) {
+            enemies.splice(i2, 1);
+            i2--;
+            player.kills++;
+            let newScreenshake = 50 / (this.pos["-"](player.pos).mag / 500 + 1);
+            if (get("screenshake") < newScreenshake) {
+              set("screenshake", newScreenshake);
+            } else {
+              set("screenshake", get("screenshake") + newScreenshake / 5);
+            }
+            player.xp += 20;
+            player.score += 20;
+            rumble(0.2, 0.7);
+            explode(this.pos, 60);
+          }
+        }
+      }
+      beforeDraw() {
+        if (getOnScreen(this.pos, this.size)) {
+          if (this.time > 1 || !this.spawn) {
+            if (settings.emojiMovie) {
+            } else {
+              sketch.translate(this.pos.x, this.pos.y);
+              sketch.rectMode("center");
+              sketch.fill(0);
+              sketch.stroke(255);
+              sketch.strokeWeight(5);
+              sketch.line(-this.size, -this.size, this.size, this.size);
+              sketch.line(-this.size, this.size, this.size, -this.size);
+              sketch.rect(0, 0, this.size * 1.5, this.size * 1.5);
+            }
+          } else {
             sketch.fill(`rgba(150,50,0,${this.time * 0.5})`);
             sketch.stroke(`rgba(200,50,0,${this.time * 1})`);
             sketch.strokeWeight(5);
@@ -17492,21 +17759,185 @@
           }
         }
       }
+      afterDraw() {
+        if (getOnScreen(this.pos, this.size)) {
+          if (this.time > 1 || !this.spawn) {
+            if (settings.emojiMovie) {
+              sketch.push();
+              sketch.textAlign("center", "center");
+              sketch.textSize(this.size * 2);
+              sketch.translate(this.pos.x, this.pos.y);
+              sketch.rotate(this.vel.heading);
+              sketch.text(">", 0, 0);
+              sketch.pop();
+            } else {
+              sketch.translate(this.pos.x, this.pos.y);
+              sketch.rotate(this.dir);
+              sketch.rectMode("center");
+              sketch.fill(0);
+              sketch.stroke(190);
+              sketch.strokeWeight(5);
+              let d2 = 0;
+              let prog = 1 - this.reload / this.reloadTime;
+              let time2 = 0.2;
+              if (this.cooldown > 0) {
+                d2 = 0.35;
+              } else {
+                if (this.reloadTime - this.reload > time2) {
+                  d2 = 0.2 + (prog / (1 - time2) - time2) * 0.15;
+                } else {
+                  d2 = 0.35 - (this.reloadTime - this.reload) / time2 * 0.15;
+                }
+              }
+              sketch.line(0, -this.size * d2, this.size * 1, -this.size * d2);
+              sketch.line(0, this.size * d2, this.size * 1, this.size * d2);
+              sketch.rect(-this.size * 0.3, 0, this.size * 0.8, this.size * 1.2);
+            }
+          } else {
+          }
+        }
+      }
+    },
+    //boss
+    class {
+      constructor({ mode, pos, vel, spawn, hp, speed }) {
+        if (mode == 0) {
+          if (pos == void 0) pos = getPosAroundPlayer();
+          if (speed == void 0) speed = 10 + Math.random() * 30;
+          if (vel == void 0) vel = new Vector(speed, 0).rotate(Math.random() * 2 * Math.PI);
+          if (spawn == void 0) spawn = false;
+        } else if (mode == 1) {
+          if (pos == void 0) pos = getRandomBox(currentLevel.size);
+          if (speed == void 0) speed = 10 + Math.random() * 30;
+          if (vel == void 0) vel = new Vector(speed, 0).rotate(Math.random() * 2 * Math.PI);
+          if (spawn == void 0) spawn = true;
+        }
+        if (hp == void 0) hp = 30;
+        this.pos = pos.copy;
+        this.vel = vel.copy;
+        this.type = 2;
+        this.size = 50;
+        this.hp = hp;
+        this.maxHp = hp;
+        this.hitDir = Math.random() * 2 * Math.PI;
+        this.time = 0;
+        this.id = Math.floor(Math.random() * 1e6 + 2e6);
+        enemies.push(this);
+        this.children = [];
+        for (let i2 = 0; i2 < Math.round(this.hp / 10); i2++) {
+          this.children.push(new enemyTypes[1]({ mode, pos: this.pos.copy, vel: new Vector(0, 0), hp: 15, index: i2, max: Math.round(this.hp / 10) }));
+        }
+      }
+      tick(i2) {
+        this.time += clampTime;
+        this.children.forEach((child, childIndex) => {
+          child.pos = this.pos.copy;
+          let multiplicationVector = new Vector(2, 0).rotate(2 * Math.PI / this.children.length * childIndex + (/* @__PURE__ */ new Date()).getTime() / 1e3);
+          multiplicationVector.mag = 100;
+          child.pos = child.pos["+="](multiplicationVector);
+        });
+        if (this.time > 1 || !this.spawn) {
+          this.pos["+="](this.vel["*"](clampTime));
+          applyBorder(this);
+          projectiles.forEach((p, pI) => {
+            p.enemyTick(pI, this, i2);
+          });
+          let dif = this.pos["-"](player.pos);
+          if (dif.mag < this.size + 25 && player.dodgeTime <= 0) {
+            let hitStr = player.vel["-"](this.vel).mag;
+            this.hp--;
+            this.pos["-="](player.pos);
+            this.pos.mag = this.size + 30;
+            this.pos["+="](player.pos);
+            let d2 = dif.copy;
+            d2.mag = hitStr;
+            this.vel["+="](d2);
+            player.vel["-="](d2);
+            this.hitDir = dif.heading;
+            damagePlayer((this.size > 10 ? 25 : 15) * (hitStr / 250 + 0.5));
+          }
+          if (this.hp <= 0) {
+            enemies.splice(i2, 1);
+            i2--;
+            player.kills++;
+            if (this.size > 10) {
+              for (let r = -1; r <= 1; r += 1) {
+                new enemyTypes[0]({ pos: this.pos, vel: this.vel["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });
+              }
+            }
+            let newScreenshake = (this.size > 20 ? 12 : 7) / (this.pos["-"](player.pos).mag / 500 + 1);
+            if (get("screenshake") < newScreenshake) {
+              set("screenshake", newScreenshake);
+            } else {
+              set("screenshake", get("screenshake") + newScreenshake / 5);
+            }
+            player.xp += this.size > 15 ? 5 : 3;
+            player.score += this.size > 15 ? 5 : this.size > 10 ? 3 : 1;
+            this.children.map((child) => child.hp = 0);
+            rumble(this.size > 15 ? 0.15 : this.size > 10 ? 0.1 : 0.05, this.size > 15 ? 0.5 : this.size > 10 ? 0.4 : 0.3);
+            explode(this.pos, this.size > 15 ? 30 : this.size > 10 ? 20 : 10);
+          }
+        }
+      }
+      beforeDraw(i2) {
+        if (getOnScreen(this.pos, this.size)) {
+          if (this.time > 1 || !this.spawn) {
+            if (settings.emojiMovie) {
+            } else {
+            }
+          } else {
+            sketch.fill(`rgba(150,50,0,${this.time * 0.5})`);
+            sketch.stroke(`rgba(200,50,0,${this.time * 1})`);
+            sketch.strokeWeight(5);
+            let s3 = this.size * 2;
+            sketch.ellipse(this.pos.x, this.pos.y, s3, s3);
+          }
+        }
+      }
+      afterDraw(i2) {
+        if (getOnScreen(this.pos, this.size)) {
+          if (this.time > 1 || !this.spawn) {
+            if (settings.emojiMovie) {
+              sketch.push();
+              sketch.textAlign("center", "center");
+              sketch.textSize(this.size * 2);
+              sketch.translate(this.pos.x, this.pos.y);
+              sketch.rotate(this.vel.heading);
+              sketch.text("\u2B50", 0, 0);
+              sketch.pop();
+            } else {
+              sketch.fill("rgb(70, 10, 0)");
+              sketch.stroke("rgb(250, 100, 100)");
+              sketch.strokeWeight(5);
+              sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
+            }
+          } else {
+          }
+        }
+      }
     }
   ];
   var enemy_types_default = enemyTypes;
+  function getPosAroundPlayer() {
+    let pos = player.pos["+"](new Vector(300 + currentLevel.size * 1.41 * Math.random() ** 0.7, 0).rotate(Math.random() * 2 * Math.PI));
+    if (calcBorder({ pos }).mag > 0) {
+      return getPosAroundPlayer();
+    }
+    return pos;
+  }
 
   // src/levels.js
   var levels = [
     {
       size: 2e3,
-      start: [{ count: 50, size: 20, type: 0 }, { count: 20, size: 25, type: 0 }],
+      start: [{ count: 50, props: { size: 20 }, type: 0 }, { count: 20, props: { size: 25 }, type: 0 }],
       waves: [
-        { time: 30, enemies: [{ count: 100, size: 20, speed: 50, type: 0 }, { count: 50, size: 25, speed: 40, type: 0 }] },
-        { time: 60, enemies: [{ count: 10, size: 40, speed: 25, type: 0 }, { count: 50, size: 25, speed: 40, type: 0 }] },
-        { time: 90, enemies: [{ count: 10, size: 50, speed: 40, type: 0 }, { count: 50, size: 20, speed: 200, type: 0 }] },
-        { time: 120, enemies: [{ count: 50, size: 50, speed: 50, type: 0 }, { count: 10, size: 100, speed: 30, type: 0 }] },
-        { time: 180, enemies: [{ count: 70, size: 50, speed: 100, type: 0 }, { count: 50, size: 100, speed: 60, type: 0 }, { count: 50, size: 30, speed: 1e3, type: 0 }] }
+        { time: 30, enemies: [{ count: 100, props: { size: 20, speed: 50 }, type: 0 }, { count: 50, props: { size: 25, speed: 40 }, type: 0 }] },
+        { time: 60, enemies: [{ count: 10, props: { size: 40, speed: 25 }, type: 0 }, { count: 50, props: { size: 25, speed: 40 }, type: 0 }] },
+        { time: 90, enemies: [{ count: 10, props: { size: 50, speed: 40 }, type: 0 }, { count: 50, props: { size: 20, speed: 200 }, type: 0 }, { count: 2, props: { mode: 0, spawn: true }, type: 1 }] },
+        { time: 120, enemies: [{ count: 50, props: { size: 50, speed: 50 }, type: 0 }, { count: 10, props: { size: 100, speed: 30 }, type: 0 }, { count: 5, props: { mode: 0, spawn: true }, type: 1 }] },
+        { time: 180, enemies: [{ count: 70, props: { size: 50, speed: 100 }, type: 0 }, { count: 50, props: { size: 100, speed: 60 }, type: 0 }, { count: 1, props: { hp: 30, speed: 200 }, type: 2 }] },
+        { time: 240, enemies: [{ count: 100, props: { size: 50, speed: 100 }, type: 0 }, { count: 5, props: { mode: 0, spawn: true, hp: 25 }, type: 1 }, { count: 1, props: { hp: 50, speed: 200 }, type: 2 }] }
       ]
     }
   ];
@@ -18372,12 +18803,22 @@
     user = pb.authStore.model;
     signedIn = true;
   }
-  async function postScore(score2, time2, dev) {
+  pb.collection("feed").subscribe("*", async (event) => {
+    const record = await pb.collection("feed").getOne(event.record.id, {
+      expand: "user"
+    });
+    console.log(record);
+    new Notify({
+      title: record.expand.user.name + " died in " + formatTime(record.data.time) + " with a score of " + record.data.score
+    });
+  });
+  async function postScore(score2, time2, dev, version2) {
     return await pb.collection("scores").create({
       user: user.id,
       score: score2,
       time: time2,
-      dev
+      dev,
+      version: version2
     });
   }
   async function updateStats({ score: score2, level, kills }) {
@@ -18479,6 +18920,7 @@
   }
 
   // src/main.js
+  var version = "v0.4.0";
   var keys = {};
   "qwertyuiopasdfghjklzxcvbnm ".split("").forEach((e3) => {
     keys[e3] = false;
@@ -18532,8 +18974,8 @@
     enemies = [];
     posted = false;
     player = {
-      pos: new Vector(0, 0),
-      vel: new Vector(0, 0),
+      pos: Vector.zero,
+      vel: Vector.zero,
       dir: 0,
       weapons: [],
       speed: 350,
@@ -18549,13 +18991,17 @@
       level: -1,
       kills: 0,
       score: 0,
-      died: false
+      died: false,
+      dodgeCooldown: 0,
+      dodgeVel: Vector.zero,
+      dodgeTime: 0
     };
     paused = false;
     score = 0;
     playerUpgrades.forEach((e3) => e3.times = 0);
     if (!location.href.includes("https://cam0studios.github.io/")) {
       window.playerLink = player;
+      window.setTime = (val) => time = val;
       devMode = true;
     }
     settings = {
@@ -18564,12 +19010,18 @@
       emojiMovie: false
     };
     currentLevel.start.forEach((e3) => {
-      for (let i2 = 0; i2 < e3.count; i2++) new enemy_types_default[e3.type](new Vector(200 + Math.random() * currentLevel.size, 0).rotate(Math.random() * 2 * Math.PI), new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), e3.size, false);
+      for (let i2 = 0; i2 < e3.count; i2++) {
+        let props = { mode: 0, index: i2, max: e3.count };
+        for (let prop in e3.props) {
+          props[prop] = e3.props[prop];
+        }
+        new enemy_types_default[e3.type](props);
+      }
     });
     addWeapon("gun");
     projectiles = [];
     size = new Vector(innerWidth, innerHeight);
-    cam = new Vector(0, 0);
+    cam = Vector.zero;
     time = 0;
     fpsTime = 0;
     fps = 0;
@@ -18588,7 +19040,9 @@
       if (clampTime > 100) clampTime = 100;
       clampTime /= 1e3;
       if (!player.died) time += clampTime;
-      cam["="](player.pos);
+      let camMove = Math.pow(1e-3, clampTime);
+      cam["*="](camMove);
+      cam["+="](player.pos["*"](1 - camMove));
       if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
       screenshake *= Math.pow(5e-5, clampTime);
       if (fpsTime < 0) {
@@ -18609,7 +19063,11 @@
             wave.passed = true;
             wave.enemies.forEach((e3) => {
               for (let i2 = 0; i2 < e3.count; i2++) {
-                new enemy_types_default[e3.type](getRandomBox(currentLevel.size), new Vector(10 + Math.random() * e3.speed, 0).rotate(Math.random() * 2 * Math.PI), e3.size);
+                let props = { mode: 1, index: i2, max: e3.count };
+                for (let prop in e3.props) {
+                  props[prop] = e3.props[prop];
+                }
+                new enemy_types_default[e3.type](props);
               }
             });
           }
@@ -18626,9 +19084,26 @@
         if (gamepadConnected) {
           if (gamepad.rightStick.mag > 0.1) {
             let dir = gamepad.rightStick.copy;
-            dir.mag = innerHeight * 1 / 8;
+            dir.mag = 200;
             mouse["="](dir);
           }
+        }
+        if (player.dodgeTime <= 0) {
+          player.dodgeCooldown -= clampTime;
+          if ((keys[" "] || gamepad.leftTrigger) && player.dodgeCooldown <= 0 && joy.mag > 0) {
+            player.dodgeCooldown = 0.2;
+            let v = joy.copy;
+            v.mag = 1e3;
+            player.dodgeVel = v;
+            player.dodgeTime = 0.15;
+          }
+        } else {
+          player.dodgeTime -= clampTime;
+          if (player.dodgeTime <= 0) {
+            player.dodgeVel = Vector.zero;
+          }
+          player.vel["="](player.dodgeVel);
+          new projectile_types_default[3]({ pos: player.pos.copy });
         }
         player.dir = mouse.heading;
         applyBorder(player);
@@ -18767,11 +19242,20 @@
         }
         sketch.pop();
       }
+      enemies.forEach((a, i2) => {
+        sketch.push();
+        a.beforeDraw();
+        sketch.pop();
+      });
       projectiles.forEach((p) => {
+        sketch.push();
         p.draw();
+        sketch.pop();
       });
       enemies.forEach((a, i2) => {
-        a.drawTick();
+        sketch.push();
+        a.afterDraw();
+        sketch.pop();
       });
       if (player.hp > 0) {
         sketch.push();
@@ -18807,9 +19291,9 @@
       sketch.rect(size.x - minimapSize - 20 - minimapBorder / 2, size.y - minimapSize - 20 - minimapBorder / 2, minimapSize + minimapBorder, minimapSize + minimapBorder);
       sketch.translate(size.x - 20 - minimapSize / 2, size.y - 20 - minimapSize / 2);
       sketch.scale(130 / 2, 130 / 2);
-      sketch.stroke("rgb(200,50,0)");
       enemies.forEach((a) => {
-        sketch.strokeWeight(2e-3 * a.size);
+        sketch.strokeWeight(2e-3 * a.size * [1, 2.5, 2.5][a.type]);
+        sketch.stroke(["rgb(200,50,0)", "rgb(50,200,0)", "rgb(0,50,200)"][a.type]);
         sketch.point(a.pos.x / currentLevel.size, a.pos.y / currentLevel.size);
       });
       sketch.strokeWeight(0.05);
@@ -18912,7 +19396,7 @@
           user: user.id
         });
         if (player.score > 150 && time > 10) {
-          await postScore(player.score, Math.round(time), devMode);
+          await postScore(player.score, Math.round(time), devMode, version);
         }
         if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills });
         posted = true;
@@ -19082,7 +19566,7 @@
           break;
         default:
           if ("1234567890".split("").includes(ev.key)) {
-            if (enemy_types_default[parseInt(ev.key)]) new enemy_types_default[parseInt(ev.key)](mousePos, new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), 60, false);
+            if (enemy_types_default[parseInt(ev.key)]) new enemy_types_default[parseInt(ev.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
           }
           break;
       }

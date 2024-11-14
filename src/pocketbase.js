@@ -1,5 +1,5 @@
 import PocketBase, { RecordService } from "pocketbase";
-import { devMode } from "./main";
+import { devMode, formatTime } from "./main";
 const url = "https://asteroids.pockethost.io";
 export const pb = new PocketBase(url);
 
@@ -11,6 +11,17 @@ if (pb.authStore.model) {
   user = pb.authStore.model;
   signedIn = true;
 }
+
+pb.collection("feed").subscribe("*", async (event) => {
+  const record = await pb.collection("feed").getOne(event.record.id, {
+    expand: "user"
+  })
+
+  console.log(record)
+  new Notify({
+    title: record.expand.user.name + " died in " + formatTime(record.data.time) + " with a score of " + record.data.score,
+  })
+})
 
 /*if (!location.href.includes("cam0studios.github.io")) {
   pb.collection("users").authWithPassword("testing", "testing0").then(u => { user = u.record });
@@ -24,12 +35,13 @@ if (pb.authStore.model) {
   }
 }*/
 
-export async function postScore(score, time, dev) {
+export async function postScore(score, time, dev, version) {
   return await pb.collection("scores").create({
     user: user.id,
     score,
     time,
-    dev
+    dev,
+    version
   });
 }
 

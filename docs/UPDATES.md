@@ -2,6 +2,12 @@
 
 # Update Logs
 
+## v0.4
+
+## v0.4.0
+- Add laser turret and boss enemies
+- Add player dash
+
 ## v0.3
 
 ## v0.3.3

@@ -1,8 +1,9 @@
 import { Vector } from "../vector-library/vector";
-import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer } from "./main";
+import { intersections } from "../vector-library/intersection";
+import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies } from "./main";
 
 const projectileTypes = [
-  class {
+  class {  // player bullet
     constructor(data) {
       this.pos = data.pos;
       this.dir = data.dir;
@@ -29,7 +30,7 @@ const projectileTypes = [
       sketch.strokeWeight(5);
       sketch.fill(0);
       if (settings.emojiMovie) {
-        sketch.textAlign(sketch.CENTER, sketch.CENTER);
+        sketch.textAlign("center", "center");
         sketch.textSize(10);
         sketch.text("⚪", this.pos.x, this.pos.y)
       } else {
@@ -46,7 +47,7 @@ const projectileTypes = [
       }
     }
   },
-  class {
+  class {  // explosion
     constructor(data) {
       this.pos = data.pos;
       this.size = data.size;
@@ -65,7 +66,7 @@ const projectileTypes = [
 
     draw() {
       if (settings.emojiMovie) {
-        sketch.textAlign(sketch.CENTER, sketch.CENTER);
+        sketch.textAlign("center", "center");
         sketch.textSize(10);
         sketch.noStroke();
         sketch.fill(255);
@@ -75,6 +76,125 @@ const projectileTypes = [
         sketch.stroke(200);
         sketch.strokeWeight(this.maxSize * 0.5);
         sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
+      }
+    }
+
+    enemyTick(i, enemy, enemyI) {
+
+    }
+  },
+  class {  // enemy laser
+    constructor(data) {
+      this.pos = data.pos;
+      this.dir = data.dir;
+      this.cooldown = 0.5;
+      this.firing = 0;
+      this.dirV = new Vector(1, 0).rotate(this.dir);
+      this.link = data.link || -1;
+      this.len = 0;
+      this.maxLen = currentLevel.size * 2;
+      projectiles.push(this);
+    }
+
+    tick(i) {
+      let linked = enemies.find(e => e.id === this.link);
+      if (linked) {
+        this.pos = linked.pos.copy;
+        // this.dir = linked.dir;
+      }
+      this.dirV = new Vector(1, 0).rotate(this.dir);
+      if (this.cooldown > 0) {
+        this.cooldown -= clampTime;
+        if (this.cooldown <= 0) {
+          this.firing = 0;
+          this.cooldown = 0;
+        }
+      } else {
+        this.firing += clampTime;
+        this.len += clampTime * this.maxLen * 1.5;
+        if (this.len > this.maxLen) this.len = this.maxLen;
+
+        let int = intersections.lineCircleCollision(this.pos, (this.pos)["+"]((this.dirV)["*"](this.len)), player.pos, 25);
+        if (int) {
+          let point = intersections.lineClosestPoint(this.pos, (this.pos)["+"]((this.dirV)["*"](this.len)), player.pos);
+          explode(point["+"](new Vector(Math.random() * 15, 0).rotate(Math.random() * 2 * Math.PI))["-"]((this.dirV)["*"](20)), 15);
+          damagePlayer(clampTime * 10);
+          player.vel["+="]((point)["-"](player.pos).normalized["*"](clampTime * 500));
+          player.vel["+="]((this.dirV)["*"](clampTime * 1000));
+        }
+
+        if (this.firing >= 1) {
+          projectiles.splice(i, 1);
+          i--;
+        }
+      }
+    }
+
+    draw() {
+      if (settings.emojiMovie) {
+        sketch.textAlign("center", "center");
+        sketch.textSize(10);
+        sketch.noStroke();
+        sketch.fill(255);
+        sketch.text("", this.pos.x, this.pos.y);
+      } else {
+        if (this.cooldown > 0) {
+          sketch.noFill();
+          sketch.stroke("rgba(255, 0, 0, 0.5)");
+          sketch.strokeWeight(2);
+          sketch.translate(this.pos.x, this.pos.y);
+          sketch.line(0, 0, this.maxLen * this.dirV.x, this.maxLen * this.dirV.y);
+        } else {
+          sketch.noFill();
+          sketch.stroke("rgb(200, 230, 255)");
+          let thick = 10;
+          if (this.firing < 0.1) {
+            thick *= this.firing * 10;
+          }
+          if (this.firing > 0.8) {
+            thick *= (1 - this.firing) * 5;
+          }
+          sketch.strokeWeight(thick);
+          sketch.translate(this.pos.x, this.pos.y);
+          sketch.line(0, 0, this.len * this.dirV.x, this.len * this.dirV.y);
+        }
+      }
+    }
+
+    enemyTick(i, enemy, enemyI) {
+
+    }
+  },
+  class {  // dash effect
+    constructor(data) {
+      this.pos = data.pos;
+      this.progress = 0;
+      projectiles.push(this);
+    }
+
+    tick(i) {
+      this.progress += clampTime * 5;
+      if (this.progress >= 1) {
+        projectiles.splice(i, 1);
+        i--;
+      }
+    }
+
+    draw() {
+      if (settings.emojiMovie) {
+        sketch.textAlign("center", "center");
+        sketch.textSize(10);
+        sketch.noStroke();
+        sketch.fill(255);
+        sketch.text("", this.pos.x, this.pos.y);
+      } else {
+        let alpha = (1 - this.progress) * 0.2;
+        if (alpha < 0) alpha = 0;
+        if (alpha > 1) alpha = 1;
+        alpha = Math.round(alpha * 100) / 100;
+        sketch.fill(`rgba(150, 150, 150, ${alpha})`);
+        sketch.noStroke();
+        sketch.circle(this.pos.x, this.pos.y, 30 + this.progress * 40);
       }
     }
 

@@ -7,7 +7,7 @@ import projectileTypes, { explode } from "./projectile-types";
 import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 
-const version = "v0.3.2";
+export const version = "v0.4.0";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
@@ -43,8 +43,8 @@ const s = (sk) => {
   enemies = [];
   posted = false;
   player = {
-    pos: new Vector(0, 0),
-    vel: new Vector(0, 0),
+    pos: Vector.zero,
+    vel: Vector.zero,
     dir: 0,
     weapons: [],
     speed: 350,
@@ -60,7 +60,10 @@ const s = (sk) => {
     level: -1,
     kills: 0,
     score: 0,
-    died: false
+    died: false,
+    dodgeCooldown: 0,
+    dodgeVel: Vector.zero,
+    dodgeTime: 0,
   };
   paused = false;
   score = 0;
@@ -68,6 +71,7 @@ const s = (sk) => {
 
   if (!location.href.includes("https://cam0studios.github.io/")) {
     window.playerLink = player;
+    window.setTime = (val) => time = val;
     devMode = true;
   }
 
@@ -77,12 +81,18 @@ const s = (sk) => {
     emojiMovie: false,
   }
   currentLevel.start.forEach(e => {
-    for (let i = 0; i < e.count; i++) new enemyTypes[e.type](new Vector(200 + Math.random() * currentLevel.size, 0).rotate(Math.random() * 2 * Math.PI), new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), e.size, false);
+    for (let i = 0; i < e.count; i++) {
+      let props = { mode: 0, index: i, max: e.count };
+      for (let prop in e.props) {
+        props[prop] = e.props[prop];
+      }
+      new enemyTypes[e.type](props);
+    }
   });
   addWeapon("gun");
   projectiles = [];
   size = new Vector(innerWidth, innerHeight);
-  cam = new Vector(0, 0);
+  cam = Vector.zero;
   time = 0;
   fpsTime = 0;
   fps = 0;
@@ -101,11 +111,18 @@ const s = (sk) => {
     clampTime = sketch.deltaTime;
     if (clampTime > 100) clampTime = 100;
     clampTime /= 1000;
+
     if (!player.died) time += clampTime;
-    cam["="](player.pos);
-    if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
-    screenshake *= Math.pow(0.00005, clampTime);
+
+    // cam["="](player.pos);
+    let camMove = Math.pow(1e-3, clampTime);
+    cam["*="](camMove);
+    cam["+="]((player.pos)["*"](1 - camMove));
+
     // cam["+="](mouse["/"](10));
+
+    if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
+    screenshake *= Math.pow(5e-5, clampTime);
 
     // fps
     if (fpsTime < 0) {
@@ -128,7 +145,11 @@ const s = (sk) => {
           wave.passed = true;
           wave.enemies.forEach(e => {
             for (let i = 0; i < e.count; i++) {
-              new enemyTypes[e.type](getRandomBox(currentLevel.size), new Vector(10 + Math.random() * e.speed, 0).rotate(Math.random() * 2 * Math.PI), e.size);
+              let props = { mode: 1, index: i, max: e.count };
+              for (let prop in e.props) {
+                props[prop] = e.props[prop];
+              }
+              new enemyTypes[e.type](props);
             }
           });
         }
@@ -139,21 +160,43 @@ const s = (sk) => {
     // player movement
     if (player.hp > 0) {
       player.pos["+="]((player.vel)["*"](clampTime));
+
       let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
       joy["+="](gamepad.leftStick);
       if (joy.mag > 1) joy.mag = 1;
       joy["*="](player.speed * clampTime);
       player.vel["+="](joy);
       player.vel["*="](Math.pow(0.3, clampTime));
+
       if (gamepadConnected) {
         if (gamepad.rightStick.mag > 0.1) {
           let dir = gamepad.rightStick.copy;
-          dir.mag = innerHeight * 1 / 8;
+          dir.mag = 200;
           mouse["="](dir);
         }
       }
+
+      if (player.dodgeTime <= 0) {
+        player.dodgeCooldown -= clampTime;
+        if ((keys[" "] || gamepad.leftTrigger) && player.dodgeCooldown <= 0 && joy.mag > 0) {
+          player.dodgeCooldown = 0.2;
+          let v = joy.copy;
+          v.mag = 1000;
+          player.dodgeVel = v;
+          player.dodgeTime = .15;
+        }
+      } else {
+        player.dodgeTime -= clampTime;
+        if (player.dodgeTime <= 0) {
+          player.dodgeVel = Vector.zero;
+        }
+        player.vel["="](player.dodgeVel);
+        new projectileTypes[3]({ pos: player.pos.copy });
+      }
+
       player.dir = mouse.heading;
       applyBorder(player);
+
       // level up
       if (player.xp >= player.levelUp) {
         player.level++;
@@ -162,6 +205,7 @@ const s = (sk) => {
         player.xp -= player.levelUp;
         player.levelUp *= 1.2;
         document.getElementById("upgradeMenu").showModal();
+
         let content = "";
         let choices = [];
         playerUpgrades.filter(e => e.times < e.max).forEach(e => { for (let n = 0; n < e.weight; n += 0.05) choices.push({ type: 0, val: e }) });
@@ -203,6 +247,7 @@ const s = (sk) => {
           });
         });
       }
+
       // player shield
       if (player.shield < player.maxShield) {
         if (player.shieldRegenTimeLeft < player.shieldRegenTime) {
@@ -213,7 +258,9 @@ const s = (sk) => {
       } else if (player.shield > player.maxShield) {
         player.shield = player.maxShield;
       }
+
       if (player.hp > player.maxHp) player.hp = player.maxHp;
+
       // weapons
       player.weapons.forEach(weapon => {
         weapon.tick(weapon);
@@ -226,10 +273,13 @@ const s = (sk) => {
         document.getElementById("gameOver").showModal();
       }
     }
+
     // projectiles
     projectiles.forEach((projectile, i) => {
       projectile.tick(i);
     });
+
+    // enemies
     enemies.forEach((a, aI) => {
       a.tick(aI);
     });
@@ -309,25 +359,37 @@ const s = (sk) => {
       sketch.pop();
     }
 
+    // enemies before draw
+    enemies.forEach((a, i) => {
+      sketch.push();
+      a.beforeDraw();
+      sketch.pop();
+    });
 
     // projectiles
     projectiles.forEach(p => {
+      sketch.push();
       p.draw();
+      sketch.pop();
     });
 
-    // enemies
+    // enemies after draw
     enemies.forEach((a, i) => {
-      a.drawTick();
+      sketch.push();
+      a.afterDraw();
+      sketch.pop();
     });
 
     // player
     if (player.hp > 0) {
       sketch.push();
       sketch.translate(player.pos.x, player.pos.y);
+
       sketch.rotate(player.dir);
       sketch.stroke(255);
       sketch.strokeWeight(5);
       sketch.fill(0);
+
       if (settings.emojiMovie) {
         sketch.textAlign("center", "center");
         sketch.rotate(Math.PI / 4);
@@ -362,9 +424,9 @@ const s = (sk) => {
     sketch.scale(130 / 2, 130 / 2);
 
     // minimap content
-    sketch.stroke("rgb(200,50,0)");
     enemies.forEach(a => {
-      sketch.strokeWeight(0.002 * a.size);
+      sketch.strokeWeight(0.002 * a.size * [1, 2.5, 2.5][a.type]);
+      sketch.stroke(["rgb(200,50,0)", "rgb(50,200,0)", "rgb(0,50,200)"][a.type]);
       sketch.point(a.pos.x / currentLevel.size, a.pos.y / currentLevel.size);
     });
     sketch.strokeWeight(0.05);
@@ -482,7 +544,7 @@ async function die() {
       });
 
       if (player.score > 150 && time > 10) {
-        await postScore(player.score, Math.round(time), devMode);
+        await postScore(player.score, Math.round(time), devMode, version);
       }
 
       if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills });
@@ -667,7 +729,7 @@ function setKey(ev, val) {
         break;
       default:
         if ("1234567890".split("").includes(ev.key)) {
-          if (enemyTypes[parseInt(ev.key)]) new enemyTypes[parseInt(ev.key)](mousePos, new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), 60, false);
+          if (enemyTypes[parseInt(ev.key)]) new enemyTypes[parseInt(ev.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
 
         }
         break;
