@@ -12,6 +12,7 @@ if (pb.authStore.model) {
   signedIn = true;
 }
 
+/*
 pb.collection("feed").subscribe("*", async (event) => {
   const record = await pb.collection("feed").getOne(event.record.id, {
     expand: "user"
@@ -22,18 +23,7 @@ pb.collection("feed").subscribe("*", async (event) => {
     title: record.expand.user.name + " died in " + formatTime(record.data.time) + " with a score of " + record.data.score,
   })
 })
-
-/*if (!location.href.includes("cam0studios.github.io")) {
-  pb.collection("users").authWithPassword("testing", "testing0").then(u => { user = u.record });
-  signedIn = true;
-} else {
-  if (localStorage.getItem("user")) {
-    pb.collection("users").authWithPassword(localStorage.getItem("user")).then(u => { user = u.record });
-    signedIn = true;
-  } else {
-    signedIn = false;
-  }
-}*/
+*/
 
 export async function postScore(score, time, dev, version) {
   return await pb.collection("scores").create({

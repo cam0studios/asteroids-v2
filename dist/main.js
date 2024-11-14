@@ -18803,15 +18803,6 @@
     user = pb.authStore.model;
     signedIn = true;
   }
-  pb.collection("feed").subscribe("*", async (event) => {
-    const record = await pb.collection("feed").getOne(event.record.id, {
-      expand: "user"
-    });
-    console.log(record);
-    new Notify({
-      title: record.expand.user.name + " died in " + formatTime(record.data.time) + " with a score of " + record.data.score
-    });
-  });
   async function postScore(score2, time2, dev, version2) {
     return await pb.collection("scores").create({
       user: user.id,
