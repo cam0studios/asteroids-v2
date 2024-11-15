@@ -4,6 +4,9 @@
 
 ## v0.4
 
+## v0.4.1
+- Add player stats
+
 ## v0.4.0
 - Add laser turret and boss enemies
 - Add player dash

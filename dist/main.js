@@ -18812,13 +18812,16 @@
       version: version2
     });
   }
-  async function updateStats({ score: score2, level, kills }) {
-    return await pb.collection("users").update(user.id, {
+  async function updateStats({ score: score2, level, kills, time: time2 }) {
+    user = await pb.collection("users").update(user.id, {
       deaths: (user.deaths || 0) + 1,
       score: (user.score || 0) + score2,
       levelups: (user.levelups || 0) + level,
-      kills: (user.kills || 0) + kills
+      kills: (user.kills || 0) + kills,
+      highscore: Math.max(user.highscore || 0, score2),
+      highestTime: Math.max(user.highestTime || 0, time2)
     });
+    return user;
   }
   async function postFeed(event) {
     return await pb.collection("feed").create({
@@ -18911,7 +18914,7 @@
   }
 
   // src/main.js
-  var version = "v0.4.0";
+  var version = "v0.4.1";
   var keys = {};
   "qwertyuiopasdfghjklzxcvbnm ".split("").forEach((e3) => {
     keys[e3] = false;
@@ -19368,6 +19371,7 @@
     explode(player.pos, 100);
     document.getElementById("score").innerText = player.score;
     document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
+    document.getElementById("stats").innerHTML = "<p> <b> Loading... </b> </p>";
     if (signedIn) {
       document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${user.name} </b> </p> <button id="signOutBtn"> Sign out </button>`;
       setTimeout(() => {
@@ -19389,11 +19393,20 @@
         if (player.score > 150 && time > 10) {
           await postScore(player.score, Math.round(time), devMode, version);
         }
-        if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills });
+        if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) });
         posted = true;
       }
+      document.getElementById("stats").innerHTML = `
+      <p> <b> Deaths: </b> ${user.deaths} </p>
+      <p> <b> Total score: </b> ${user.score} </p>
+      <p> <b> Total levelups: </b> ${user.levelups} </p>
+      <p> <b> Total kills: </b> ${user.kills} </p>
+      <p> <b> Highscore: </b> ${user.highscore} </p>
+      <p> <b> Highest time: </b> ${formatTime(user.highestTime)} </p>
+    `;
     } else {
       document.getElementById("signInDiv").innerHTML = `<p> <b> Sign in to save score </b> </p> <button id="signInBtn"> Sign in </button> <!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
+      document.getElementById("stats").innerHTML = "<p> <b> Sign in to see stats </b> </p>";
       setTimeout(() => {
         document.getElementById("signInBtn").addEventListener("click", async () => {
           let res = await signIn();
@@ -19494,7 +19507,10 @@
     mouse["-="](size["/"](2));
   });
   document.getElementById("restart").addEventListener("click", restart);
-  document.getElementById("quit").addEventListener("click", restart);
+  document.getElementById("quit").addEventListener("click", () => {
+    player.hp = 0;
+    unpause();
+  });
   document.getElementById("pause").addEventListener("cancel", unpause);
   document.getElementById("resume").addEventListener("click", unpause);
   function pause() {

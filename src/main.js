@@ -7,7 +7,7 @@ import projectileTypes, { explode } from "./projectile-types";
 import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 
-export const version = "v0.4.0";
+export const version = "v0.4.1";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
@@ -524,6 +524,7 @@ async function die() {
 
   document.getElementById("score").innerText = player.score;
   document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
+  document.getElementById("stats").innerHTML = "<p> <b> Loading... </b> </p>";
   if (signedIn) {
     document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${user.name} </b> </p> <button id="signOutBtn"> Sign out </button>`;
     setTimeout(() => {
@@ -547,12 +548,22 @@ async function die() {
         await postScore(player.score, Math.round(time), devMode, version);
       }
 
-      if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills });
+      if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) });
 
       posted = true;
     }
+    
+    document.getElementById("stats").innerHTML = `
+      <p> <b> Deaths: </b> ${user.deaths} </p>
+      <p> <b> Total score: </b> ${user.score} </p>
+      <p> <b> Total levelups: </b> ${user.levelups} </p>
+      <p> <b> Total kills: </b> ${user.kills} </p>
+      <p> <b> Highscore: </b> ${user.highscore} </p>
+      <p> <b> Highest time: </b> ${formatTime(user.highestTime)} </p>
+    `;
   } else {
     document.getElementById("signInDiv").innerHTML = `<p> <b> Sign in to save score </b> </p> <button id="signInBtn"> Sign in </button> <!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
+    document.getElementById("stats").innerHTML = "<p> <b> Sign in to see stats </b> </p>";
     // await new Promise(setTimout(()=>{}, 1000));
     setTimeout(() => {
       document.getElementById("signInBtn").addEventListener("click", async () => {
@@ -659,7 +670,10 @@ document.addEventListener("mousemove", (e) => {
 });
 
 document.getElementById("restart").addEventListener("click", restart);
-document.getElementById("quit").addEventListener("click", restart);
+document.getElementById("quit").addEventListener("click", () => {
+  player.hp = 0;
+  unpause();
+});
 
 document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);

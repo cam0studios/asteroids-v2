@@ -35,13 +35,16 @@ export async function postScore(score, time, dev, version) {
   });
 }
 
-export async function updateStats({ score, level, kills }) {
-  return await pb.collection("users").update(user.id, {
+export async function updateStats({ score, level, kills, time }) {
+  user = await pb.collection("users").update(user.id, {
     deaths: (user.deaths || 0) + 1,
     score: (user.score || 0) + score,
     levelups: (user.levelups || 0) + level,
-    kills: (user.kills || 0) + kills
+    kills: (user.kills || 0) + kills,
+    highscore: Math.max(user.highscore || 0, score),
+    highestTime: Math.max(user.highestTime || 0, time)
   });
+  return user;
 }
 
 export async function postFeed(event) {
