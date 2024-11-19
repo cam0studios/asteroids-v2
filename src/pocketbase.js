@@ -8,7 +8,9 @@ export var user, signedIn = false;
 // pb.authStore.clear();
 
 if (pb.authStore.model) {
-  user = pb.authStore.model;
+  (async () => {
+    user = await pb.collection("users").getOne(pb.authStore.model.id);
+  })();
   signedIn = true;
 }
 

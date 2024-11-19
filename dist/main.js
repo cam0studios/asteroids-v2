@@ -18800,7 +18800,9 @@
   var user;
   var signedIn = false;
   if (pb.authStore.model) {
-    user = pb.authStore.model;
+    (async () => {
+      user = await pb.collection("users").getOne(pb.authStore.model.id);
+    })();
     signedIn = true;
   }
   async function postScore(score2, time2, dev, version2) {
