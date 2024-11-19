@@ -552,7 +552,7 @@ async function die() {
 
       posted = true;
     }
-    
+
     document.getElementById("stats").innerHTML = `
       <p> <b> Deaths: </b> ${user.deaths} </p>
       <p> <b> Total score: </b> ${user.score} </p>

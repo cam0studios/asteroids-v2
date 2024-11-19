@@ -1,4 +1,4 @@
-import PocketBase, { RecordService } from "pocketbase";
+import PocketBase from "pocketbase";
 import { devMode, formatTime } from "./main";
 const url = "https://asteroids.pockethost.io";
 export const pb = new PocketBase(url);
@@ -26,34 +26,45 @@ pb.collection("feed").subscribe("*", async (event) => {
 */
 
 export async function postScore(score, time, dev, version) {
-  return await pb.collection("scores").create({
-    user: user.id,
-    score,
-    time,
-    dev,
-    version
-  });
+  try {
+    return await pb.collection("scores").create({
+      user: user.id,
+      score,
+      time,
+      dev,
+      version
+    });
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 export async function updateStats({ score, level, kills, time }) {
-  user = await pb.collection("users").update(user.id, {
-    deaths: (user.deaths || 0) + 1,
-    score: (user.score || 0) + score,
-    levelups: (user.levelups || 0) + level,
-    kills: (user.kills || 0) + kills,
-    highscore: Math.max(user.highscore || 0, score),
-    highestTime: Math.max(user.highestTime || 0, time)
-  });
-  return user;
+  try {
+    return user = await pb.collection("users").update(user.id, {
+      deaths: (user.deaths || 0) + 1,
+      score: (user.score || 0) + score,
+      levelups: (user.levelups || 0) + level,
+      kills: (user.kills || 0) + kills,
+      highscore: Math.max(user.highscore || 0, score),
+      highestTime: Math.max(user.highestTime || 0, time)
+    });
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 export async function postFeed(event) {
-  return await pb.collection("feed").create({
-    user: user.id,
-    data: event.data,
-    type: event.type,
-    dev: event.dev
-  });
+  try {
+    return await pb.collection("feed").create({
+      user: user.id,
+      data: event.data,
+      type: event.type,
+      dev: event.dev
+    });
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 export async function getUsers() {

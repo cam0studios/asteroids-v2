@@ -18804,32 +18804,44 @@
     signedIn = true;
   }
   async function postScore(score2, time2, dev, version2) {
-    return await pb.collection("scores").create({
-      user: user.id,
-      score: score2,
-      time: time2,
-      dev,
-      version: version2
-    });
+    try {
+      return await pb.collection("scores").create({
+        user: user.id,
+        score: score2,
+        time: time2,
+        dev,
+        version: version2
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
   async function updateStats({ score: score2, level, kills, time: time2 }) {
-    user = await pb.collection("users").update(user.id, {
-      deaths: (user.deaths || 0) + 1,
-      score: (user.score || 0) + score2,
-      levelups: (user.levelups || 0) + level,
-      kills: (user.kills || 0) + kills,
-      highscore: Math.max(user.highscore || 0, score2),
-      highestTime: Math.max(user.highestTime || 0, time2)
-    });
-    return user;
+    try {
+      user = await pb.collection("users").update(user.id, {
+        deaths: (user.deaths || 0) + 1,
+        score: (user.score || 0) + score2,
+        levelups: (user.levelups || 0) + level,
+        kills: (user.kills || 0) + kills,
+        highscore: Math.max(user.highscore || 0, score2),
+        highestTime: Math.max(user.highestTime || 0, time2)
+      });
+      return user;
+    } catch (err) {
+      console.error(err);
+    }
   }
   async function postFeed(event) {
-    return await pb.collection("feed").create({
-      user: user.id,
-      data: event.data,
-      type: event.type,
-      dev: event.dev
-    });
+    try {
+      return await pb.collection("feed").create({
+        user: user.id,
+        data: event.data,
+        type: event.type,
+        dev: event.dev
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
   async function getUsers() {
     return await pb.collection("users").getFullList({});
