@@ -7,7 +7,7 @@ import projectileTypes, { explode } from "./projectile-types";
 import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 
-export const version = "v0.4.1";
+export const version = "v0.4.2";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
@@ -579,7 +579,7 @@ async function die() {
   }
 
   let scores = await getScores();
-  document.getElementById("scores").innerHTML = scores.sort((a, b) => b.score - a.score).map((score, scoreI) => `<p> ${scoreI + 1} <b> ${score.expand.user.name} </b> - ${score.score} ${score.version ? ` (${score.version})` : ""} (${score.time > 0 ? formatTime(score.time) : "no time"}) </p>`).join("");
+  document.getElementById("scores").innerHTML = scores.map((score, scoreI) => `<p> ${scoreI + 1} <b> ${score.expand.user.name} </b> - ${score.score} ${score.version ? ` (${score.version})` : ""} (${score.time > 0 ? formatTime(score.time) : "no time"}) </p>`).join("");
 }
 
 export function applyBorder(obj) {

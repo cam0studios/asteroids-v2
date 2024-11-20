@@ -18848,7 +18848,10 @@
     return await pb.collection("users").getFullList({});
   }
   async function getScores() {
-    let scores = (await pb.collection("scores").getFullList({ expand: "user" })).filter((e3) => (!e3.dev || devMode) && getVersion(e3.version)[1] >= 4 && getVersion(e3.version)[2] >= 0);
+    let scores = await pb.collection("scores").getFullList({ expand: "user" });
+    scores = scores.filter((e3) => (!e3.dev || devMode) && getVersion(e3.version)[1] >= 4 && getVersion(e3.version)[2] >= 0);
+    scores.sort((a, b) => b.score - a.score);
+    scores = scores.slice(0, 10);
     return scores;
   }
   async function signIn() {
@@ -18927,7 +18930,7 @@
   }
 
   // src/main.js
-  var version = "v0.4.1";
+  var version = "v0.4.2";
   var keys = {};
   "qwertyuiopasdfghjklzxcvbnm ".split("").forEach((e3) => {
     keys[e3] = false;
@@ -19432,7 +19435,7 @@
       }, 100);
     }
     let scores = await getScores();
-    document.getElementById("scores").innerHTML = scores.sort((a, b) => b.score - a.score).map((score2, scoreI) => `<p> ${scoreI + 1} <b> ${score2.expand.user.name} </b> - ${score2.score} ${score2.version ? ` (${score2.version})` : ""} (${score2.time > 0 ? formatTime(score2.time) : "no time"}) </p>`).join("");
+    document.getElementById("scores").innerHTML = scores.map((score2, scoreI) => `<p> ${scoreI + 1} <b> ${score2.expand.user.name} </b> - ${score2.score} ${score2.version ? ` (${score2.version})` : ""} (${score2.time > 0 ? formatTime(score2.time) : "no time"}) </p>`).join("");
   }
   function applyBorder(obj) {
     if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15);

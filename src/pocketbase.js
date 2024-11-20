@@ -74,7 +74,10 @@ export async function getUsers() {
 }
 
 export async function getScores() {
-  let scores = (await pb.collection("scores").getFullList({ expand: "user" })).filter(e => ((!e.dev) || devMode) && getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
+  let scores = await pb.collection("scores").getFullList({ expand: "user" })
+  scores = scores.filter(e => ((!e.dev) || devMode) && getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
+  scores.sort((a, b) => b.score - a.score);
+  scores = scores.slice(0, 10);
   return scores;
 }
 

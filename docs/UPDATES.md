@@ -4,6 +4,10 @@
 
 ## v0.4
 
+## v0.4.2
+- Filter leaderboard by version
+- Cap leaderboard to top 10
+
 ## v0.4.1
 - Add player stats
 
