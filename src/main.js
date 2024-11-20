@@ -654,6 +654,11 @@ export function damagePlayer(amt) {
   }
 }
 
+export function getVersion(v) {
+  v = v.slice(1);
+  return v.split(".").map(e => parseInt(e));
+}
+
 // ********************  event listeners  ******************** //
 [...document.querySelectorAll(".noClose")].forEach(elem => {
   elem.addEventListener("cancel", ev => ev.preventDefault());

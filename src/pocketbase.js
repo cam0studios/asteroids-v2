@@ -1,5 +1,5 @@
 import PocketBase from "pocketbase";
-import { devMode, formatTime } from "./main";
+import { devMode, formatTime, getVersion } from "./main";
 const url = "https://asteroids.pockethost.io";
 export const pb = new PocketBase(url);
 
@@ -74,7 +74,7 @@ export async function getUsers() {
 }
 
 export async function getScores() {
-  let scores = (await pb.collection("scores").getFullList({ expand: "user" })).filter(e => (!e.dev) || devMode);
+  let scores = (await pb.collection("scores").getFullList({ expand: "user" })).filter(e => ((!e.dev) || devMode) && getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
   return scores;
 }
 

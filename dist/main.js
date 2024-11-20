@@ -18848,7 +18848,7 @@
     return await pb.collection("users").getFullList({});
   }
   async function getScores() {
-    let scores = (await pb.collection("scores").getFullList({ expand: "user" })).filter((e3) => !e3.dev || devMode);
+    let scores = (await pb.collection("scores").getFullList({ expand: "user" })).filter((e3) => (!e3.dev || devMode) && getVersion(e3.version)[1] >= 4 && getVersion(e3.version)[2] >= 0);
     return scores;
   }
   async function signIn() {
@@ -19506,6 +19506,10 @@
     if (player.hp > 0) {
       rumble(0.2, 0.5);
     }
+  }
+  function getVersion(v) {
+    v = v.slice(1);
+    return v.split(".").map((e3) => parseInt(e3));
   }
   [...document.querySelectorAll(".noClose")].forEach((elem) => {
     elem.addEventListener("cancel", (ev) => ev.preventDefault());
