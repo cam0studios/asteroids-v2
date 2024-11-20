@@ -44,10 +44,10 @@ export async function postScore(score, time, dev, version) {
 export async function updateStats({ score, level, kills, time }) {
   try {
     return user = await pb.collection("users").update(user.id, {
-      deaths: (user.deaths || 0) + 1,
-      score: (user.score || 0) + score,
-      levelups: (user.levelups || 0) + level,
-      kills: (user.kills || 0) + kills,
+      "deaths+": 1,
+      "score+": score,
+      "levelups+": level,
+      "kills+": kills,
       highscore: Math.max(user.highscore || 0, score),
       highestTime: Math.max(user.highestTime || 0, time)
     });
