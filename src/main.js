@@ -743,6 +743,14 @@ function setKey(ev, val) {
         player.pos.x = mousePos.x
         player.pos.y = mousePos.y
         break;
+      case "P":
+        if (paused) unpause();
+        if (document.head.querySelector("script[src='https://cdn.jsdelivr.net/npm/eruda']")) break;
+        
+        const erudaScript = document.createElement("script");
+        erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
+        document.head.appendChild(erudaScript);
+        erudaScript.onload = () => eruda.init();
       case "b":
         settings.emojiMovie = !settings.emojiMovie;
         break;
