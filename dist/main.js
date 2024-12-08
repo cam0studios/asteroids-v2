@@ -19621,6 +19621,7 @@
           erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
           document.head.appendChild(erudaScript);
           erudaScript.onload = () => eruda.init();
+          break;
         case "b":
           settings.emojiMovie = !settings.emojiMovie;
           break;
