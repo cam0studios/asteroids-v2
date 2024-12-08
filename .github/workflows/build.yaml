@@ -16,7 +16,7 @@ jobs:
     - name: Clone Submodules
       shell: bash
       run: |
-        git submodule update --init --force --recursive --depth=1
+        git submodule update --init --force --remote --recursive --depth=1
 
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
