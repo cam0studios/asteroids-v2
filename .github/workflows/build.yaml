@@ -3,6 +3,9 @@ name: Build & Deploy
 on:
   push:
     branches: [ "master" ]
+
+permissions:
+  contents: write
     
 jobs:
   build:
