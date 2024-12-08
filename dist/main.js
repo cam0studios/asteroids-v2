@@ -17273,8 +17273,8 @@
     },
     lineCircleCollision: function(l1, l2, c, r) {
       if (l1["-"](c) < r || l2["-"](c) < r) return true;
-      let closest = lineClosestPoint(l1, l2, c);
-      if (!linePointCollision(l1, l2, closest)) return false;
+      let closest = this.lineClosestPoint(l1, l2, c);
+      if (!this.linePointCollision(l1, l2, closest)) return false;
       return closest["-"](c) < r;
     }
   };
@@ -18849,7 +18849,7 @@
   }
   async function getScores(page = 1, sort = "-score") {
     const scoresPerPage = 10;
-    const scores = await pb.collection("scores").getList(page, scoresPerPage, { expand: "user", sort });
+    const scores = await pb.collection("scores").getList(page, scoresPerPage, { expand: "user", sort, filter: `dev=${devMode}` });
     return scores.items;
   }
   async function signIn() {
