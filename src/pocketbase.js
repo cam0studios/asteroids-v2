@@ -73,12 +73,12 @@ export async function getUsers() {
   return await pb.collection("users").getFullList({});
 }
 
-export async function getScores() {
-  let scores = await pb.collection("scores").getFullList({ expand: "user" })
-  scores = scores.filter(e => ((!e.dev) || devMode) && getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
-  scores.sort((a, b) => b.score - a.score);
-  scores = scores.slice(0, 10);
-  return scores;
+export async function getScores(page = 1, sort = "-score") {
+  const scoresPerPage = 10;
+
+  const scores = await pb.collection("scores").getList(page, scoresPerPage, { expand: "user", sort});
+    
+  return scores.items//.filter(e => getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
 }
 
 export async function signIn() {

@@ -1,2 +1,4 @@
 node_modules
 dist/main.js.map
+.vscode
+.DS_Store

@@ -578,9 +578,50 @@ async function die() {
     }, 100);
   }
 
-  let scores = await getScores();
-  document.getElementById("scores").innerHTML = scores.map((score, scoreI) => `<p> ${scoreI + 1} <b> ${score.expand.user.name} </b> - ${score.score} ${score.version ? ` (${score.version})` : ""} (${score.time > 0 ? formatTime(score.time) : "no time"}) </p>`).join("");
+  let page = 1;
+  const scores = await getScores(page);
+
+  const scoresContainer = document.getElementById("scores");
+  scoresContainer.innerHTML = "";
+
+  const appendScore = (score, index, offset = "") => {
+    const scoreContainer = document.createElement("p");
+    const scoreIndex = document.createTextNode(`${index + 1 + offset} `);
+    const scoreAuthorName = document.createElement("b");
+
+    scoreAuthorName.textContent = score.expand.user.name;
+
+    const scoreText = document.createTextNode(` - ${score.score} ${score.version ? ` (${score.version})` : ""} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
+
+    scoreContainer.append(scoreIndex, scoreAuthorName, scoreText);
+    scoresContainer.appendChild(scoreContainer);
+  }
+
+  scores.forEach((score, index) => appendScore(score, index));
+
+  let loadingScores = false;
+  const gameOverElement = document.getElementById("gameOver");
+
+  const loadMoreScores = async () => {
+    if (!loadingScores && gameOverElement.scrollTop + gameOverElement.clientHeight >= gameOverElement.scrollHeight - 10) {
+      loadingScores = true;
+      page++;
+
+      const newScores = await getScores(page);
+      if (newScores.length > 0) {
+        newScores.forEach((score, index) => appendScore(score, index, (page - 1) * 10));
+      } else {
+        gameOverElement.removeEventListener("scroll", loadMoreScores);
+      }
+
+      loadingScores = false;
+    }
+  }
+  
+  gameOverElement.addEventListener("scroll", loadMoreScores);
 }
+
+
 
 export function applyBorder(obj) {
   if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15);
@@ -746,7 +787,7 @@ function setKey(ev, val) {
       case "P":
         if (paused) unpause();
         if (document.head.querySelector("script[src='https://cdn.jsdelivr.net/npm/eruda']")) break;
-        
+
         const erudaScript = document.createElement("script");
         erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
         document.head.appendChild(erudaScript);

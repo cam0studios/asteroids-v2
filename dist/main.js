@@ -18847,12 +18847,10 @@
   async function getUsers() {
     return await pb.collection("users").getFullList({});
   }
-  async function getScores() {
-    let scores = await pb.collection("scores").getFullList({ expand: "user" });
-    scores = scores.filter((e3) => (!e3.dev || devMode) && getVersion(e3.version)[1] >= 4 && getVersion(e3.version)[2] >= 0);
-    scores.sort((a, b) => b.score - a.score);
-    scores = scores.slice(0, 10);
-    return scores;
+  async function getScores(page = 1, sort = "-score") {
+    const scoresPerPage = 10;
+    const scores = await pb.collection("scores").getList(page, scoresPerPage, { expand: "user", sort });
+    return scores.items;
   }
   async function signIn() {
     let username = await getUsername("Enter a username");
@@ -19434,8 +19432,36 @@
         });
       }, 100);
     }
-    let scores = await getScores();
-    document.getElementById("scores").innerHTML = scores.map((score2, scoreI) => `<p> ${scoreI + 1} <b> ${score2.expand.user.name} </b> - ${score2.score} ${score2.version ? ` (${score2.version})` : ""} (${score2.time > 0 ? formatTime(score2.time) : "no time"}) </p>`).join("");
+    let page = 1;
+    const scores = await getScores(page);
+    const scoresContainer = document.getElementById("scores");
+    scoresContainer.innerHTML = "";
+    const appendScore = (score2, index, offset = "") => {
+      const scoreContainer = document.createElement("p");
+      const scoreIndex = document.createTextNode(`${index + 1 + offset} `);
+      const scoreAuthorName = document.createElement("b");
+      scoreAuthorName.textContent = score2.expand.user.name;
+      const scoreText = document.createTextNode(` - ${score2.score} ${score2.version ? ` (${score2.version})` : ""} (${score2.time > 0 ? formatTime(score2.time) : "no time"})`);
+      scoreContainer.append(scoreIndex, scoreAuthorName, scoreText);
+      scoresContainer.appendChild(scoreContainer);
+    };
+    scores.forEach((score2, index) => appendScore(score2, index));
+    let loadingScores = false;
+    const gameOverElement = document.getElementById("gameOver");
+    const loadMoreScores = async () => {
+      if (!loadingScores && gameOverElement.scrollTop + gameOverElement.clientHeight >= gameOverElement.scrollHeight - 10) {
+        loadingScores = true;
+        page++;
+        const newScores = await getScores(page);
+        if (newScores.length > 0) {
+          newScores.forEach((score2, index) => appendScore(score2, index, (page - 1) * 10));
+        } else {
+          gameOverElement.removeEventListener("scroll", loadMoreScores);
+        }
+        loadingScores = false;
+      }
+    };
+    gameOverElement.addEventListener("scroll", loadMoreScores);
   }
   function applyBorder(obj) {
     if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15);
