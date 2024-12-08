@@ -76,7 +76,7 @@ export async function getUsers() {
 export async function getScores(page = 1, sort = "-score") {
   const scoresPerPage = 10;
 
-  const scores = await pb.collection("scores").getList(page, scoresPerPage, { expand: "user", sort});
+  const scores = await pb.collection("scores").getList(page, scoresPerPage, { expand: "user", sort, filter: `dev=${devMode}` });
     
   return scores.items//.filter(e => getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
 }
