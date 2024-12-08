@@ -617,7 +617,7 @@ async function die() {
       loadingScores = false;
     }
   }
-  
+
   gameOverElement.addEventListener("scroll", loadMoreScores);
 }
 
@@ -792,6 +792,8 @@ function setKey(ev, val) {
         erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
         document.head.appendChild(erudaScript);
         erudaScript.onload = () => eruda.init();
+
+        break;
       case "b":
         settings.emojiMovie = !settings.emojiMovie;
         break;
