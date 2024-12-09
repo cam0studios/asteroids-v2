@@ -40,7 +40,7 @@ const enemyTypes = [
           p.enemyTick(pI, this, i);
         });
         let dif = (this.pos)["-"](player.pos);
-        if (dif.mag < this.size + 25 && player.dodgeTime <= 0) {
+        if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
           let hitStr = (player.vel)["-"](this.vel).mag;
           this.hp--;
           this.pos["-="](player.pos);
@@ -155,7 +155,7 @@ const enemyTypes = [
           p.enemyTick(pI, this, i);
         });
         let dif = (this.pos)["-"](player.pos);
-        if (dif.mag < this.size + 25 && player.dodgeTime <= 0) {
+        if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
           let hitStr = (player.vel)["-"](this.vel).mag;
           this.hp--;
           this.pos["-="](player.pos);
@@ -318,7 +318,7 @@ const enemyTypes = [
           p.enemyTick(pI, this, i);
         });
         let dif = (this.pos)["-"](player.pos);
-        if (dif.mag < this.size + 25 && player.dodgeTime <= 0) {
+        if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
           let hitStr = (player.vel)["-"](this.vel).mag;
           this.hp--;
           this.pos["-="](player.pos);
