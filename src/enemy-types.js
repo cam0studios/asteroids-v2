@@ -171,7 +171,7 @@ const enemyTypes = [
 
         if (this.cooldown > 0) {
           this.cooldown -= clampTime;
-        } else {
+        } else if (this.pos["-"](player.pos).mag < 1000) {
           this.reload -= clampTime;
           let d = (player.pos)["-"](this.pos);
           d["+="]((player.vel)["*"](0.7));
