@@ -17284,6 +17284,10 @@
     class {
       // player bullet
       constructor(data) {
+        if (data.vel) {
+          data.dir = data.vel.heading;
+          data.speed = data.vel.mag;
+        }
         this.pos = data.pos;
         this.dir = data.dir;
         this.damage = data.damage;
@@ -17433,11 +17437,19 @@
       // dash effect
       constructor(data) {
         this.pos = data.pos;
+        this.type = data.type;
         this.progress = 0;
         projectiles.push(this);
       }
       tick(i2) {
-        this.progress += clampTime * 5;
+        if (this.type == 0) {
+          this.progress += clampTime * 5;
+        } else {
+          this.progress += clampTime * 1;
+          if (player.dodgeTime > 0) {
+            this.progress = 1;
+          }
+        }
         if (this.progress >= 1) {
           projectiles.splice(i2, 1);
           i2--;
@@ -17451,11 +17463,20 @@
           sketch.fill(255);
           sketch.text("", this.pos.x, this.pos.y);
         } else {
-          let alpha = (1 - this.progress) * 0.2;
-          if (alpha < 0) alpha = 0;
-          if (alpha > 1) alpha = 1;
+          let alpha;
+          let col = 150;
+          if (this.type == 0) {
+            alpha = (1 - this.progress) * 0.2;
+            if (alpha < 0) alpha = 0;
+            if (alpha > 1) alpha = 1;
+          } else {
+            alpha = (1 - this.progress) * 0.01;
+            if (alpha < 0) alpha = 0;
+            if (alpha > 1) alpha = 1;
+            col = 100;
+          }
           alpha = Math.round(alpha * 100) / 100;
-          sketch.fill(`rgba(150, 150, 150, ${alpha})`);
+          sketch.fill(`rgba(${col}, ${col}, ${col}, ${alpha})`);
           sketch.noStroke();
           sketch.circle(this.pos.x, this.pos.y, 30 + this.progress * 40);
         }
@@ -17938,6 +17959,14 @@
         { time: 120, enemies: [{ count: 50, props: { size: 50, speed: 50 }, type: 0 }, { count: 10, props: { size: 100, speed: 30 }, type: 0 }, { count: 5, props: { mode: 0, spawn: true }, type: 1 }] },
         { time: 180, enemies: [{ count: 70, props: { size: 50, speed: 100 }, type: 0 }, { count: 50, props: { size: 100, speed: 60 }, type: 0 }, { count: 1, props: { hp: 30, speed: 200 }, type: 2 }] },
         { time: 240, enemies: [{ count: 100, props: { size: 50, speed: 100 }, type: 0 }, { count: 5, props: { mode: 0, spawn: true, hp: 25 }, type: 1 }, { count: 1, props: { hp: 50, speed: 200 }, type: 2 }] }
+      ],
+      planets: [
+        {
+          name: "West Virgina",
+          size: 50,
+          pos: new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1)["*"](2e3),
+          backgroundColor: "#e4ac05"
+        }
       ]
     }
   ];
@@ -18955,15 +18984,25 @@
   var paused;
   var score;
   var posted;
-  setTimeout(() => startGame(0), 100);
+  var started = false;
+  var starCol = 100;
+  document.getElementById("startScreen").showModal();
+  started = false;
+  document.getElementById("start").addEventListener("click", () => {
+    startGame(0);
+    document.getElementById("startScreen").close();
+  });
   function startGame(level) {
     currentLevel = levels_default[level];
     let p5Inst = new import_p5.default(s2);
+    started = true;
   }
   function stopGame() {
     sketch.noLoop();
     document.getElementById("defaultCanvas0").remove();
+    started = false;
   }
+  var stars = [];
   var playerUpgrades = [
     { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5, weight: 1 },
     { name: "Health", desc: "Increase max health", func: () => {
@@ -19015,7 +19054,9 @@
     settings = {
       toggleFire: false,
       doScreenShake: true,
-      emojiMovie: false
+      emojiMovie: false,
+      oledMode: false,
+      starDetail: 1
     };
     currentLevel.start.forEach((e3) => {
       for (let i2 = 0; i2 < e3.count; i2++) {
@@ -19037,9 +19078,10 @@
     screenshake = 0;
     mouseDown = false;
     cursorContract = 0;
+    updateStars();
     sketch.setup = () => {
       sketch.createCanvas(size.x, size.y);
-      sketch.frameRate(144);
+      sketch.frameRate(240);
       document.getElementById("defaultCanvas0").focus();
     };
     sketch.draw = () => {
@@ -19051,6 +19093,7 @@
       let camMove = Math.pow(1e-3, clampTime);
       cam["*="](camMove);
       cam["+="](player.pos["*"](1 - camMove));
+      if (settings.mousePan) cam["+="](mouse["/"](100));
       if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
       screenshake *= Math.pow(5e-5, clampTime);
       if (fpsTime < 0) {
@@ -19089,6 +19132,8 @@
         joy["*="](player.speed * clampTime);
         player.vel["+="](joy);
         player.vel["*="](Math.pow(0.3, clampTime));
+        if (joy.mag > 0) {
+        }
         if (gamepadConnected) {
           if (gamepad.rightStick.mag > 0.1) {
             let dir = gamepad.rightStick.copy;
@@ -19099,7 +19144,7 @@
         if (player.dodgeTime <= 0) {
           player.dodgeCooldown -= clampTime;
           if ((keys[" "] || gamepad.leftTrigger) && player.dodgeCooldown <= 0 && joy.mag > 0) {
-            player.dodgeCooldown = 0.2;
+            player.dodgeCooldown = 0.5;
             let v = joy.copy;
             v.mag = 1e3;
             player.dodgeVel = v;
@@ -19111,7 +19156,7 @@
             player.dodgeVel = Vector.zero;
           }
           player.vel["="](player.dodgeVel);
-          new projectile_types_default[3]({ pos: player.pos.copy });
+          new projectile_types_default[3]({ pos: player.pos.copy, type: 0 });
         }
         player.dir = mouse.heading;
         applyBorder(player);
@@ -19191,34 +19236,51 @@
       enemies.forEach((a, aI) => {
         a.tick(aI);
       });
-      sketch.background(10);
-      sketch.stroke(50);
+      if (settings.noBG) sketch.background(`rgba(0,0,0,${Math.round((1 - Math.pow(0.03, clampTime)) * 1e4) / 1e4})`);
+      else sketch.background("rgb(0,0,0)");
+      sketch.stroke("rgb(35,35,35)");
       sketch.strokeWeight(2);
       sketch.strokeJoin("round");
-      let lineSize = 70;
-      let off = cam["*"](-1)["%"](lineSize);
-      for (let x = 0; x < size.x + lineSize; x += lineSize) {
-        let rx = x + off.x;
-        sketch.line(rx, 0, rx, size.y);
-      }
-      for (let y = 0; y < size.y + lineSize; y += lineSize) {
-        let ry = y + off.y;
-        sketch.line(0, ry, size.x, ry);
+      if (settings.starDetail == 3) {
+        let lineSize = 70;
+        let off = cam["*"](-1)["%"](lineSize);
+        for (let x = 0; x < size.x + lineSize; x += lineSize) {
+          let rx = x + off.x;
+          sketch.line(rx, 0, rx, size.y);
+        }
+        for (let y = 0; y < size.y + lineSize; y += lineSize) {
+          let ry = y + off.y;
+          sketch.line(0, ry, size.x, ry);
+        }
       }
       sketch.push();
       sketch.translate(size.x / 2, size.y / 2);
       sketch.translate(-cam.x, -cam.y);
+      if ("planets" in currentLevel) {
+      }
+      stars.forEach((star) => {
+        if (!settings.noBG || star.size < 10) {
+          let pos = star.pos.copy;
+          pos["-="](cam["*"](-star.layer));
+          if (getOnScreen(pos, star.size)) {
+            sketch.stroke(star.col);
+            sketch.strokeWeight(star.size);
+            sketch.point(pos.x, pos.y);
+          }
+        }
+      });
+      if (!settings.noBG && settings.oledMode) sketch.background("rgba(0,0,0,0.5)");
       if (true) {
         sketch.push();
         sketch.noStroke();
-        let num = 7;
+        let num = 2;
         let borderSize = 20;
         let borderPow = 0.7;
-        let col = "5,5,6";
+        let col = "0,0,0";
         let outerSize = new Vector(size.x / 2 + currentLevel.size * 0.5, size.y / 2 + currentLevel.size * 0.5);
         if (cam.x > currentLevel.size - size.x / 2) {
           for (let i2 = 0; i2 < num; i2++) {
-            sketch.fill(`rgba(${col},${Math.pow((i2 + 1) / (num + 1), borderPow)})`);
+            sketch.fill(`rgba(${col},${Math.round(Math.pow((i2 + 1) / (num + 1), borderPow) * 100) / 100})`);
             sketch.rect(currentLevel.size + i2 * borderSize, cam.y - size.y / 2, borderSize, size.y);
           }
           sketch.fill(`rgb(${col})`);
@@ -19226,7 +19288,7 @@
         }
         if (cam.x < -currentLevel.size + size.x / 2) {
           for (let i2 = 0; i2 < num; i2++) {
-            sketch.fill(`rgba(${col},${Math.pow((i2 + 1) / (num + 1), borderPow)})`);
+            sketch.fill(`rgba(${col},${Math.round(Math.pow((i2 + 1) / (num + 1), borderPow) * 100) / 100})`);
             sketch.rect(-currentLevel.size - i2 * borderSize, cam.y - size.y / 2, -borderSize, size.y);
           }
           sketch.fill(`rgb(${col})`);
@@ -19234,7 +19296,7 @@
         }
         if (cam.y > currentLevel.size - size.y / 2) {
           for (let i2 = 0; i2 < num; i2++) {
-            sketch.fill(`rgba(${col},${Math.pow((i2 + 1) / (num + 1), borderPow)})`);
+            sketch.fill(`rgba(${col},${Math.round(Math.pow((i2 + 1) / (num + 1), borderPow) * 100) / 100})`);
             sketch.rect(cam.x - size.x / 2, currentLevel.size + i2 * borderSize, size.x, borderSize);
           }
           sketch.fill(`rgb(${col})`);
@@ -19242,7 +19304,7 @@
         }
         if (cam.y < -currentLevel.size + size.y / 2) {
           for (let i2 = 0; i2 < num; i2++) {
-            sketch.fill(`rgba(${col},${Math.pow((i2 + 1) / (num + 1), borderPow)})`);
+            sketch.fill(`rgba(${col},${Math.round(Math.pow((i2 + 1) / (num + 1), borderPow) * 100) / 100})`);
             sketch.rect(cam.x - size.x / 2, -currentLevel.size - i2 * borderSize, size.x, -borderSize);
           }
           sketch.fill(`rgb(${col})`);
@@ -19540,6 +19602,34 @@
     v = v.slice(1);
     return v.split(".").map((e3) => parseInt(e3));
   }
+  function updateStars() {
+    stars = [];
+    let starSize = settings.starDetail == 0 ? 1 : settings.starDetail == 1 ? 2 : settings.starDetail == 2 ? 3 : 0;
+    for (let i2 = 0; i2 < (settings.starDetail == 0 ? 1e4 : settings.starDetail == 1 ? 5e3 : settings.starDetail == 2 ? 3e3 : 0); i2++) {
+      let layer = Math.random();
+      let data = getStarData();
+      stars.push({ layer: 0.5 + layer * 0.2, col: `rgb(${data.col.x}, ${data.col.y}, ${data.col.z})`, size: (starSize + Math.random() * starSize / 2) * data.size * (1 - layer * 0.8), pos: new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1)["*"](currentLevel.size) });
+    }
+    stars.sort((a, b) => b.layer - a.layer);
+  }
+  function getStarData() {
+    let stops = [{ col: new Vector(200, 50, 0), size: 0.5, pos: 0 }, { col: new Vector(250, 100, 0), size: 2, pos: 0.1 }, { col: new Vector(255, 200, 0), size: 1, pos: 0.3 }, { col: new Vector(255, 255, 255), size: 1, pos: 0.7 }, { col: new Vector(200, 200, 255), size: 1.5, pos: 1 }];
+    let t2 = Math.random();
+    let data;
+    stops.forEach((stop, i2) => {
+      if (i2 < stops.length - 1) {
+        let nextStop = stops[i2 + 1];
+        if (t2 >= stop.pos && t2 < nextStop.pos) {
+          let dif = (t2 - stop.pos) / (nextStop.pos - stop.pos);
+          data = { col: Vector.lerp(stop.col, nextStop.col, dif), size: lerp(stop.size, nextStop.size, dif), pos: t2 };
+        }
+      }
+    });
+    return data;
+  }
+  function lerp(a, b, t2) {
+    return a + (b - a) * t2;
+  }
   [...document.querySelectorAll(".noClose")].forEach((elem) => {
     elem.addEventListener("cancel", (ev) => ev.preventDefault());
   });
@@ -19560,7 +19650,7 @@
   document.getElementById("pause").addEventListener("cancel", unpause);
   document.getElementById("resume").addEventListener("click", unpause);
   function pause() {
-    if (!paused) {
+    if (!paused && started) {
       setTimeout(() => {
         document.getElementById("pause").showModal();
         sketch.noLoop();
@@ -19573,7 +19663,7 @@
     }
   }
   function unpause() {
-    if (paused) {
+    if (paused && started) {
       sketch.loop();
       document.getElementById("pause").close();
       paused = false;
@@ -19592,49 +19682,73 @@
   addEventListener("blur", pause);
   function setKey(ev, val) {
     keys[ev.key] = val;
-    if (ev.key == "z" && val) {
-      settings.toggleFire = !settings.toggleFire;
-    }
-    if (ev.key == "Escape" && val && !paused) {
-      pause();
-    }
-    if (val && devMode) {
-      const mousePos = new Vector(mouse.x + player.pos.x, player.pos.y + mouse.y);
-      switch (ev.key) {
-        case "x":
-          enemies.forEach((e3) => e3.hp = 0);
-          break;
-        case "c":
-          enemies.forEach((e3) => {
-            e3.pos.x = mousePos.x;
-            e3.pos.y = mousePos.y;
-          });
-          break;
-        case "v":
-          player.pos.x = mousePos.x;
-          player.pos.y = mousePos.y;
-          break;
-        case "P":
-          if (paused) unpause();
-          if (document.head.querySelector("script[src='https://cdn.jsdelivr.net/npm/eruda']")) break;
-          const erudaScript = document.createElement("script");
-          erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
-          document.head.appendChild(erudaScript);
-          erudaScript.onload = () => eruda.init();
-          break;
-        case "b":
-          settings.emojiMovie = !settings.emojiMovie;
-          break;
-        default:
-          if ("1234567890".split("").includes(ev.key)) {
-            if (enemy_types_default[parseInt(ev.key)]) new enemy_types_default[parseInt(ev.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
-          }
-          break;
+    if (started) {
+      if (ev.key == "z" && val) {
+        settings.toggleFire = !settings.toggleFire;
+      }
+      if (ev.key == "Escape" && val && !paused) {
+        pause();
+      }
+      if (val && devMode) {
+        const mousePos = new Vector(mouse.x + player.pos.x, player.pos.y + mouse.y);
+        switch (ev.key) {
+          case "x":
+            enemies.forEach((e3) => e3.hp = 0);
+            break;
+          case "c":
+            enemies.forEach((e3) => {
+              e3.pos.x = mousePos.x;
+              e3.pos.y = mousePos.y;
+            });
+            break;
+          case "v":
+            player.pos.x = mousePos.x;
+            player.pos.y = mousePos.y;
+            break;
+          case "P":
+            if (paused) unpause();
+            if (document.head.querySelector("script[src='https://cdn.jsdelivr.net/npm/eruda']")) break;
+            const erudaScript = document.createElement("script");
+            erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
+            document.head.appendChild(erudaScript);
+            erudaScript.onload = () => eruda.init();
+            break;
+          case "b":
+            settings.emojiMovie = !settings.emojiMovie;
+            break;
+          case "m":
+            settings.mousePan = !settings.mousePan;
+            break;
+          case "n":
+            settings.noBG = !settings.noBG;
+            break;
+          case "l":
+            settings.oledMode = !settings.oledMode;
+            break;
+          case ",":
+            settings.starDetail--;
+            if (settings.starDetail < 0) settings.starDetail = 3;
+            updateStars();
+            break;
+          case ".":
+            settings.starDetail++;
+            if (settings.starDetail > 3) settings.starDetail = 0;
+            updateStars();
+            break;
+          case "k":
+            updateStars();
+            break;
+          default:
+            if ("1234567890".split("").includes(ev.key)) {
+              if (enemy_types_default[parseInt(ev.key)]) new enemy_types_default[parseInt(ev.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
+            }
+            break;
+        }
       }
     }
   }
   function onGamepadButton(button, val) {
-    if (button == "rightPause" && val) {
+    if (button == "rightPause" && val && started) {
       if (paused) unpause();
       else pause();
     }

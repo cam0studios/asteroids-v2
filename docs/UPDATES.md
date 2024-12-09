@@ -4,6 +4,10 @@
 
 ## v0.4
 
+## v0.4.3
+- Replace grid background with stars
+- Add start screen
+
 ## v0.4.2
 - Filter leaderboard by version
 - Cap leaderboard to top 10
