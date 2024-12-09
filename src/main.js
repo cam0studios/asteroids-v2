@@ -15,20 +15,53 @@ export var keys = {};
 });
 
 // global vars
-export var clampTime, enemies, player, projectiles, sketch, size = new Vector(innerWidth, innerHeight), cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse = Vector.zero, screenshake, cursorContract, devMode = false, paused, score, posted;
+export var clampTime,
+  enemies,
+  player,
+  projectiles,
+  sketch,
+  size = new Vector(innerWidth, innerHeight),
+  cam,
+  currentLevel,
+  settings,
+  mouseDown,
+  time,
+  fpsTime,
+  fps,
+  nextFps,
+  deltaTime,
+  mouse = Vector.zero,
+  screenshake,
+  cursorContract,
+  devMode = false,
+  paused,
+  score,
+  posted,
+  started = false,
+  starCol = 100;
 
 // setup base html
 
-setTimeout(() => startGame(0), 100);
+// setTimeout(() => startGame(0), 100);
+document.getElementById("startScreen").showModal();
+started = false;
+document.getElementById("start").addEventListener("click", () => {
+  startGame(0);
+  document.getElementById("startScreen").close();
+});
 
 function startGame(level) {
   currentLevel = levels[level];
   let p5Inst = new p5(s);
+  started = true;
 }
 function stopGame() {
   sketch.noLoop();
   document.getElementById("defaultCanvas0").remove();
+  started = false;
 }
+
+var stars = [];
 
 var playerUpgrades = [
   { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5, weight: 1 },
@@ -79,6 +112,8 @@ const s = (sk) => {
     toggleFire: false,
     doScreenShake: true,
     emojiMovie: false,
+    oledMode: false,
+    starDetail: 1
   }
   currentLevel.start.forEach(e => {
     for (let i = 0; i < e.count; i++) {
@@ -89,6 +124,7 @@ const s = (sk) => {
       new enemyTypes[e.type](props);
     }
   });
+
   addWeapon("gun");
   projectiles = [];
   size = new Vector(innerWidth, innerHeight);
@@ -100,9 +136,10 @@ const s = (sk) => {
   screenshake = 0;
   mouseDown = false;
   cursorContract = 0;
+  updateStars();
   sketch.setup = () => {
     sketch.createCanvas(size.x, size.y);
-    sketch.frameRate(144);
+    sketch.frameRate(240);
     document.getElementById("defaultCanvas0").focus();
   }
   sketch.draw = () => {
@@ -119,7 +156,8 @@ const s = (sk) => {
     cam["*="](camMove);
     cam["+="]((player.pos)["*"](1 - camMove));
 
-    // cam["+="](mouse["/"](10));
+
+    if (settings.mousePan) cam["+="](mouse["/"](100));
 
     if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
     screenshake *= Math.pow(5e-5, clampTime);
@@ -167,6 +205,9 @@ const s = (sk) => {
       joy["*="](player.speed * clampTime);
       player.vel["+="](joy);
       player.vel["*="](Math.pow(0.3, clampTime));
+      if (joy.mag > 0) {
+        // new projectileTypes[3]({ pos: player.pos.copy, type: 1 });
+      }
 
       if (gamepadConnected) {
         if (gamepad.rightStick.mag > 0.1) {
@@ -179,7 +220,7 @@ const s = (sk) => {
       if (player.dodgeTime <= 0) {
         player.dodgeCooldown -= clampTime;
         if ((keys[" "] || gamepad.leftTrigger) && player.dodgeCooldown <= 0 && joy.mag > 0) {
-          player.dodgeCooldown = 0.2;
+          player.dodgeCooldown = 0.5;
           let v = joy.copy;
           v.mag = 1000;
           player.dodgeVel = v;
@@ -191,7 +232,7 @@ const s = (sk) => {
           player.dodgeVel = Vector.zero;
         }
         player.vel["="](player.dodgeVel);
-        new projectileTypes[3]({ pos: player.pos.copy });
+        new projectileTypes[3]({ pos: player.pos.copy, type: 0 });
       }
 
       player.dir = mouse.heading;
@@ -287,19 +328,26 @@ const s = (sk) => {
 
     // ********************  drawing  ******************** //
     // background
-    sketch.background(10);
-    sketch.stroke(50);
+    if (settings.noBG) sketch.background(`rgba(0,0,0,${Math.round((1 - Math.pow(0.03, clampTime)) * 10000) / 10000})`);
+    else sketch.background("rgb(0,0,0)");
+
+    sketch.stroke("rgb(35,35,35)");
     sketch.strokeWeight(2);
     sketch.strokeJoin("round");
-    let lineSize = 70;
-    let off = ((cam)["*"](-1))["%"](lineSize);
-    for (let x = 0; x < size.x + lineSize; x += lineSize) {
-      let rx = x + off.x;
-      sketch.line(rx, 0, rx, size.y);
-    }
-    for (let y = 0; y < size.y + lineSize; y += lineSize) {
-      let ry = y + off.y;
-      sketch.line(0, ry, size.x, ry);
+
+    //lines
+    if (settings.starDetail == 3) {
+      let lineSize = 70;
+      let off = ((cam)["*"](-1))["%"](lineSize);
+      for (let x = 0; x < size.x + lineSize; x += lineSize) {
+        let rx = x + off.x;
+        sketch.line(rx, 0, rx, size.y);
+      }
+
+      for (let y = 0; y < size.y + lineSize; y += lineSize) {
+        let ry = y + off.y;
+        sketch.line(0, ry, size.x, ry);
+      }
     }
 
     sketch.push();
@@ -307,19 +355,36 @@ const s = (sk) => {
 
     sketch.translate(-cam.x, -cam.y);
 
+    // cosmos
+    if ("planets" in currentLevel) {
+      // currentLevel.planets
+    }
+    stars.forEach(star => {
+      if (!settings.noBG || star.size < 10) {
+        let pos = star.pos.copy;
+        pos["-="]((cam)["*"](-star.layer));
+        if (getOnScreen(pos, star.size)) {
+          sketch.stroke(star.col);
+          sketch.strokeWeight(star.size);
+          sketch.point(pos.x, pos.y);
+        }
+      }
+    });
+    if (!settings.noBG && settings.oledMode) sketch.background("rgba(0,0,0,0.5)");
+
     // world borders
     if (true) {
       sketch.push();
       sketch.noStroke();
-      let num = 7;
+      let num = 2;
       let borderSize = 20;
       let borderPow = 0.7;
-      let col = "5,5,6";
+      let col = "0,0,0";
       let outerSize = new Vector(size.x / 2 + currentLevel.size * 0.5, size.y / 2 + currentLevel.size * 0.5);
       // right
       if (cam.x > currentLevel.size - size.x / 2) {
         for (let i = 0; i < num; i++) {
-          sketch.fill(`rgba(${col},${Math.pow((i + 1) / (num + 1), borderPow)})`);
+          sketch.fill(`rgba(${col},${Math.round(Math.pow((i + 1) / (num + 1), borderPow) * 100) / 100})`);
           sketch.rect(currentLevel.size + i * borderSize, cam.y - size.y / 2, borderSize, size.y);
         }
 
@@ -329,7 +394,7 @@ const s = (sk) => {
       // left
       if (cam.x < -currentLevel.size + size.x / 2) {
         for (let i = 0; i < num; i++) {
-          sketch.fill(`rgba(${col},${Math.pow((i + 1) / (num + 1), borderPow)})`);
+          sketch.fill(`rgba(${col},${Math.round(Math.pow((i + 1) / (num + 1), borderPow) * 100) / 100})`);
           sketch.rect(-currentLevel.size - i * borderSize, cam.y - size.y / 2, -borderSize, size.y);
         }
 
@@ -339,7 +404,7 @@ const s = (sk) => {
       // bottom
       if (cam.y > currentLevel.size - size.y / 2) {
         for (let i = 0; i < num; i++) {
-          sketch.fill(`rgba(${col},${Math.pow((i + 1) / (num + 1), borderPow)})`);
+          sketch.fill(`rgba(${col},${Math.round(Math.pow((i + 1) / (num + 1), borderPow) * 100) / 100})`);
           sketch.rect(cam.x - size.x / 2, currentLevel.size + i * borderSize, size.x, borderSize);
         }
 
@@ -349,7 +414,7 @@ const s = (sk) => {
       // top
       if (cam.y < -currentLevel.size + size.y / 2) {
         for (let i = 0; i < num; i++) {
-          sketch.fill(`rgba(${col},${Math.pow((i + 1) / (num + 1), borderPow)})`);
+          sketch.fill(`rgba(${col},${Math.round(Math.pow((i + 1) / (num + 1), borderPow) * 100) / 100})`);
           sketch.rect(cam.x - size.x / 2, -currentLevel.size - i * borderSize, size.x, -borderSize);
         }
 
@@ -659,6 +724,44 @@ export function getVersion(v) {
   return v.split(".").map(e => parseInt(e));
 }
 
+export function updateStars() {
+  stars = [];
+  let starSize = settings.starDetail == 0 ? 1 : settings.starDetail == 1 ? 2 : settings.starDetail == 2 ? 3 : 0;
+  for (let i = 0; i < (settings.starDetail == 0 ? 10000 : settings.starDetail == 1 ? 5000 : settings.starDetail == 2 ? 3000 : 0); i++) {
+    // let layer = Math.ceil(Math.random() * 3) / 3;
+    let layer = Math.random();
+    let data = getStarData();
+    stars.push({ layer: 0.5 + layer * 0.2, col: `rgb(${data.col.x}, ${data.col.y}, ${data.col.z})`, size: (starSize + Math.random() * starSize / 2) * data.size * (1 - layer * 0.8), pos: new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1)["*"](currentLevel.size) });
+  }
+  /*for (let i = 0; i < 100; i++) {
+    // let layer = Math.ceil(Math.random() * 3) / 3;
+    let layer = Math.random();
+    let rand = () => Math.round(40 - Math.pow(Math.random(), 1 / 2) * 30);
+    stars.push({ layer: 0.4 + layer * 0.4, col: `rgba(${rand()}, ${rand()}, ${rand()}, ${Math.random() * 0.2 + 0.3})`, size: (50 + Math.random() * 50) * (3 - layer * 2.5), pos: new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1)["*"](currentLevel.size) });
+  }*/
+  stars.sort((a, b) => b.layer - a.layer);
+}
+
+function getStarData() {
+  let stops = [{ col: new Vector(200, 50, 0), size: 0.5, pos: 0 }, { col: new Vector(250, 100, 0), size: 2, pos: 0.1 }, { col: new Vector(255, 200, 0), size: 1, pos: 0.3 }, { col: new Vector(255, 255, 255), size: 1, pos: 0.7 }, { col: new Vector(200, 200, 255), size: 1.5, pos: 1 }];
+  let t = Math.random();
+  let data;
+  stops.forEach((stop, i) => {
+    if (i < stops.length - 1) {
+      let nextStop = stops[i + 1];
+      if (t >= stop.pos && t < nextStop.pos) {
+        let dif = (t - stop.pos) / (nextStop.pos - stop.pos);
+        data = { col: Vector.lerp(stop.col, nextStop.col, dif), size: lerp(stop.size, nextStop.size, dif), pos: t };
+      }
+    }
+  });
+  return data;
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
 // ********************  event listeners  ******************** //
 [...document.querySelectorAll(".noClose")].forEach(elem => {
   elem.addEventListener("cancel", ev => ev.preventDefault());
@@ -684,7 +787,7 @@ document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
 
 function pause() {
-  if (!paused) {
+  if (!paused && started) {
     setTimeout(() => {
       document.getElementById("pause").showModal();
       sketch.noLoop();
@@ -697,7 +800,7 @@ function pause() {
   }
 }
 function unpause() {
-  if (paused) {
+  if (paused && started) {
     sketch.loop();
     document.getElementById("pause").close();
     paused = false;
@@ -717,47 +820,71 @@ function setKey(ev, val) {
   keys[ev.key] = val;
 
   //extra keybinds
-  if (ev.key == "z" && val) {
-    settings.toggleFire = !settings.toggleFire
-  }
+  if (started) {
+    if (ev.key == "z" && val) {
+      settings.toggleFire = !settings.toggleFire
+    }
 
-  if (ev.key == "Escape" && val && !paused) {
-    pause();
-  }
+    if (ev.key == "Escape" && val && !paused) {
+      pause();
+    }
 
-  if (val && devMode) {
-    const mousePos = new Vector(mouse.x + player.pos.x, player.pos.y + mouse.y);
-    switch (ev.key) {
-      case "x":
-        enemies.forEach(e => e.hp = 0);
-        break;
+    if (val && devMode) {
+      const mousePos = new Vector(mouse.x + player.pos.x, player.pos.y + mouse.y);
+      switch (ev.key) {
+        case "x":
+          enemies.forEach(e => e.hp = 0);
+          break;
 
-      case "c":
-        enemies.forEach(e => {
-          e.pos.x = mousePos.x
-          e.pos.y = mousePos.y
-        });
-        break;
+        case "c":
+          enemies.forEach(e => {
+            e.pos.x = mousePos.x
+            e.pos.y = mousePos.y
+          });
+          break;
 
-      case "v":
-        player.pos.x = mousePos.x
-        player.pos.y = mousePos.y
-        break;
-      case "b":
-        settings.emojiMovie = !settings.emojiMovie;
-        break;
-      default:
-        if ("1234567890".split("").includes(ev.key)) {
-          if (enemyTypes[parseInt(ev.key)]) new enemyTypes[parseInt(ev.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
+        case "v":
+          player.pos.x = mousePos.x
+          player.pos.y = mousePos.y
+          break;
+        case "b":
+          settings.emojiMovie = !settings.emojiMovie;
+          break;
+        case "m":
+          settings.mousePan = !settings.mousePan;
+          break;
+        case "n":
+          settings.noBG = !settings.noBG;
+          break;
+        case "l":
+          settings.oledMode = !settings.oledMode;
+          break;
+        case ",":
+          settings.starDetail--;
+          if (settings.starDetail < 0) settings.starDetail = 3;
+          updateStars();
+          break;
+        case ".":
+          settings.starDetail++;
+          if (settings.starDetail > 3) settings.starDetail = 0;
+          updateStars();
+          break;
+        case "k":
+          updateStars();
+          break;
+        default:
+          if ("1234567890".split("").includes(ev.key)) {
+            if (enemyTypes[parseInt(ev.key)]) new enemyTypes[parseInt(ev.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
 
-        }
-        break;
+          }
+          break;
+      }
     }
   }
 }
 
 export function onGamepadButton(button, val) {
-  if (button == "rightPause" && val) {
+  if (button == "rightPause" && val && started) {
     if (paused) unpause();
     else pause();
   }

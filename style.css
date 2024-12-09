@@ -139,3 +139,9 @@ button {
     background-color: rgb(170, 40, 20);
   }
 }
+
+a {
+  color: white;
+  font-size: 15px;
+  margin: 5px;
+}
