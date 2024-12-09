@@ -18986,6 +18986,7 @@
   var posted;
   var started = false;
   var starCol = 100;
+  var editableSettings = {};
   document.getElementById("startScreen").showModal();
   started = false;
   document.getElementById("start").addEventListener("click", () => {
@@ -19051,13 +19052,13 @@
       window.setTime = (val) => time = val;
       devMode = true;
     }
-    settings = {
-      toggleFire: false,
-      doScreenShake: true,
-      emojiMovie: false,
-      oledMode: false,
-      starDetail: 1
-    };
+    getSettings();
+    editableSettings = [
+      { name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
+      { name: "Do Screen Shake", var: "doScreenShake", type: "checkbox" },
+      { name: "OLED Mode", var: "oledMode", type: "checkbox" },
+      { name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] }
+    ];
     currentLevel.start.forEach((e3) => {
       for (let i2 = 0; i2 < e3.count; i2++) {
         let props = { mode: 0, index: i2, max: e3.count };
@@ -19659,6 +19660,8 @@
           `<p> Player Upgrades </p> <div> ${playerUpgrades.map((e3) => `<p> ${e3.name} <span> ${e3.times}/${e3.max} </span> </p>`).join("")} </div>`,
           ...player.weapons.map((w) => `<p> ${w.name} </p> <div>  ${w.upgrades.map((e3) => `<p> ${e3.name} <span> ${e3.times}/${e3.max} </span> </p>`).join("")} </div>`).join("")
         ].join("");
+        if (document.getElementById("settings")) document.getElementById("settings").remove();
+        document.querySelector("#pause>.centered").appendChild(getSettingsMenu());
       }, 100);
     }
   }
@@ -19674,6 +19677,68 @@
     stopGame();
     startGame(0);
     document.getElementById("gameOver").close();
+  }
+  function getSettingsMenu() {
+    let elem = document.createElement("div");
+    elem.id = "settings";
+    editableSettings.forEach((e3) => {
+      if (e3.type == "checkbox") {
+        let setting = document.createElement("input");
+        setting.type = "checkbox";
+        setting.setAttribute("for", e3.var);
+        setting.checked = settings[e3.var];
+        setting.addEventListener("change", () => {
+          settings[e3.var] = setting.checked;
+          storeSettings();
+        });
+        let label = document.createElement("label");
+        label.appendChild(document.createTextNode(e3.name));
+        label.setAttribute("for", e3.var);
+        label.addEventListener("click", () => setting.click());
+        elem.appendChild(setting);
+        elem.appendChild(label);
+      } else if (e3.type == "select") {
+        let label = document.createElement("label");
+        label.appendChild(document.createTextNode(e3.name));
+        label.setAttribute("for", e3.var);
+        let select = document.createElement("select");
+        select.setAttribute("for", e3.var);
+        e3.options.forEach((option, i2) => {
+          let label2 = e3.labels[i2];
+          let opt = document.createElement("option");
+          if (option == settings[e3.var]) opt.selected = true;
+          opt.appendChild(document.createTextNode(label2));
+          opt.value = option;
+          select.appendChild(opt);
+        });
+        select.addEventListener("change", () => {
+          settings[e3.var] = select.value;
+          if (e3.var == "starDetail") updateStars();
+          storeSettings();
+        });
+        elem.appendChild(label);
+        elem.appendChild(select);
+      }
+      elem.appendChild(document.createElement("br"));
+    });
+    return elem;
+  }
+  function storeSettings() {
+    localStorage.setItem("settings", JSON.stringify(settings));
+  }
+  function getSettings() {
+    if (localStorage.getItem("settings")) {
+      settings = JSON.parse(localStorage.getItem("settings"));
+    } else {
+      settings = {
+        toggleFire: false,
+        doScreenShake: true,
+        emojiMovie: false,
+        oledMode: false,
+        starDetail: 1
+      };
+      storeSettings();
+    }
   }
   addEventListener("resize", () => {
     size["="](innerWidth, innerHeight);

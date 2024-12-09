@@ -38,7 +38,8 @@ export var clampTime,
   score,
   posted,
   started = false,
-  starCol = 100;
+  starCol = 100,
+  editableSettings = {};
 
 // setup base html
 
@@ -108,13 +109,13 @@ const s = (sk) => {
     devMode = true;
   }
 
-  settings = {
-    toggleFire: false,
-    doScreenShake: true,
-    emojiMovie: false,
-    oledMode: false,
-    starDetail: 1
-  }
+  getSettings();
+  editableSettings = [
+    { name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
+    { name: "Do Screen Shake", var: "doScreenShake", type: "checkbox" },
+    { name: "OLED Mode", var: "oledMode", type: "checkbox" },
+    { name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] },
+  ];
   currentLevel.start.forEach(e => {
     for (let i = 0; i < e.count; i++) {
       let props = { mode: 0, index: i, max: e.count };
@@ -837,6 +838,8 @@ function pause() {
         `<p> Player Upgrades </p> <div> ${playerUpgrades.map(e => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`).join("")} </div>`,
         ...player.weapons.map(w => `<p> ${w.name} </p> <div>  ${w.upgrades.map(e => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`).join("")} </div>`).join("")
       ].join("");
+      if (document.getElementById("settings")) document.getElementById("settings").remove();
+      document.querySelector("#pause>.centered").appendChild(getSettingsMenu());
     }, 100);
   }
 }
@@ -852,6 +855,74 @@ function restart() {
   stopGame();
   startGame(0);
   document.getElementById("gameOver").close();
+}
+function getSettingsMenu() {
+  let elem = document.createElement("div");
+  elem.id = "settings";
+  editableSettings.forEach(e => {
+
+    if (e.type == "checkbox") {
+      let setting = document.createElement("input");
+      setting.type = "checkbox";
+      setting.setAttribute("for", e.var);
+      setting.checked = settings[e.var];
+      setting.addEventListener("change", () => {
+        settings[e.var] = setting.checked;
+        storeSettings();
+      });
+
+      let label = document.createElement("label");
+      label.appendChild(document.createTextNode(e.name));
+      label.setAttribute("for", e.var);
+      label.addEventListener("click", () => setting.click());
+
+      elem.appendChild(setting);
+      elem.appendChild(label);
+
+    } else if (e.type == "select") {
+      let label = document.createElement("label");
+      label.appendChild(document.createTextNode(e.name));
+      label.setAttribute("for", e.var);
+
+      let select = document.createElement("select");
+      select.setAttribute("for", e.var);
+      e.options.forEach((option, i) => {
+        let label = e.labels[i];
+        let opt = document.createElement("option");
+        if (option == settings[e.var]) opt.selected = true;
+        opt.appendChild(document.createTextNode(label));
+        opt.value = option;
+        select.appendChild(opt);
+      });
+      select.addEventListener("change", () => {
+        settings[e.var] = select.value;
+        if (e.var == "starDetail") updateStars();
+        storeSettings();
+      });
+      
+      elem.appendChild(label);
+      elem.appendChild(select);
+    }
+    elem.appendChild(document.createElement("br"));
+  });
+  return elem;
+}
+function storeSettings() {
+  localStorage.setItem("settings", JSON.stringify(settings));
+}
+function getSettings() {
+  if (localStorage.getItem("settings")) {
+    settings = JSON.parse(localStorage.getItem("settings"));
+  } else {
+    settings = {
+      toggleFire: false,
+      doScreenShake: true,
+      emojiMovie: false,
+      oledMode: false,
+      starDetail: 1
+    }
+    storeSettings();
+  }
 }
 
 addEventListener("resize", () => { size["="](innerWidth, innerHeight); sketch.resizeCanvas(size.x, size.y) });
@@ -887,15 +958,15 @@ function setKey(ev, val) {
         case "v":
           player.pos.x = mousePos.x
           player.pos.y = mousePos.y
-        break;
-      case "P":
-        if (paused) unpause();
-        if (document.head.querySelector("script[src='https://cdn.jsdelivr.net/npm/eruda']")) break;
+          break;
+        case "P":
+          if (paused) unpause();
+          if (document.head.querySelector("script[src='https://cdn.jsdelivr.net/npm/eruda']")) break;
 
-        const erudaScript = document.createElement("script");
-        erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
-        document.head.appendChild(erudaScript);
-        erudaScript.onload = () => eruda.init();
+          const erudaScript = document.createElement("script");
+          erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
+          document.head.appendChild(erudaScript);
+          erudaScript.onload = () => eruda.init();
 
           break;
         case "b":
