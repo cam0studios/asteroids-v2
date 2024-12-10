@@ -79,6 +79,7 @@ const weapons = [
           weapon.reload = 1 / weapon.fireRate;
           for (let i = 0; i < weapon.amount; i++) {
             new projectileTypes[projectileEnums.playerBullet]({ pos: player.pos.copy, dir: player.dir + weapon.spread * (i - (weapon.amount - 1) / 2), damage: weapon.damage, speed: weapon.speed });
+            // new projectileTypes[0]({ pos: player.pos.copy, vel: new Vector(weapon.speed, 0).rotate(player.dir + weapon.spread * (i - (weapon.multishot - 1) / 2))["+"](player.vel), damage: weapon.damage });
           }
         }
       } else {

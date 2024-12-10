@@ -13,6 +13,10 @@ export const projectileEnums = {
 const projectileTypes = [
   class {  // player bullet
     constructor(data) {
+      if (data.vel) {
+        data.dir = data.vel.heading;
+        data.speed = data.vel.mag;
+      }
       this.pos = data.pos;
       this.dir = data.dir;
       this.damage = data.damage;
@@ -176,12 +180,20 @@ const projectileTypes = [
   class {  // dash effect
     constructor(data) {
       this.pos = data.pos;
+      this.type = data.type;
       this.progress = 0;
       projectiles.push(this);
     }
 
     tick(i) {
-      this.progress += clampTime * 5;
+      if (this.type == 0) {
+        this.progress += clampTime * 5;
+      } else {
+        this.progress += clampTime * 1;
+        if (player.dodgeTime > 0) {
+          this.progress = 1;
+        }
+      }
       if (this.progress >= 1) {
         projectiles.splice(i, 1);
         i--;
@@ -196,11 +208,20 @@ const projectileTypes = [
         sketch.fill(255);
         sketch.text("", this.pos.x, this.pos.y);
       } else {
-        let alpha = (1 - this.progress) * 0.2;
-        if (alpha < 0) alpha = 0;
-        if (alpha > 1) alpha = 1;
+        let alpha;
+        let col = 150;
+        if (this.type == 0) {
+          alpha = (1 - this.progress) * 0.2;
+          if (alpha < 0) alpha = 0;
+          if (alpha > 1) alpha = 1;
+        } else {
+          alpha = (1 - this.progress) * 0.01;
+          if (alpha < 0) alpha = 0;
+          if (alpha > 1) alpha = 1;
+          col = 100;
+        }
         alpha = Math.round(alpha * 100) / 100;
-        sketch.fill(`rgba(150, 150, 150, ${alpha})`);
+        sketch.fill(`rgba(${col}, ${col}, ${col}, ${alpha})`);
         sketch.noStroke();
         sketch.circle(this.pos.x, this.pos.y, 30 + this.progress * 40);
       }
