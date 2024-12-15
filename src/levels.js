@@ -1,7 +1,27 @@
 import { Vector } from "../vector-library/vector";
 import { getRandomBox } from "./main";
 
+/**
+ * @typedef {Object} Level
+ * @property {number} size - The size of the level.
+ * 
+ * @property {Object[]} start - The starting enemies.
+ * @property {number} start[].count - The amount of enemies.
+ * @property {Object} start[].props - The properties of the enemies.
+ * @property {number} start[].props.size - The size of the enemy.
+ * @property {number} start[].props.type - The type of the enemy.
+ * 
+ * @property {Object[]} waves - The waves of enemies.
+ * @property {number} waves[].time - The time the wave starts.
+ * @property {Object[]} waves[].enemies - The enemies in the wave.
+ * @property {number} waves[].enemies[].count - The amount of enemies.
+ * @property {Object} waves[].enemies[].props - The properties of the enemies.
+ * @property {number} waves[].enemies[].props.size - The size of the enemy.
+ * @property {number} waves[].enemies[].props.speed - The speed of the enemy.
+ * @property {number} waves[].enemies[].type - The type of the enemy.
+ */
 const levels = [
+  
   {
     size: 2000,
     start: [{ count: 50, props: { size: 20 }, type: 0 }, { count: 20, props: { size: 25 }, type: 0 }],

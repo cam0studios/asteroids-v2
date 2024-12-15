@@ -16909,7 +16909,7 @@
   });
 
   // src/main.js
-  var import_p5 = __toESM(require_p5_min());
+  var import_p52 = __toESM(require_p5_min());
 
   // vector-library/vector.js
   var Vector = class _Vector {
@@ -17146,6 +17146,9 @@
     }
   };
 
+  // src/weapon-types.js
+  var import_p5 = __toESM(require_p5_min());
+
   // src/gamepad.js
   var gamepads = [];
   var gamepadConnected = false;
@@ -17280,6 +17283,13 @@
   };
 
   // src/projectile-types.js
+  var projectileEnums = {
+    playerBullet: 0,
+    explosion: 1,
+    enemyLaser: 2,
+    dashEffect: 3,
+    sacredBlade: 4
+  };
   var projectileTypes = [
     class {
       // player bullet
@@ -17483,11 +17493,50 @@
       }
       enemyTick(i2, enemy, enemyI) {
       }
+    },
+    class {
+      constructor(data) {
+        this.pos = data.pos;
+        this.vel = new Vector(data.vel.x, data.vel.y);
+        this.dir = Vector.zero;
+        this.damage = data.damage;
+        this.speed = data.speed;
+        this.life = 0;
+        this.lifeTime = data.lifeTime;
+        projectiles.push(this);
+      }
+      tick(i2) {
+        this.pos["+="](this.vel["*"](clampTime));
+        if (calcBorder(this).mag > 100 || player.pos["-"](this.pos).mag < 100 && this.life > 1) {
+          projectiles.splice(i2, 1);
+          i2--;
+        }
+        this.vel["+="](player.pos["-"](this.pos).normalized["*"](clampTime * 2e3));
+        this.dir["+="](clampTime * 5);
+        this.life += clampTime;
+      }
+      draw() {
+        const scale = 50;
+        sketch.push();
+        sketch.translate(this.pos.x, this.pos.y);
+        sketch.rotate(time * 40);
+        sketch.fill(255);
+        sketch.rect(0, 0, scale * 2, scale * 0.5, 2);
+        sketch.triangle(scale, scale, scale * 2, scale, scale, 0);
+        sketch.pop();
+      }
+      enemyTick(i2, enemy, enemyI) {
+        if (this.pos["-"](enemy.pos).mag < enemy.size + 100) {
+          enemy.hp -= this.damage;
+          enemy.hitDir = this.dir;
+          i2--;
+        }
+      }
     }
   ];
   var projectile_types_default = projectileTypes;
   function explode(pos, size2) {
-    new projectileTypes[1]({
+    new projectileTypes[projectileEnums.explosion]({
       pos,
       size: 0,
       maxSize: size2
@@ -17496,6 +17545,27 @@
 
   // src/weapon-types.js
   var Weapon = class {
+    /**
+     * Creates an instance of Weapon.
+     * @param {Object} data - The data for the weapon.
+     * @param {string} data.name - The name of the weapon.
+     * @param {number} data.id - The ID of the weapon.
+     * @param {Function} data.tick - The tick function for the weapon.
+     * 
+     * @param {Object} data.props - The properties of the weapon.
+     * @param {number} data.props.reload - The reload time of the weapon.
+     * @param {number} data.props.fireRate - The fire rate of the weapon.
+     * @param {number} data.props.damage - The damage of the weapon.
+     * @param {number} data.props.speed - The speed of the weapon.
+     * @param {number} data.props.amount - The amount of projectiles to shoot.
+     * 
+     * @param {Object[]} data.upgrades - The upgrades available for the weapon.
+     * @param {string} data.upgrades[].name - The name of the upgrade.
+     * @param {string} data.upgrades[].desc - The description of the upgrade.
+     * @param {Function} data.upgrades[].func - Function to run on getting upgrade.
+     * @param {number} data.upgrades[].max - The maximum level of the upgrade.
+     * @param {number} data.upgrades[].weight [reload] - The weight of the upgrade.
+     */
     constructor(data) {
       this.name = data.name;
       this.id = data.id;
@@ -17524,7 +17594,7 @@
         fireRate: 5,
         damage: 1,
         speed: 500,
-        multishot: 1,
+        amount: 1,
         spread: 0.1
       },
       upgrades: [
@@ -17537,20 +17607,20 @@
         { name: "Projectile Speed", desc: "Bullets move faster", func: (w) => {
           w.speed *= 1.3;
         }, max: 3, weight: 1 },
-        { name: "Multishot", desc: "Shoot more bullets", func: (w) => {
-          w.multishot++;
+        { name: "Multi-shot", desc: "Shoot more bullets", func: (w) => {
+          w.amount++;
         }, max: 5, weight: 0.2 }
         // { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
       ],
       tick: (weapon) => {
         let contract = get("cursorContract") || 0;
         let pow = 1 - Math.pow(1e-6, clampTime);
-        if ((mouseDown || gamepad.rightTrigger) != settings.toggleFire) {
+        if (player.isFiring) {
           contract += (1 - contract) * pow;
-          if (weapon.reload <= 0 && player.dodgeCooldown <= 0) {
+          if (weapon.reload <= 0 && player.dodge.cooldown <= 0) {
             weapon.reload = 1 / weapon.fireRate;
-            for (let i2 = 0; i2 < weapon.multishot; i2++) {
-              new projectile_types_default[0]({ pos: player.pos.copy, dir: player.dir + weapon.spread * (i2 - (weapon.multishot - 1) / 2), damage: weapon.damage, speed: weapon.speed });
+            for (let i2 = 0; i2 < weapon.amount; i2++) {
+              new projectile_types_default[projectileEnums.playerBullet]({ pos: player.pos.copy, dir: player.dir + weapon.spread * (i2 - (weapon.amount - 1) / 2), damage: weapon.damage, speed: weapon.speed });
             }
           }
         } else {
@@ -17560,6 +17630,35 @@
         weapon.reload -= clampTime;
       }
     })
+    // new Weapon({
+    //   id: "sacred-blade",
+    //   name: "Sacred Blade",
+    //   props: {
+    //     amount: 1,
+    //     damage: 5,
+    //     speed: 300,
+    //     reload: 0,
+    //     fireRate: 3
+    //   },
+    //   upgrades: [
+    //     { name: "Damage", desc: "Damage up", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
+    //   ],
+    //   tick: (weapon) => {
+    //     if (weapon.reload <= 0) {
+    //       weapon.reload = 1 / weapon.fireRate;
+    //       for (let i = 0; i < weapon.amount; i++) {
+    //         new projectileTypes[projectileEnums.sacredBlade]({
+    //           pos: player.pos.copy,
+    //           damage: weapon.damage,
+    //           speed: weapon.speed,
+    //           life: 120,
+    //           vel: new Vector(weapon.speed, 0).rotate(Math.random() * Math.PI * 2).mult(5),
+    //         });
+    //       }
+    //     }
+    //     weapon.reload -= clampTime;
+    //   },
+    // })
   ];
   var weapon_types_default = weapons;
 
@@ -17601,7 +17700,7 @@
             p.enemyTick(pI, this, i2);
           });
           let dif = this.pos["-"](player.pos);
-          if (dif.mag < this.size + 25 && player.dodgeTime <= 0) {
+          if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
             let hitStr = player.vel["-"](this.vel).mag;
             this.hp--;
             this.pos["-="](player.pos);
@@ -17711,7 +17810,7 @@
             p.enemyTick(pI, this, i2);
           });
           let dif = this.pos["-"](player.pos);
-          if (dif.mag < this.size + 25 && player.dodgeTime <= 0) {
+          if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
             let hitStr = player.vel["-"](this.vel).mag;
             this.hp--;
             this.pos["-="](player.pos);
@@ -17726,7 +17825,7 @@
           }
           if (this.cooldown > 0) {
             this.cooldown -= clampTime;
-          } else {
+          } else if (this.pos["-"](player.pos).mag < 1e3) {
             this.reload -= clampTime;
             let d2 = player.pos["-"](this.pos);
             d2["+="](player.vel["*"](0.7));
@@ -17864,7 +17963,7 @@
             p.enemyTick(pI, this, i2);
           });
           let dif = this.pos["-"](player.pos);
-          if (dif.mag < this.size + 25 && player.dodgeTime <= 0) {
+          if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
             let hitStr = player.vel["-"](this.vel).mag;
             this.hp--;
             this.pos["-="](player.pos);
@@ -18995,7 +19094,7 @@
   });
   function startGame(level) {
     currentLevel = levels_default[level];
-    let p5Inst = new import_p5.default(s2);
+    let p5Inst = new import_p52.default(s2);
     started = true;
   }
   function stopGame() {
@@ -19011,9 +19110,9 @@
       player.hp += 20;
     }, max: 5, weight: 0.8 },
     { name: "Shield", desc: "Make shield better", func: () => {
-      player.maxShield += 10;
-      player.shieldRegenTime--;
-      player.shieldRegenSpeed++;
+      player.shield.maxValue += 10;
+      player.shield.regenTime--;
+      player.shield.regenSpeed++;
     }, max: 5, weight: 0.8 }
     // { name: "", desc: "", func: () => {}, max: 0 }
   ];
@@ -19026,23 +19125,28 @@
       vel: Vector.zero,
       dir: 0,
       weapons: [],
+      isFiring: false,
       speed: 350,
       xp: 200,
       levelUp: 200,
       hp: 100,
       maxHp: 100,
-      shield: 0,
-      maxShield: 30,
-      shieldRegenTime: 10,
-      shieldRegenSpeed: 5,
-      shieldRegenTimeLeft: 0,
       level: -1,
       kills: 0,
       score: 0,
       died: false,
-      dodgeCooldown: 0,
-      dodgeVel: Vector.zero,
-      dodgeTime: 0
+      shield: {
+        value: 0,
+        maxValue: 30,
+        regenTime: 10,
+        regenSpeed: 5,
+        regenTimeLeft: 0
+      },
+      dodge: {
+        cooldown: 0,
+        vel: Vector.zero,
+        time: 0
+      }
     };
     paused = false;
     score = 0;
@@ -19135,6 +19239,7 @@
         player.vel["*="](Math.pow(0.3, clampTime));
         if (joy.mag > 0) {
         }
+        player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire;
         if (gamepadConnected) {
           if (gamepad.rightStick.mag > 0.1) {
             let dir = gamepad.rightStick.copy;
@@ -19142,22 +19247,22 @@
             mouse["="](dir);
           }
         }
-        if (player.dodgeTime <= 0) {
-          player.dodgeCooldown -= clampTime;
-          if ((keys[" "] || gamepad.leftTrigger) && player.dodgeCooldown <= 0 && joy.mag > 0) {
-            player.dodgeCooldown = 0.5;
+        if (player.dodge.time <= 0) {
+          player.dodge.cooldown -= clampTime;
+          if ((keys[" "] || gamepad.leftTrigger) && player.dodge.cooldown <= 0 && joy.mag > 0) {
+            player.dodge.cooldown = 0.2;
             let v = joy.copy;
             v.mag = 1e3;
-            player.dodgeVel = v;
-            player.dodgeTime = 0.15;
+            player.dodge.vel = v;
+            player.dodge.time = 0.15;
           }
         } else {
-          player.dodgeTime -= clampTime;
-          if (player.dodgeTime <= 0) {
-            player.dodgeVel = Vector.zero;
+          player.dodge.time -= clampTime;
+          if (player.dodge.time <= 0) {
+            player.dodge.vel = Vector.zero;
           }
-          player.vel["="](player.dodgeVel);
-          new projectile_types_default[3]({ pos: player.pos.copy, type: 0 });
+          player.vel["="](player.dodge.vel);
+          new projectile_types_default[3]({ pos: player.pos.copy });
         }
         player.dir = mouse.heading;
         applyBorder(player);
@@ -19210,14 +19315,14 @@
             });
           });
         }
-        if (player.shield < player.maxShield) {
-          if (player.shieldRegenTimeLeft < player.shieldRegenTime) {
-            player.shieldRegenTimeLeft += clampTime;
+        if (player.shield.value < player.shield.maxValue) {
+          if (player.shield.regenTimeLeft < player.shield.regenTime) {
+            player.shield.regenTimeLeft += clampTime;
           } else {
-            player.shield += player.shieldRegenSpeed * clampTime;
+            player.shield.value += player.shield.regenSpeed * clampTime;
           }
-        } else if (player.shield > player.maxShield) {
-          player.shield = player.maxShield;
+        } else if (player.shield.value > player.shield.maxValue) {
+          player.shield.value = player.shield.maxValue;
         }
         if (player.hp > player.maxHp) player.hp = player.maxHp;
         player.weapons.forEach((weapon) => {
@@ -19415,7 +19520,7 @@
       sketch.pop();
       bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
       bar(new Vector(25, 55), 100, player.xp / player.levelUp, "rgb(40,30,0)", "rgb(220,200,0)", 15);
-      bar(new Vector(25, 25), 100, player.shield / player.maxShield, "rgb(0,40,60)", "rgb(0,150,250)", 5);
+      bar(new Vector(25, 25), 100, player.shield.value / player.shield.maxValue, "rgb(0,40,60)", "rgb(0,150,250)", 5);
     };
   };
   function addWeapon(id) {
@@ -19586,14 +19691,14 @@
   }
   function damagePlayer(amt) {
     if (amt <= 0) return;
-    player.shieldRegenTimeLeft = 0;
-    if (player.shield > amt) {
+    player.shield.regenTimeLeft = 0;
+    if (player.shield.value > amt) {
       rumble(0.15, 0.35);
       player.shield -= amt;
       return;
     }
-    amt -= player.shield;
-    player.shield = 0;
+    amt -= player.shield.value;
+    player.shield.value = 0;
     player.hp -= amt;
     if (player.hp > 0) {
       rumble(0.2, 0.5);
