@@ -67,7 +67,7 @@ var stars = [];
 var playerUpgrades = [
   { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5, weight: 1 },
   { name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.15; player.hp += 20 }, max: 5, weight: 0.8 },
-  { name: "Shield", desc: "Make shield better", func: () => { player.maxShield += 10; player.shieldRegenTime--; player.shieldRegenSpeed++ }, max: 5, weight: 0.8 },
+  { name: "Shield", desc: "Make shield better", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
 
@@ -81,23 +81,28 @@ const s = (sk) => {
     vel: Vector.zero,
     dir: 0,
     weapons: [],
+    isFiring: false,
     speed: 350,
     xp: 200,
     levelUp: 200,
     hp: 100,
     maxHp: 100,
-    shield: 0,
-    maxShield: 30,
-    shieldRegenTime: 10,
-    shieldRegenSpeed: 5,
-    shieldRegenTimeLeft: 0,
     level: -1,
     kills: 0,
     score: 0,
     died: false,
-    dodgeCooldown: 0,
-    dodgeVel: Vector.zero,
-    dodgeTime: 0,
+    shield: {
+      value: 0,
+      maxValue: 30,
+      regenTime: 10,
+      regenSpeed: 5,
+      regenTimeLeft: 0
+    },
+    dodge: {
+      cooldown: 0,
+      vel: Vector.zero,
+      time: 0
+    }
   };
   paused = false;
   score = 0;
@@ -210,6 +215,8 @@ const s = (sk) => {
         // new projectileTypes[3]({ pos: player.pos.copy, type: 1 });
       }
 
+      player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire
+
       if (gamepadConnected) {
         if (gamepad.rightStick.mag > 0.1) {
           let dir = gamepad.rightStick.copy;
@@ -218,22 +225,22 @@ const s = (sk) => {
         }
       }
 
-      if (player.dodgeTime <= 0) {
-        player.dodgeCooldown -= clampTime;
-        if ((keys[" "] || gamepad.leftTrigger) && player.dodgeCooldown <= 0 && joy.mag > 0) {
-          player.dodgeCooldown = 0.5;
+      if (player.dodge.time <= 0) {
+        player.dodge.cooldown -= clampTime;
+        if ((keys[" "] || gamepad.leftTrigger) && player.dodge.cooldown <= 0 && joy.mag > 0) {
+          player.dodge.cooldown = 0.2;
           let v = joy.copy;
           v.mag = 1000;
-          player.dodgeVel = v;
-          player.dodgeTime = .15;
+          player.dodge.vel = v;
+          player.dodge.time = .15;
         }
       } else {
-        player.dodgeTime -= clampTime;
-        if (player.dodgeTime <= 0) {
-          player.dodgeVel = Vector.zero;
+        player.dodge.time -= clampTime;
+        if (player.dodge.time <= 0) {
+          player.dodge.vel = Vector.zero;
         }
-        player.vel["="](player.dodgeVel);
-        new projectileTypes[3]({ pos: player.pos.copy, type: 0 });
+        player.vel["="](player.dodge.vel);
+        new projectileTypes[3]({ pos: player.pos.copy });
       }
 
       player.dir = mouse.heading;
@@ -291,14 +298,14 @@ const s = (sk) => {
       }
 
       // player shield
-      if (player.shield < player.maxShield) {
-        if (player.shieldRegenTimeLeft < player.shieldRegenTime) {
-          player.shieldRegenTimeLeft += clampTime;
+      if (player.shield.value < player.shield.maxValue) {
+        if (player.shield.regenTimeLeft < player.shield.regenTime) {
+          player.shield.regenTimeLeft += clampTime;
         } else {
-          player.shield += player.shieldRegenSpeed * clampTime;
+          player.shield.value += player.shield.regenSpeed * clampTime;
         }
-      } else if (player.shield > player.maxShield) {
-        player.shield = player.maxShield;
+      } else if (player.shield.value > player.shield.maxValue) {
+        player.shield.value = player.shield.maxValue;
       }
 
       if (player.hp > player.maxHp) player.hp = player.maxHp;
@@ -553,7 +560,7 @@ const s = (sk) => {
     // health, xp, shield
     bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
     bar(new Vector(25, 55), 100, player.xp / player.levelUp, "rgb(40,30,0)", "rgb(220,200,0)", 15);
-    bar(new Vector(25, 25), 100, player.shield / player.maxShield, "rgb(0,40,60)", "rgb(0,150,250)", 5);
+    bar(new Vector(25, 25), 100, player.shield.value / player.shield.maxValue, "rgb(0,40,60)", "rgb(0,150,250)", 5);
   }
 }
 
@@ -747,14 +754,14 @@ export function get(prop) {
 }
 export function damagePlayer(amt) {
   if (amt <= 0) return;
-  player.shieldRegenTimeLeft = 0;
-  if (player.shield > amt) {
+  player.shield.regenTimeLeft = 0;
+  if (player.shield.value > amt) {
     rumble(0.15, 0.35);
     player.shield -= amt;
     return;
   }
-  amt -= player.shield;
-  player.shield = 0;
+  amt -= player.shield.value;
+  player.shield.value = 0;
   player.hp -= amt;
   if (player.hp > 0) {
     rumble(0.2, 0.5);
