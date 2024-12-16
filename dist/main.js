@@ -19160,7 +19160,7 @@
     editableSettings = [
       { name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
       { name: "Do Screen Shake", var: "doScreenShake", type: "checkbox" },
-      { name: "OLED Mode", var: "oledMode", type: "checkbox" },
+      { name: "Dim Background", var: "dimBG", type: "checkbox" },
       { name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] }
     ];
     currentLevel.start.forEach((e3) => {
@@ -19375,7 +19375,7 @@
           }
         }
       });
-      if (!settings.noBG && settings.oledMode) sketch.background("rgba(0,0,0,0.5)");
+      if (!settings.noBG && settings.dimBG) sketch.background("rgba(0,0,0,0.5)");
       if (true) {
         sketch.push();
         sketch.noStroke();
@@ -19835,15 +19835,14 @@
     if (localStorage.getItem("settings")) {
       settings = JSON.parse(localStorage.getItem("settings"));
     } else {
-      settings = {
-        toggleFire: false,
-        doScreenShake: true,
-        emojiMovie: false,
-        oledMode: false,
-        starDetail: 1
-      };
-      storeSettings();
+      settings = {};
     }
+    if (!("toggleFire" in settings)) settings.toggleFire = false;
+    if (!("doScreenShake" in settings)) settings.doScreenShake = true;
+    if (!("emojiMovie" in settings)) settings.emojiMovie = false;
+    if (!("dimBG" in settings)) settings.dimBG = false;
+    if (!("starDetail" in settings)) settings.starDetail = 1;
+    storeSettings();
   }
   addEventListener("resize", () => {
     size["="](innerWidth, innerHeight);
@@ -19893,7 +19892,7 @@
             settings.noBG = !settings.noBG;
             break;
           case "l":
-            settings.oledMode = !settings.oledMode;
+            settings.dimBG = !settings.dimBG;
             break;
           case ",":
             settings.starDetail--;
