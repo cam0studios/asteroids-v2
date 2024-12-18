@@ -16913,9 +16913,17 @@
 
   // vector-library/vector.js
   var Vector = class _Vector {
-    constructor(x, y, z) {
+    /**
+     * Create a new vector object
+     * @param {number} x - The x component of the vector
+     * @param {number} y - The y component of the vector
+     * @param {number} [z=0] - The z component of the vector (optional)
+     * @returns {Vector} A new Vector object
+     * @example
+     * let a = new Vector(1, 2);
+     */
+    constructor(x, y, z = 0) {
       if (arguments.length > 1) {
-        if (arguments.length == 2) z = 0;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -16924,6 +16932,13 @@
         console.error("Error: Vector expected 2 or 3 arguments, not " + arguments.length);
       }
     }
+    /**
+     * Add a vector to this vector
+     * @param {number|Vector} v - The vector to add, or the x component of the vector
+     * @param {number} y - The y component of the vector (optional)
+     * @param {number} z - The z component of the vector (optional)
+     * @returns {Vector} The vector object
+     */
     add(v, y, z) {
       if (arguments.length > 1) {
         if (arguments.length == 2) z = 0;
@@ -16937,6 +16952,13 @@
       }
       return this;
     }
+    /**
+     * Subtract a vector from this vector
+     * @param {number|Vector} v - The vector to subtract, or the x component of the vector
+     * @param {number} y - The y component of the vector (optional)
+     * @param {number} z - The z component of the vector (optional)
+     * @returns {Vector} The vector object
+     */
     sub(v, y, z) {
       if (arguments.length > 1) {
         if (arguments.length == 2) z = 0;
@@ -16950,22 +16972,55 @@
       }
       return this;
     }
+    /**
+     * Divide this vector by a number or vector
+     * @param {number|Vector} v - The number or vector to divide by
+     * @returns {Vector} The vector object
+     */
     div(n2) {
-      if (n2 == 0) {
-        console.error("Error: div parameter cannot be 0");
+      if (n2 instanceof _Vector) {
+        if (n2.x == 0 || n2.y == 0 || n2.z == 0) {
+          console.error("Error: div parameter cannot be 0");
+        } else {
+          this.x /= n2.x;
+          this.y /= n2.y;
+          this.z /= n2.z;
+        }
       } else {
-        this.x /= n2;
-        this.y /= n2;
-        this.z /= n2;
+        if (n2 == 0) {
+          console.error("Error: div parameter cannot be 0");
+        } else {
+          this.x /= n2;
+          this.y /= n2;
+          this.z /= n2;
+        }
       }
       return this;
     }
+    /**
+     * Multiply this vector by a number or vector
+     * @param {number|Vector} v - The number or vector to multiply by
+     * @returns {Vector} The vector object
+     */
     mult(n2) {
-      this.x *= n2;
-      this.y *= n2;
-      this.z *= n2;
+      if (n2 instanceof _Vector) {
+        this.x *= n2.x;
+        this.y *= n2.y;
+        this.z *= n2.z;
+      } else {
+        this.x *= n2;
+        this.y *= n2;
+        this.z *= n2;
+      }
       return this;
     }
+    /**
+     * Set this vector to another vector
+     * @param {number|Vector} v - The vector to add, or the x component of the vector
+     * @param {number} [y=0] - The y component of the vector (optional)
+     * @param {number} [z=0] - The z component of the vector (optional)
+     * @returns {Vector} The vector object
+     */
     set(v, y, z) {
       if (arguments.length > 1) {
         if (arguments.length == 2) z = 0;
@@ -16979,6 +17034,12 @@
       }
       return this;
     }
+    /**
+     * Rotate this vector by an angle
+     * @param {number} angle - The angle to rotate by in radians
+     * @param {string} [axis="z"] - The axis to rotate around (optional)
+     * @returns {Vector} The vector object
+     */
     rotate(angle, axis = "z") {
       let rot;
       if (axis == "x") rot = this.yz;
@@ -16992,10 +17053,19 @@
       if (axis == "z") this.xy = rot;
       return this;
     }
+    /**
+     * Normalize this vector
+     * @returns {Vector} The normalized vector object
+     */
     normalize() {
       this["/="](this.mag);
       return this;
     }
+    /**
+     * Reflect this vector off another vector
+     * @param {Vector} v - The number or vector to reflect off of
+     * @returns {Vector} The vector object
+     */
     reflect(v) {
       let sub = v["*"](this.dot(v));
       this["-="](sub);
@@ -17003,129 +17073,327 @@
       this["+="](sub);
       return this;
     }
+    /**
+     * Get the squared magnitude of the vector
+     * @returns {number} The squared magnitude
+     */
     get magSq() {
       return this.x * this.x + this.y * this.y + this.z * this.z;
     }
+    /**
+     * Get the magnitude of the vector
+     * @returns {number} The magnitude
+     */
     get mag() {
       return Math.sqrt(this.magSq);
     }
+    /**
+     * Get the normalized vector
+     * @returns {Vector} The normalized vector
+     */
     get normalized() {
       return this.copy.normalize();
     }
+    /**
+     * Get a copy of the vector
+     * @returns {Vector} The copied vector
+     */
     get copy() {
       return new _Vector(this.x, this.y, this.z);
     }
+    /**
+     * Get the heading of the vector
+     * @returns {number} The heading in radians
+     */
     get heading() {
       return Math.atan2(this.y, this.x);
     }
+    /**
+     * Get the absolute value of the vector
+     * @returns {number} The vector, with all components positive
+     */
     get abs() {
       return new _Vector(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
     }
+    /**
+     * Get the maximum between this vector and another vector
+     * @param {Vector} v - The other vector
+     * @returns {Vector} The maximum vector
+     */
     max(v) {
       return new _Vector(Math.max(this.x, v.x), Math.max(this.y, v.y), Math.max(this.z, v.z));
     }
+    /**
+     * Get the minimum between this vector and another vector
+     * @param {Vector} v - The other vector
+     * @returns {Vector} The minimum vector
+     */
     min(v) {
       return new _Vector(Math.min(this.x, v.x), Math.min(this.y, v.y), Math.min(this.z, v.z));
     }
+    /**
+     * Get the dot product between this vector and another vector
+     * @param {Vector} v - The other vector
+     * @returns {number} The dot product
+     */
     dot(v) {
       return this.x * v.x + this.y * v.y + this.z * v.z;
     }
+    /**
+     * Linearly interpolate between this vector and another vector
+     * @param {Vector} v - The other vector
+     * @returns {Vector} The lerped vector
+     */
     lerp(v, n2) {
       return this["+"](v["-"](this)["*"](n2));
     }
+    /**
+     * Get the 2D vector (x, y) of this vector
+     * @returns {Vector} The 2D vector
+     */
     get xy() {
       return new _Vector(this.x, this.y);
     }
+    /**
+     * Get the 2D vector (x, z) of this vector
+     * @returns {Vector} The 2D vector
+     */
     get xz() {
       return new _Vector(this.x, this.z);
     }
+    /**
+     * Get the 2D vector (y, z) of this vector
+     * @returns {Vector} The 2D vector
+     */
     get yz() {
       return new _Vector(this.y, this.z);
     }
+    /**
+     * Sets the x and y components of this vector
+     * @param {Vector} v - The 2D vector to set
+     * @returns {Vector} The modified vector
+     */
     set xy(v) {
       this.set(v.x, v.y, this.z);
     }
+    /**
+     * Sets the x and z components of this vector
+     * @param {Vector} v - The 2D vector to set
+     * @returns {Vector} The modified vector
+     */
     set xz(v) {
       this.set(v.x, this.y, v.y);
     }
+    /**
+     * Sets the y and z components of this vector
+     * @param {Vector} v - The 2D vector to set
+     * @returns {Vector} The modified vector
+     */
     set yz(v) {
       this.set(this.x, v.x, v.y);
     }
+    /**
+     * Multiplies this vector to a magnitude
+     * @param {number} n - The magnitude to set to
+     * @returns {Vector} The modified vector
+     */
     set mag(n2) {
       this.mult(n2 / this.mag);
       return this;
     }
+    /**
+     * Rotate this vector to a heading (2D only)
+     * @param {Vector} v - The 2D vector to set
+     * @returns {Vector} The modified vector
+     */
     set heading(n2) {
       this.rotate(n2 - this.heading);
       return this;
     }
+    /**
+     * Add two vectors
+     * @param {Vector} v1 - The first vector
+     * @param {Vector} v2 - The second vector
+     * @returns {Vector} The completed result
+     */
     static add(v1, v2) {
       let v = v1.copy;
       v.add(v2);
       return v;
     }
+    /**
+     * Subtracts a vector from another vector
+     * @param {Vector} v1 - The first vector
+     * @param {Vector} v2 - The second vector
+     * @returns {Vector} The completed result
+     */
     static sub(v1, v2) {
       let v = v1.copy;
       v.sub(v2);
       return v;
     }
+    /**
+     * Multiplies two vectors
+     * @param {Vector} v1 - The first vector
+     * @param {Vector} v2 - The second vector
+     * @returns {Vector} The completed result
+     */
     static mult(v, n2) {
       let v2 = v.copy;
       v2.mult(n2);
       return v2;
     }
+    /**
+     * Divides a vector by another vector
+     * @param {Vector} v1 - The first vector
+     * @param {Vector} v2 - The second vector
+     * @returns {Vector} The completed result
+     */
     static div(v, n2) {
       let v2 = v.copy;
       v2.div(n2);
       return v2;
     }
+    /**
+     * Rotates a vector by an angle and an axis
+     * @param {Vector} v - The vector
+     * @param {Vector} angle - The angle to rotate by
+     * @param {Vector} [axis="z"] - The axis to rotate around
+     * @returns {Vector} The completed result
+     */
     static rotate(v, angle, axis) {
       let v2 = v.copy;
       v2.rotate(angle, axis);
       return v2;
     }
+    /**
+     * Gets the dot product of two vectors
+     * @param {Vector} v1 - The first vector
+     * @param {Vector} v2 - The second vector
+     * @returns {Vector} The completed result
+     */
     static dot(v1, v2) {
       return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
     }
+    /**
+     * Linearly interpolates between two vectors
+     * @param {Vector} v1 - The first vector
+     * @param {Vector} v2 - The second vector
+     * @returns {Vector} The completed result
+     */
     static lerp(v1, v2, n2) {
       return v1.lerp(v2, n2);
     }
+    /**
+     * Gets the normalized vector of a vector
+     * @param {Vector} v - The vector
+     * @returns {Vector} The completed result
+     */
     static normalize(v) {
       return v.normalized;
     }
+    /**
+     * Gets a vector (0, 0, 0)
+     * @returns {Vector} (0, 0, 0)
+     */
     static get zero() {
       return new _Vector(0, 0, 0);
     }
+    /**
+     * Add a vector to this vector
+     * @param {number|Vector} v - The vector to add, or the x component of the vector
+     * @param {number} y - The y component of the vector (optional)
+     * @param {number} z - The z component of the vector (optional)
+     * @returns {Vector} The vector object
+     */
     "+="(v, y, z) {
       return this.add(...arguments);
     }
+    /**
+     * Subtracts a vector from this vector
+     * @param {number|Vector} v - The vector to subtract, or the x component of the vector
+     * @param {number} y - The y component of the vector (optional)
+     * @param {number} z - The z component of the vector (optional)
+     * @returns {Vector} The vector object
+     */
     "-="(v, y, z) {
       return this.sub(...arguments);
     }
+    /**
+     * Divides this vector by another vector
+     * @param {number|Vector} v - The vector to divide by, or the x component of the vector
+     * @param {number} y - The y component of the vector (optional)
+     * @param {number} z - The z component of the vector (optional)
+     * @returns {Vector} The vector object
+     */
     "/="(n2) {
       return this.div(...arguments);
     }
+    /**
+     * Multiplies his vector by another vector
+     * @param {number|Vector} v - The vector to multiply by, or the x component of the vector
+     * @param {number} y - The y component of the vector (optional)
+     * @param {number} z - The z component of the vector (optional)
+     * @returns {Vector} The vector object
+     */
     "*="(n2) {
       return this.mult(...arguments);
     }
+    /**
+     * Sets this vector to another vector
+     * @param {number|Vector} v - The vector to set to, or the x component of the vector
+     * @param {number} y - The y component of the vector (optional)
+     * @param {number} z - The z component of the vector (optional)
+     * @returns {Vector} The vector object
+     */
     "="(v, y, z) {
       this.set(...arguments);
     }
+    /**
+     * Adds two vectors
+     * @param {Vector} v - The vector to add to this one
+     * @returns {Vector} The vector object
+     */
     "+"(v) {
       return _Vector.add(this, v);
     }
+    /**
+     * Subtracts two vectors
+     * @param {Vector} v - The vector to subtract from this one
+     * @returns {Vector} The vector object
+     */
     "-"(v) {
       return _Vector.sub(this, v);
     }
+    /**
+     * Divides two vectors
+     * @param {number|Vector} n - The number or vector to divide this one by
+     * @returns {Vector} The vector object
+     */
     "/"(n2) {
       return _Vector.div(this, n2);
     }
+    /**
+     * Multiplies two vectors
+     * @param {Vector} v - The vector to multiply by this one
+     * @returns {Vector} The vector object
+     */
     "*"(n2) {
       return _Vector.mult(this, n2);
     }
+    /**
+     * Gets the remainder of two vectors
+     * @param {Vector} v - The vector to divide this one by and get the remainder
+     * @returns {Vector} The vector object
+     */
     "%"(n2) {
       return new _Vector(this.x % n2, this.y % n2, this.z % n2);
     }
+    /**
+     * Checks if two vectors are equal
+     * @param {Vector} vector - The vector to check against
+     * @returns {boolean} If the vectors are equal
+     */
     "=="(vector) {
       return this.x == vector.x && this.y == vector.y && this.z == vector.z;
     }
@@ -17138,9 +17406,17 @@
           return this.toNumber();
       }
     }
+    /**
+     * Converts the vector to a string (x, y, z) or (x, y) if z == 0
+     * @returns {string} The stringified vector
+     */
     toString() {
       return this.z == 0 ? `(${this.x}, ${this.y})` : `(${this.x}, ${this.y}, ${this.z})`;
     }
+    /**
+     * Converts the vector to a number, equal to the magnitude
+     * @returns {Vector} The number-ified vector
+     */
     toNumber() {
       return this.mag;
     }
@@ -17263,17 +17539,39 @@
 
   // vector-library/intersection.js
   var intersections = {
+    /**
+     * Checks if a point is on a line
+     * @param {Vector} l1 - The first point of the line
+     * @param {Vector} l2 - The second point of the line
+     * @param {Vector} p - The point to check
+     * @returns {boolean} - Whether the point is on the line
+     */
     linePointCollision: function(l1, l2, p) {
       let d1 = l1["-"](p);
       let d2 = l2["-"](p);
       let l = l2["-"](l1);
       return d1 + d2 > l - 0.1 && d1 + d2 < l + 0.1;
     },
+    /**
+     * Gets the closest point on a line to a point
+     * @param {Vector} l1 - The first point of the line
+     * @param {Vector} l2 - The second point of the line
+     * @param {Vector} p - The point to check
+     * @returns {Vector} - The closest point on the line
+     */
     lineClosestPoint: function(l1, l2, p) {
       let dif = l2["-"](l1);
       let dot = p["-"](l1).dot(dif) / dif.magSq;
       return l1["+"](dif["*"](dot));
     },
+    /**
+     * 
+     * @param {Vector} l1 - The first point of the line
+     * @param {Vector} l2 - The second point of the line
+     * @param {Vector} c - The center of the circle
+     * @param {number} r - The radius of the circle
+     * @returns 
+     */
     lineCircleCollision: function(l1, l2, c, r) {
       if (l1["-"](c) < r || l2["-"](c) < r) return true;
       let closest = this.lineClosestPoint(l1, l2, c);

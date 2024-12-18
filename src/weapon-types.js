@@ -1,4 +1,4 @@
-import { Vector } from "p5";
+import Vector from "p5";
 import { gamepad } from "./gamepad";
 import { player, mouseDown, settings, clampTime, get, set } from "./main";
 import projectileTypes, { projectileEnums } from "./projectile-types";

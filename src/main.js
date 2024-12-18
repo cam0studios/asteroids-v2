@@ -1,5 +1,5 @@
 import p5 from "p5";
-import { Vector } from "../vector-library/vector";
+import Vector from "../vector-library/vector";
 import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
