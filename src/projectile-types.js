@@ -1,4 +1,4 @@
-import { Vector } from "../vector-library/vector";
+import Vector from "../vector-library/vector";
 import { intersections } from "../vector-library/intersection";
 import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies, time } from "./main";
 

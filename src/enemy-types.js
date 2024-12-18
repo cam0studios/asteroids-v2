@@ -1,4 +1,4 @@
-import { Vector } from "../vector-library/vector";
+import Vector from "../vector-library/vector";
 import { rumble } from "./gamepad";
 import { enemies, clampTime, applyBorder, projectiles, player, getOnScreen, sketch, get, set, settings, damagePlayer, currentLevel, getRandomBox, calcBorder } from "./main";
 import projectileTypes, { explode } from "./projectile-types";
