@@ -764,13 +764,8 @@ export function get(prop) {
     case "cursorContract": return cursorContract;
   }
 }
-<<<<<<< HEAD
-export function damagePlayer(amt, source) {
-  if (amt <= 0) return;
-=======
-export function damagePlayer(amount) {
+export function damagePlayer(amount, source) {
   if (amount <= 0) return;
->>>>>>> 52b9eba1eda8a5676114ad13385fecaf1947d141
   player.shield.regenTimeLeft = 0;
   if (player.shield.value > amount) {
     rumble(0.15, 0.35);
@@ -779,12 +774,8 @@ export function damagePlayer(amount) {
   }
   amount -= player.shield.value;
   player.shield.value = 0;
-<<<<<<< HEAD
-  player.hp -= amt;
-  playSound(source == "border" ? "border" : "hurt")
-=======
   player.hp -= amount;
->>>>>>> 52b9eba1eda8a5676114ad13385fecaf1947d141
+  playSound(source == "border" ? "border" : "hurt")
   if (player.hp > 0) {
     rumble(0.2, 0.5);
   }
