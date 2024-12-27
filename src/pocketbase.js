@@ -85,7 +85,7 @@ export async function signIn() {
   let username = await getUsername("Enter a username");
   if (!username) return;
   let users = await getUsers();
-  if (users.map(e => e.username).includes(username)) {
+  if (users.map(otherUser => otherUser.username).includes(username)) {
     let password = await getPassword("Enter your password");
     if (!password) return;
     try {
@@ -124,9 +124,9 @@ export async function getUsername(prompt) {
   dialog.showModal();
   dialog.querySelector(".prompt").innerText = prompt;
   return new Promise((res, rej) => {
-    dialog.querySelector(".prompt").addEventListener("keypress", (ev) => {
-      if (ev.key !== "Enter") return;
-      let username = ev.currentTarget.value.toLowerCase();
+    dialog.querySelector(".prompt").addEventListener("keypress", (event) => {
+      if (event.key !== "Enter") return;
+      let username = event.currentTarget.value.toLowerCase();
       res(username);
       dialog.close();
     });
@@ -143,9 +143,9 @@ export async function getPassword(prompt) {
   dialog.showModal();
   dialog.querySelector(".prompt").innerText = prompt;
   return new Promise((res, rej) => {
-    dialog.querySelector(".prompt").addEventListener("keypress", (ev) => {
-      if (ev.key !== "Enter") return;
-      let password = ev.currentTarget.value;
+    dialog.querySelector(".prompt").addEventListener("keypress", (event) => {
+      if (event.key !== "Enter") return;
+      let password = event.currentTarget.value;
       res(password);
       dialog.close();
     });

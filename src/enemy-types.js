@@ -1,8 +1,8 @@
 import Vector from "../vector-library/vector";
 import { rumble } from "./gamepad";
 import { enemies, clampTime, applyBorder, projectiles, player, getOnScreen, sketch, get, set, settings, damagePlayer, currentLevel, getRandomBox, calcBorder } from "./main";
-import projectileTypes, { explode } from "./projectile-types";
-import { playSound } from "./sound";
+import projectileTypes, { explode, projectileEnums } from "./projectile-types";
+import { playSound } from './sound';
 
 const enemyTypes = [
   class {
@@ -184,7 +184,7 @@ const enemyTypes = [
           if (this.reload <= 0) {
             this.reload = this.reloadTime;
             this.cooldown = this.cooldownTime;
-            new projectileTypes[2]({ pos: this.pos.copy, dir: this.dir, link: this.id });
+            new projectileTypes[projectileEnums.enemyLaser]({ pos: this.pos.copy, dir: this.dir, link: this.id });
           }
         }
 
