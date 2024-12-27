@@ -8,7 +8,7 @@ import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, 
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { playSound } from "./sound";
 
-export const version = "v0.4.3";
+export const version = "v0.4.4";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {

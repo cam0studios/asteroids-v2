@@ -17522,6 +17522,7 @@
   }
   function rumble(duration, strength) {
     if (!gamepadConnected) return;
+    if (!gamepads[0].vibrationActuator) return;
     if ("hapticActuators" in gamepads[0] && gamepads[0].hapticActuators.length > 0) {
       gamepads[0].hapticActuators[0].pulse(strength, duration * 1e3);
     } else if ("vibrationActuator" in gamepads[0]) {
@@ -19398,7 +19399,7 @@
   }
 
   // src/main.js
-  var version = "v0.4.3";
+  var version = "v0.4.4";
   var keys = {};
   "qwertyuiopasdfghjklzxcvbnm ".split("").forEach((key) => {
     keys[key] = false;
