@@ -2,6 +2,7 @@ import Vector from "../vector-library/vector";
 import { rumble } from "./gamepad";
 import { enemies, clampTime, applyBorder, projectiles, player, getOnScreen, sketch, get, set, settings, damagePlayer, currentLevel, getRandomBox, calcBorder } from "./main";
 import projectileTypes, { explode } from "./projectile-types";
+import { playSound } from "./sound";
 
 const enemyTypes = [
   class {
@@ -57,6 +58,7 @@ const enemyTypes = [
           enemies.splice(i, 1);
           i--;
           player.kills++;
+          playSound("kill")
           if (this.size > 10) {
             for (let r = -1; r <= 1; r += 1) {
               new enemyTypes[0]({ pos: this.pos, vel: (this.vel)["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });
@@ -188,6 +190,7 @@ const enemyTypes = [
 
         if (this.hp <= 0) {
           enemies.splice(i, 1);
+          playSound("kill")
           i--;
           player.kills++;
           let newScreenshake = 50 / ((this.pos)["-"](player.pos).mag / 500 + 1);
@@ -335,6 +338,7 @@ const enemyTypes = [
           enemies.splice(i, 1);
           i--;
           player.kills++;
+          playSound("kill")
           if (this.size > 10) {
             for (let r = -1; r <= 1; r += 1) {
               new enemyTypes[0]({ pos: this.pos, vel: (this.vel)["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });

@@ -6,13 +6,16 @@ import levels from "./levels";
 import projectileTypes, { explode } from "./projectile-types";
 import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
+import { playSound } from "./sound";
 
-export const version = "v0.4.2";
+export const version = "v0.4.3";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(e => {
   keys[e] = false;
 });
+// disable right click
+document.addEventListener("contextmenu", e => e.preventDefault());
 
 // global vars
 export var clampTime,
@@ -40,6 +43,8 @@ export var clampTime,
   started = false,
   starCol = 100,
   editableSettings = {};
+
+var isFirstLevelup = true;
 
 // setup base html
 
@@ -228,11 +233,13 @@ const s = (sk) => {
       if (player.dodge.time <= 0) {
         player.dodge.cooldown -= clampTime;
         if ((keys[" "] || gamepad.leftTrigger) && player.dodge.cooldown <= 0 && joy.mag > 0) {
+          // Player dodge / dash
           player.dodge.cooldown = 0.2;
           let v = joy.copy;
           v.mag = 1000;
           player.dodge.vel = v;
           player.dodge.time = .15;
+          playSound("dash");
         }
       } else {
         player.dodge.time -= clampTime;
@@ -248,6 +255,11 @@ const s = (sk) => {
 
       // level up
       if (player.xp >= player.levelUp) {
+        if (isFirstLevelup) {
+          isFirstLevelup = false;
+        } else {
+          playSound("levelup")
+        }
         player.level++;
         sketch.noLoop();
         paused = true;
@@ -594,6 +606,7 @@ async function die() {
   paused = true;
   rumble(1, 1);
   explode(player.pos, 100);
+  playSound("death")
 
   document.getElementById("score").innerText = player.score;
   document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
@@ -697,7 +710,7 @@ async function die() {
 
 
 export function applyBorder(obj) {
-  if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15);
+  if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15, "border");
   obj.vel["+="]((calcBorder(obj))["*"](0.1));
 }
 export function getRandomBox(size) {
@@ -752,7 +765,7 @@ export function get(prop) {
     case "cursorContract": return cursorContract;
   }
 }
-export function damagePlayer(amt) {
+export function damagePlayer(amt, source) {
   if (amt <= 0) return;
   player.shield.regenTimeLeft = 0;
   if (player.shield.value > amt) {
@@ -763,6 +776,7 @@ export function damagePlayer(amt) {
   amt -= player.shield.value;
   player.shield.value = 0;
   player.hp -= amt;
+  playSound(source == "border" ? "border" : "hurt")
   if (player.hp > 0) {
     rumble(0.2, 0.5);
   }
@@ -858,6 +872,7 @@ function unpause() {
   }
 }
 function restart() {
+  isFirstLevelup = true
   unpause();
   stopGame();
   startGame(0);
