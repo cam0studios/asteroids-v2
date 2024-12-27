@@ -4,6 +4,12 @@
 
 ## v0.4
 
+## 0.4.5
+- Fixed a crash when using a gamepad without rumble
+
+## 0.4.4
+- Added some basic sound effects
+
 ## v0.4.3
 - Replace grid background with stars
 - Add start screen
