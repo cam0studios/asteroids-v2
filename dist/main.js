@@ -17577,6 +17577,47 @@
     }
   };
 
+  // src/sound.js
+  var sounds = {
+    dash: [
+      { sound: "dash/dash.wav", volume: 0.8 },
+      { sound: "dash/dash2.wav", volume: 0.8 }
+    ],
+    hit: { sound: "hit.wav", volume: 0.2 },
+    hurt: { sound: "hurt.wav", volume: 0.7 },
+    kill: { sound: "kill.wav", volume: 0.2 },
+    levelup: [
+      { sound: "levelup/levelup.wav" },
+      { sound: "levelup/levelup2.wav" },
+      { sound: "levelup/levelup3.wav" }
+    ],
+    death: { sound: "death.wav", volume: 0.8 },
+    border: { sound: "border.wav" }
+  };
+  var loadedSounds = {};
+  for (let type in sounds) {
+    if (Array.isArray(sounds[type])) {
+      loadedSounds[type] = sounds[type].map((sound) => new Audio("assets/sound/" + sound.sound));
+      loadedSounds[type].forEach((audio, i2) => audio.volume = sounds[type][i2].volume || 1);
+    } else {
+      loadedSounds[type] = new Audio("assets/sound/" + sounds[type].sound);
+      loadedSounds[type].volume = sounds[type].volume || 1;
+    }
+  }
+  function playSound(soundType) {
+    console.log(soundType);
+    if (sounds[soundType]) {
+      if (Array.isArray(sounds[soundType])) {
+        const randomSound = loadedSounds[soundType][Math.floor(Math.random() * loadedSounds[soundType].length)];
+        randomSound.play();
+      } else {
+        loadedSounds[soundType].play();
+      }
+    } else {
+      console.warn("Sound type not found: " + soundType);
+    }
+  }
+
   // src/projectile-types.js
   var projectileEnums = {
     playerBullet: 0,
@@ -17622,6 +17663,9 @@
       }
       enemyTick(i2, enemy, enemyI) {
         if (this.pos["-"](enemy.pos).mag < enemy.size + 10) {
+          if (enemy.hp - this.damage > 0) {
+            playSound("hit");
+          }
           enemy.hp -= this.damage;
           enemy.hitDir = this.dir;
           projectiles.splice(i2, 1);
@@ -18012,6 +18056,7 @@
             enemies.splice(i2, 1);
             i2--;
             player.kills++;
+            playSound("kill");
             if (this.size > 10) {
               for (let r = -1; r <= 1; r += 1) {
                 new enemyTypes[0]({ pos: this.pos, vel: this.vel["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });
@@ -18136,6 +18181,7 @@
           }
           if (this.hp <= 0) {
             enemies.splice(i2, 1);
+            playSound("kill");
             i2--;
             player.kills++;
             let newScreenshake = 50 / (this.pos["-"](player.pos).mag / 500 + 1);
@@ -18275,6 +18321,7 @@
             enemies.splice(i2, 1);
             i2--;
             player.kills++;
+            playSound("kill");
             if (this.size > 10) {
               for (let r = -1; r <= 1; r += 1) {
                 new enemyTypes[0]({ pos: this.pos, vel: this.vel["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });
@@ -19351,11 +19398,12 @@
   }
 
   // src/main.js
-  var version = "v0.4.2";
+  var version = "v0.4.3";
   var keys = {};
   "qwertyuiopasdfghjklzxcvbnm ".split("").forEach((key) => {
     keys[key] = false;
   });
+  document.addEventListener("contextmenu", (e3) => e3.preventDefault());
   var clampTime;
   var enemies;
   var player;
@@ -19381,6 +19429,7 @@
   var started = false;
   var starCol = 100;
   var editableSettings = {};
+  var isFirstLevelup = true;
   document.getElementById("startScreen").showModal();
   started = false;
   document.getElementById("start").addEventListener("click", () => {
@@ -19549,6 +19598,7 @@
             player.dodge.vel = joy.copy;
             player.dodge.vel.mag = 1e3;
             player.dodge.time = 0.15;
+            playSound("dash");
           }
         } else {
           player.dodge.time -= clampTime;
@@ -19561,6 +19611,11 @@
         player.dir = mouse.heading;
         applyBorder(player);
         if (player.xp >= player.levelUp) {
+          if (isFirstLevelup) {
+            isFirstLevelup = false;
+          } else {
+            playSound("levelup");
+          }
           player.level++;
           sketch.noLoop();
           paused = true;
@@ -19843,6 +19898,7 @@
     paused = true;
     rumble(1, 1);
     explode(player.pos, 100);
+    playSound("death");
     document.getElementById("score").innerText = player.score;
     document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
     document.getElementById("stats").innerHTML = "<p> <b> Loading... </b> </p>";
@@ -19924,7 +19980,7 @@
     gameOverElement.addEventListener("scroll", loadMoreScores);
   }
   function applyBorder(obj) {
-    if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15);
+    if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15, "border");
     obj.vel["+="](calcBorder(obj)["*"](0.1));
   }
   function getRandomBox(size2) {
@@ -19981,7 +20037,7 @@
         return cursorContract;
     }
   }
-  function damagePlayer(amount) {
+  function damagePlayer(amount, source) {
     if (amount <= 0) return;
     player.shield.regenTimeLeft = 0;
     if (player.shield.value > amount) {
@@ -19992,6 +20048,7 @@
     amount -= player.shield.value;
     player.shield.value = 0;
     player.hp -= amount;
+    playSound(source == "border" ? "border" : "hurt");
     if (player.hp > 0) {
       rumble(0.2, 0.5);
     }
@@ -20070,6 +20127,7 @@
     }
   }
   function restart() {
+    isFirstLevelup = true;
     unpause();
     stopGame();
     startGame(0);

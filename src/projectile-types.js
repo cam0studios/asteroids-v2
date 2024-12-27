@@ -1,6 +1,7 @@
 import Vector from "../vector-library/vector";
 import { intersections } from "../vector-library/intersection";
 import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies, time } from "./main";
+import { playSound } from "./sound";
 
 export const projectileEnums = {
   playerBullet: 0,
@@ -52,6 +53,9 @@ const projectileTypes = [
 
     enemyTick(i, enemy, enemyI) {
       if ((this.pos)["-"](enemy.pos).mag < enemy.size + 10) {
+        if (enemy.hp - this.damage > 0) {
+          playSound("hit")
+        }
         enemy.hp -= this.damage;
         enemy.hitDir = this.dir;
         projectiles.splice(i, 1);
