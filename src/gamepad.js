@@ -43,8 +43,8 @@ export const gamepadControls = {
   dpadRight: 15,
 }
 export const gamepadSticks = {
-  left: (g) => new Vector(g.axes[0], g.axes[1]),
-  right: (g) => new Vector(g.axes[2], g.axes[3])
+  left: (gamepad) => new Vector(gamepad.axes[0], gamepad.axes[1]),
+  right: (gamepad) => new Vector(gamepad.axes[2], gamepad.axes[3])
 }
 
 export function updateGamepad() {
@@ -91,11 +91,11 @@ export function updateGamepad() {
   requestAnimationFrame(updateGamepad);
 }
 
-addEventListener("gamepadconnected", (e) => {
+addEventListener("gamepadconnected", () => {
   console.log("connect");
   gamepadConnected = true;
 });
-addEventListener("gamepaddisconnected", (e) => {
+addEventListener("gamepaddisconnected", () => {
   console.log("disconnect");
   gamepadConnected = false;
 });

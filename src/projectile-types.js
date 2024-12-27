@@ -109,7 +109,7 @@ const projectileTypes = [
     }
 
     tick(i) {
-      let linked = enemies.find(e => e.id === this.link);
+      let linked = enemies.find(enemy => enemy.id === this.link);
       if (linked) {
         this.pos = linked.pos.copy;
         // this.dir = linked.dir;
