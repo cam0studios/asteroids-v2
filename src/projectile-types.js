@@ -56,14 +56,31 @@ const projectileTypes = [
         }
         enemy.hp -= this.damage;
         enemy.hitDir = this.dir;
-        if (this.piercing > 0) {
-          this.piercing--;
-          if (!this.ignore) {
-            this.ignore = [enemy.id]
-          }
-        } else {
+        function remove() {
           projectiles.splice(i, 1);
           i--;
+        }
+        function pierce(that) {
+          if (!that.ignore) {
+            that.ignore = [enemy.id]
+          } else {
+            that.ignore.push(enemy.id);
+          }
+        }
+        if (this.piercing > 0) {
+          if (this.piercing >= 1) {
+            pierce(this);
+            this.piercing--;
+          } else {
+            if (Math.random() < this.piercing) {
+              this.piercing = 0;
+              pierce(this);
+            } else {
+              remove();
+            }
+          }
+        } else {
+          remove();
         }
       }
     }

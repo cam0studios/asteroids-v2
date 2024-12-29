@@ -69,7 +69,7 @@ const weapons = [
       { name: "Fire Rate", desc: "Shoot faster", func: (w) => { w.fireRate *= 1.25 }, max: 5, weight: 1 },
       { name: "Projectile Speed", desc: "Bullets move faster", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
       { name: "Multi-shot", desc: "Shoot more bullets at a time", func: (w) => { w.amount++ }, max: 5, weight: 0.2 },
-      { name: "Piercing", desc: "Bullets pass through an additional enemy", func: (w) => { w.piercing++ }, max: 3, weight: 0.6 }
+      { name: "Piercing", desc: ["50% chance for bullets to pierce enemies", "100% chance for bullets to pierce enemies", "50% chance for bullets to pierce two enemies", "100% chance for bullets to pierce two enemies"], func: (w) => { w.piercing += 0.5 }, max: 4, weight: 0.4 }
       // { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
     ],
     tick: (weapon) => {

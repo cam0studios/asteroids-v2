@@ -9,7 +9,7 @@ import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { playSound } from "./sound";
 import EasyStorage from "@pikapower9080/easy-storage";
 
-export const version = "v0.4.6";
+export const version = "v0.4.8";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {
@@ -133,7 +133,6 @@ const sketchFunc = (sk) => {
   if (!location.href.includes("https://cam0studios.github.io/")) {
     window.playerLink = player;
     window.setTime = (val) => time = val;
-    // console.log("%cDeveloper Mode", "color: rgb(255, 102, 51); font-size: 18px; font-weight: bold; margin-bottom: 3px;");
   }
 
   getSettings();
@@ -298,10 +297,15 @@ const sketchFunc = (sk) => {
             choices = choices.filter(e => JSON.stringify(e) != JSON.stringify(choices[rand]));
           }
         }
-        if (chosen.length == 0) chosen.push({ type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 1, times: 0 } });
+        if (chosen.length == 0) chosen.push({ type: -1, val: { name: "Healing", desc: "Heal 40 HP", func: () => player.hp += 40, max: 1, times: 0 } });
+
+        function getDescription(option) {
+          if (typeof option.val.desc == "string") return option.val.desc;
+          if (Array.isArray(option.val.desc)) return option.val.desc[option.val.times] || option.val.desc[option.val.desc.length - 1];
+        }
 
         chosen.forEach((option, i) => {
-          content += `<button id="option${i}"><h2>${option.val.name}</h2><p>${option.val.desc}</p><p>${option.val.times}/${option.val.max}</p></button>`;
+          content += `<button id="option${i}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p><p>${option.val.times}/${option.val.max}</p></button>`;
         });
 
         document.getElementById("options").innerHTML = content;
