@@ -14,6 +14,7 @@ class Weapon {
    * @param {string} data.name - The name of the weapon.
    * @param {number} data.id - The ID of the weapon.
    * @param {Function} data.tick - The tick function for the weapon.
+   * @param {number} data.weight - The relative weight of the weapon when leveling up.
    * 
    * @param {Object} data.props - The properties of the weapon.
    * @param {number} data.props.reload - The reload time of the weapon.
@@ -35,6 +36,7 @@ class Weapon {
     this.props = data.props;
     this.tick = data.tick;
     this.upgrades = data.upgrades;
+    this.weight = data.weight;
   }
 
   givePlayer() {
@@ -55,6 +57,7 @@ const weapons = [
   new Weapon({
     name: "Gun",
     id: "gun",
+    weight: 0.1,
     props: {
       reload: 0,
       fireRate: 5,
@@ -65,10 +68,10 @@ const weapons = [
       piercing: 0
     },
     upgrades: [
-      { name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
-      { name: "Fire Rate", desc: "Shoot faster", func: (w) => { w.fireRate *= 1.25 }, max: 5, weight: 1 },
+      { name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.5 }, max: 4, weight: 1 },
+      { name: "Fire Rate", desc: "Shoot faster", func: (w) => { w.fireRate *= 1.35 }, max: 4, weight: 1 },
       { name: "Projectile Speed", desc: "Bullets move faster", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
-      { name: "Multi-shot", desc: "Shoot more bullets at a time", func: (w) => { w.amount++ }, max: 5, weight: 0.2 },
+      { name: "Multi-shot", desc: "Shoot more bullets at a time", func: (w) => { w.amount++ }, max: 4, weight: 0.2 },
       { name: "Piercing", desc: "Bullets pass through an additional enemy", func: (w) => { w.piercing++ }, max: 3, weight: 0.6 }
       // { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
     ],
