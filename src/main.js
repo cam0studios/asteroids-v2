@@ -7,6 +7,7 @@ import projectileTypes, { explode, projectileEnums } from "./projectile-types";
 import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { playSound } from "./sound";
+import EasyStorage from "@pikapower9080/easy-storage";
 
 export const version = "v0.4.4";
 
@@ -16,6 +17,20 @@ export var keys = {};
 });
 // disable right click
 document.addEventListener("contextmenu", e => e.preventDefault());
+
+export const settingsStore = new EasyStorage({
+  key: "asteroids-settings",
+  default: {
+    toggleFire: false,
+    doScreenShake: true,
+    dimBG: false,
+    starDetail: "1"
+  },
+  migration: {
+    enabled: true,
+    old_key: "settings"
+  }
+})
 
 // global vars
 export var clampTime,
@@ -888,7 +903,7 @@ function getSettingsMenu() {
       settingElem.checked = settings[setting.var];
       settingElem.addEventListener("change", () => {
         settings[setting.var] = settingElem.checked;
-        storeSettings();
+        settingsStore.set(setting.var, settingElem.checked);
       });
 
       let label = document.createElement("label");
@@ -917,7 +932,7 @@ function getSettingsMenu() {
       select.addEventListener("change", () => {
         settings[setting.var] = select.value;
         if (setting.var == "starDetail") updateStars();
-        storeSettings();
+        settingsStore.set(setting.var, select.value);
       });
 
       elem.appendChild(label);
@@ -927,21 +942,8 @@ function getSettingsMenu() {
   });
   return elem;
 }
-function storeSettings() {
-  localStorage.setItem("settings", JSON.stringify(settings));
-}
 function getSettings() {
-  if (localStorage.getItem("settings")) {
-    settings = JSON.parse(localStorage.getItem("settings"));
-  } else {
-    settings = {};
-  }
-  if (!("toggleFire" in settings)) settings.toggleFire = false;
-  if (!("doScreenShake" in settings)) settings.doScreenShake = true;
-  if (!("emojiMovie" in settings)) settings.emojiMovie = false;
-  if (!("dimBG" in settings)) settings.dimBG = false;
-  if (!("starDetail" in settings)) settings.starDetail = 1;
-  storeSettings();
+  settings = settingsStore.getAll();
 }
 
 addEventListener("resize", () => {
@@ -957,6 +959,7 @@ function setKey(event, state) {
   if (started) {
     if (event.key == "z" && state) {
       settings.toggleFire = !settings.toggleFire
+      settingsStore.set("toggleFire", settings.toggleFire);
     }
 
     if (event.key == "Escape" && state && !paused) {
