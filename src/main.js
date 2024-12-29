@@ -602,6 +602,8 @@ const sketchFunc = (sk) => {
     // update exposed values
     if (devMode) {
       window.game = { clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, settingsStore };
+    } else {
+      window.game = { size, fps, deltaTime, paused, version }
     }
   }
 }
