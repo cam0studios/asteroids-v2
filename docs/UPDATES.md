@@ -4,6 +4,10 @@
 
 ## v0.4
 
+## 0.4.7
+- Added ice shot upgrade
+- Added mute setting
+
 ## 0.4.6
 - Added the piercing upgrade
 
