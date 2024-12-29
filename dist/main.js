@@ -19397,6 +19397,218 @@
     user = null;
   }
 
+  // node_modules/@pikapower9080/easy-storage/index.js
+  var defaultOptions = {
+    key: "config",
+    // Master key for localStorage
+    default: {},
+    // Default config values, used if no data is present or data is corrupted
+    migration: {
+      enabled: false,
+      // Migrate user data from an old key if the key has changed
+      old_key: ""
+      // Old key to migrate from
+    }
+  };
+  var types = [
+    "object",
+    "boolean",
+    "number",
+    "bigint",
+    "string",
+    "symbol",
+    "function",
+    "object"
+  ];
+  var EasyStorage = class {
+    constructor(options) {
+      if (!options) {
+        this.options = defaultOptions;
+      } else {
+        this.options = options;
+        for (let k in defaultOptions) {
+          if (!this.options[k]) {
+            this.options[k] = defaultOptions[k];
+          }
+        }
+      }
+      if (this.options.migration.enabled && this.options.migration.old_key) {
+        if (!localStorage.getItem(this.options.key) && localStorage.getItem(this.options.migration.old_key)) {
+          let oldData;
+          try {
+            oldData = JSON.parse(localStorage.getItem(this.options.migration.old_key));
+          } catch (e3) {
+          }
+          if (oldData) {
+            localStorage.setItem(this.options.key, JSON.stringify(oldData));
+            localStorage.removeItem(this.options.migration.old_key);
+            console.log("Migration from old key " + this.options.migration.old_key + " to new key " + this.options.key + " completed.");
+          }
+        }
+      }
+    }
+    /** Default options for EasyStorage, missing EasyStorage config values are pulled from here. */
+    static defaultOptions = defaultOptions;
+    /** List of acceptable JavaScript type strings. */
+    static types = types;
+    /**
+     * Gets all stored data as an object.
+     * @return {object}
+     */
+    getAll() {
+      const dataStr = localStorage.getItem(this.options.key) || JSON.stringify(this.options.default);
+      let data;
+      try {
+        data = JSON.parse(dataStr);
+      } catch (e3) {
+        console.error(e3);
+        console.warn("Failed to parse stored JSON, reverting to default values.");
+        data = this.options.default;
+      }
+      return data;
+    }
+    /**
+     * Set the value for a key and save it to localStorage.
+     * @param {string} key - The key to be stored inside of the main localStorage key
+     * @param {any} value - Value to set
+     */
+    set(key, value) {
+      const oldData = this.getAll();
+      oldData[key] = value;
+      localStorage.setItem(this.options.key, JSON.stringify(oldData));
+    }
+    /**
+     * Get the value for a key.
+     * @param {string} key - The key to get the value from inside of the main localStorage key
+     * @param {any} [defaultValue] - Value to return if the data is not present
+     * @return {any} The stored value
+     */
+    get(key, defaultValue) {
+      const data = this.getAll();
+      return data[key] || defaultValue;
+    }
+    /**
+     * Clear all stored data.
+    */
+    clearAll() {
+      localStorage.removeItem(this.options.key);
+    }
+    /**
+     * Replace all stored data with an object.
+     * @param {object} data - Object to replace stored data with
+     */
+    setAll(data) {
+      if (typeof data !== "object" || Array.isArray(data)) {
+        throw new Error(`New data must be an object${Array.isArray(data) ? " and not an array." : "."}`);
+      }
+      localStorage.setItem(this.options.key, JSON.stringify(data));
+    }
+    /**
+     * Array of keys present in storage.
+     * @example
+     console.log(storage.keys.length)
+    */
+    get keys() {
+      return Object.keys(this.getAll());
+    }
+    /**
+     * Gets all values of a certain type.
+     * @param {string} type - Type to get
+     * @return {object} Object with filtered values
+     */
+    getAllOfType(type) {
+      if (type == "undefined") {
+        throw new Error("You cannot filter for undefined values.");
+      }
+      if (!types.includes(type)) {
+        throw new Error("Type " + type + " is not a valid JavaScript type. Valid types are: " + types.join(", "));
+      }
+      let result = {};
+      for (let k in this.getAll()) {
+        const value = this.get(k);
+        if (typeof value == type) {
+          result[k] = value;
+        }
+      }
+      return result;
+    }
+    /**
+     * This callback is for predicates used with the getAllIf function.
+     * @callback getAllIfCallback
+     * @param {string} key
+     * @param {any} value
+     * @param {number} index
+     */
+    /**
+     * Gets all key/value pairs where the specified condition is true.
+     * @param {function} predicate - Predicate to check for key/value pairs to be included
+     * @example
+     storage.getAllIf((key, value, index) => key.includes('@'))
+     * @example
+     storage.getAllIf((key, value, index) => {
+        if (index % 2 === 0) {
+          return true
+        }
+     })
+     */
+    getAllIf(predicate) {
+      if (!predicate) {
+        throw new Error("Missing required argument: predicate");
+      }
+      let items = [];
+      this.forEach((key, value, index) => {
+        if (predicate(key, value, index)) {
+          items.push([key, value]);
+        }
+      });
+      let result = {};
+      items.forEach((item) => {
+        result[item[0]] = item[1];
+      });
+      return result;
+    }
+    /**
+     * Returns all values in array format.
+     * @param {boolean} [flat] - Makes the array a list of objects with key and value properties
+     * @returns {object} Array of keys and values
+     */
+    toArray(flat) {
+      let arr = [];
+      const data = this.getAll();
+      if (flat) {
+        for (let k in data) {
+          arr.push({ key: k, value: data[k] });
+        }
+      } else {
+        for (let k in data) {
+          arr.push([k, data[k]]);
+        }
+      }
+      return arr;
+    }
+    /**
+     * This callback is for the forEach method.
+     *
+     * @callback forEachCallback
+     * @param {string} key
+     * @param {any} value
+     * @param {number} index
+     */
+    /**
+     * Executes a callback function for each stored key/value pair.
+     * @param {forEachCallback} callback - Function to be executed for each key
+     */
+    forEach(callback) {
+      const data = this.getAll();
+      let index = 0;
+      for (let k in data) {
+        callback(k, data[k], index);
+        index++;
+      }
+    }
+  };
+  var easy_storage_default = EasyStorage;
+
   // src/main.js
   var version = "v0.4.4";
   var keys = {};
@@ -19404,6 +19616,19 @@
     keys[key] = false;
   });
   document.addEventListener("contextmenu", (e3) => e3.preventDefault());
+  var settingsStore = new easy_storage_default({
+    key: "asteroids-settings",
+    default: {
+      toggleFire: false,
+      doScreenShake: true,
+      dimBG: false,
+      starDetail: "1"
+    },
+    migration: {
+      enabled: true,
+      old_key: "settings"
+    }
+  });
   var clampTime;
   var enemies;
   var player;
@@ -20144,7 +20369,7 @@
         settingElem.checked = settings[setting.var];
         settingElem.addEventListener("change", () => {
           settings[setting.var] = settingElem.checked;
-          storeSettings();
+          settingsStore.set(setting.var, settingElem.checked);
         });
         let label = document.createElement("label");
         label.appendChild(document.createTextNode(setting.name));
@@ -20169,7 +20394,7 @@
         select.addEventListener("change", () => {
           settings[setting.var] = select.value;
           if (setting.var == "starDetail") updateStars();
-          storeSettings();
+          settingsStore.set(setting.var, select.value);
         });
         elem.appendChild(label);
         elem.appendChild(select);
@@ -20178,21 +20403,8 @@
     });
     return elem;
   }
-  function storeSettings() {
-    localStorage.setItem("settings", JSON.stringify(settings));
-  }
   function getSettings() {
-    if (localStorage.getItem("settings")) {
-      settings = JSON.parse(localStorage.getItem("settings"));
-    } else {
-      settings = {};
-    }
-    if (!("toggleFire" in settings)) settings.toggleFire = false;
-    if (!("doScreenShake" in settings)) settings.doScreenShake = true;
-    if (!("emojiMovie" in settings)) settings.emojiMovie = false;
-    if (!("dimBG" in settings)) settings.dimBG = false;
-    if (!("starDetail" in settings)) settings.starDetail = 1;
-    storeSettings();
+    settings = settingsStore.getAll();
   }
   addEventListener("resize", () => {
     size["="](innerWidth, innerHeight);
@@ -20204,6 +20416,7 @@
     if (started) {
       if (event.key == "z" && state) {
         settings.toggleFire = !settings.toggleFire;
+        settingsStore.set("toggleFire", settings.toggleFire);
       }
       if (event.key == "Escape" && state && !paused) {
         pause();
