@@ -110,37 +110,37 @@ const weapons = [
       weapon.reload -= clampTime;
     }
   }),
-  new Weapon({
-    id: "sacred-blade",
-    name: "Sacred Blade",
-    props: {
-      amount: 1,
-      damage: 5,
-      speed: 300,
-      reload: 0,
-      fireRate: 3
-    },
-    upgrades: [
-      { name: "Damage", desc: "Damage up", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
-    ],
-    tick: (weapon) => {
-      if (weapon.reload <= 0) {
-        weapon.reload = 1 / weapon.fireRate;
-        for (let i = 0; i < weapon.amount; i++) {
-          new projectileTypes[projectileEnums.sacredBlade]({
-            pos: player.pos.copy,
-            damage: weapon.damage,
-            speed: weapon.speed,
-            life: 120,
-            vel: new Vector(weapon.speed, 0).rotate(Math.random() * Math.PI * 2).mult(5),
-          });
-        }
-      }
+  // new Weapon({
+  //   id: "sacred-blade",
+  //   name: "Sacred Blade",
+  //   props: {
+  //     amount: 1,
+  //     damage: 5,
+  //     speed: 300,
+  //     reload: 0,
+  //     fireRate: 3
+  //   },
+  //   upgrades: [
+  //     { name: "Damage", desc: "Damage up", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
+  //   ],
+  //   tick: (weapon) => {
+  //     if (weapon.reload <= 0) {
+  //       weapon.reload = 1 / weapon.fireRate;
+  //       for (let i = 0; i < weapon.amount; i++) {
+  //         new projectileTypes[projectileEnums.sacredBlade]({
+  //           pos: player.pos.copy,
+  //           damage: weapon.damage,
+  //           speed: weapon.speed,
+  //           life: 120,
+  //           vel: new Vector(weapon.speed, 0).rotate(Math.random() * Math.PI * 2).mult(5),
+  //         });
+  //       }
+  //     }
 
-      weapon.reload -= clampTime;
-    },
+  //     weapon.reload -= clampTime;
+  //   },
     
 
-  })
+  // })
 ];
 export default weapons;
