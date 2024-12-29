@@ -23,6 +23,7 @@ export const settingsStore = new EasyStorage({
   default: {
     toggleFire: false,
     doScreenShake: true,
+    isMuted: false,
     dimBG: false,
     starDetail: "1"
   },
@@ -142,6 +143,7 @@ const sketchFunc = (sk) => {
     { name: "Do Screen Shake", var: "doScreenShake", type: "checkbox" },
     { name: "Dim Background", var: "dimBG", type: "checkbox" },
     { name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] },
+    { name: "Mute", var: "isMuted", type: "checkbox" }
   ];
   currentLevel.start.forEach(start => {
     for (let i = 0; i < start.count; i++) {

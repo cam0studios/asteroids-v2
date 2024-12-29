@@ -53,6 +53,8 @@ class Weapon {
   }
 }
 
+let bulletsFired = 0;
+
 const weapons = [
   new Weapon({
     name: "Gun",
@@ -65,14 +67,16 @@ const weapons = [
       speed: 500,
       amount: 1,
       spread: 0.1,
-      piercing: 0
+      piercing: 0,
+      ice: 10,
     },
     upgrades: [
       { name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.5 }, max: 4, weight: 1 },
       { name: "Fire Rate", desc: "Shoot faster", func: (w) => { w.fireRate *= 1.35 }, max: 4, weight: 1 },
       { name: "Projectile Speed", desc: "Bullets move faster", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
       { name: "Multi-shot", desc: "Shoot more bullets at a time", func: (w) => { w.amount++ }, max: 4, weight: 0.2 },
-      { name: "Piercing", desc: "Bullets pass through an additional enemy", func: (w) => { w.piercing++ }, max: 3, weight: 0.6 }
+      { name: "Piercing", desc: "Bullets pass through an additional enemy", func: (w) => { w.piercing++ }, max: 3, weight: 0.6 },
+      { name: "Ice Shot", desc: `Bullets can freeze enemies`, incompatible: ["Fire Shot"], func: (w) => w.ice--, weight: 0.6, max: 3}
       // { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
     ],
     tick: (weapon) => {
@@ -83,7 +87,18 @@ const weapons = [
         if (weapon.reload <= 0 && player.dodge.cooldown <= 0) {
           weapon.reload = 1 / weapon.fireRate;
           for (let i = 0; i < weapon.amount; i++) {
-            new projectileTypes[projectileEnums.playerBullet]({ pos: player.pos.copy, dir: player.dir + weapon.spread * (i - (weapon.amount - 1) / 2), damage: weapon.damage, speed: weapon.speed, piercing: weapon.piercing });
+            bulletsFired++;
+
+            const data = {
+              pos: player.pos.copy,
+              dir: player.dir + weapon.spread * (i - (weapon.amount - 1) / 2),
+              damage: weapon.damage,
+              speed: weapon.speed,
+              piercing: weapon.piercing,
+              ice: bulletsFired % weapon.ice == 0
+            }
+
+            new projectileTypes[projectileEnums.playerBullet](data);
             // new projectileTypes[0]({ pos: player.pos.copy, vel: new Vector(weapon.speed, 0).rotate(player.dir + weapon.spread * (i - (weapon.multishot - 1) / 2))["+"](player.vel), damage: weapon.damage });
           }
         }
@@ -95,37 +110,37 @@ const weapons = [
       weapon.reload -= clampTime;
     }
   }),
-  // new Weapon({
-  //   id: "sacred-blade",
-  //   name: "Sacred Blade",
-  //   props: {
-  //     amount: 1,
-  //     damage: 5,
-  //     speed: 300,
-  //     reload: 0,
-  //     fireRate: 3
-  //   },
-  //   upgrades: [
-  //     { name: "Damage", desc: "Damage up", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
-  //   ],
-  //   tick: (weapon) => {
-  //     if (weapon.reload <= 0) {
-  //       weapon.reload = 1 / weapon.fireRate;
-  //       for (let i = 0; i < weapon.amount; i++) {
-  //         new projectileTypes[projectileEnums.sacredBlade]({
-  //           pos: player.pos.copy,
-  //           damage: weapon.damage,
-  //           speed: weapon.speed,
-  //           life: 120,
-  //           vel: new Vector(weapon.speed, 0).rotate(Math.random() * Math.PI * 2).mult(5),
-  //         });
-  //       }
-  //     }
+  new Weapon({
+    id: "sacred-blade",
+    name: "Sacred Blade",
+    props: {
+      amount: 1,
+      damage: 5,
+      speed: 300,
+      reload: 0,
+      fireRate: 3
+    },
+    upgrades: [
+      { name: "Damage", desc: "Damage up", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
+    ],
+    tick: (weapon) => {
+      if (weapon.reload <= 0) {
+        weapon.reload = 1 / weapon.fireRate;
+        for (let i = 0; i < weapon.amount; i++) {
+          new projectileTypes[projectileEnums.sacredBlade]({
+            pos: player.pos.copy,
+            damage: weapon.damage,
+            speed: weapon.speed,
+            life: 120,
+            vel: new Vector(weapon.speed, 0).rotate(Math.random() * Math.PI * 2).mult(5),
+          });
+        }
+      }
 
-  //     weapon.reload -= clampTime;
-  //   },
+      weapon.reload -= clampTime;
+    },
     
 
-  // })
+  })
 ];
 export default weapons;

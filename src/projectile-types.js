@@ -35,10 +35,12 @@ const projectileTypes = [
       let lastPos = this.pos.copy;
       lastPos["+="](new Vector(20, 0).rotate(this.dir));
 
-
       sketch.stroke(255);
       sketch.strokeWeight(5);
       sketch.fill(0);
+      
+      if (this.ice) sketch.stroke(35, 178, 246);
+
       if (settings.emojiMovie) {
         sketch.textAlign("center", "center");
         sketch.textSize(10);
@@ -54,8 +56,13 @@ const projectileTypes = [
         if (enemy.hp - this.damage > 0) {
           playSound("hit")
         }
+
         enemy.hp -= this.damage;
         enemy.hitDir = this.dir;
+
+        if (!enemy.frozen) enemy.frozen = this.ice;
+        enemy.effectTime = 3;
+
         if (this.piercing > 0) {
           this.piercing--;
           if (!this.ignore) {
