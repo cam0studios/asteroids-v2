@@ -4,6 +4,9 @@
 
 ## v0.4
 
+## 0.4.6
+- Added the piercing upgrade
+
 ## 0.4.5
 - Fixed a crash when using a gamepad without rumble
 

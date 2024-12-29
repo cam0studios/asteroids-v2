@@ -9,7 +9,7 @@ import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { playSound } from "./sound";
 import EasyStorage from "@pikapower9080/easy-storage";
 
-export const version = "v0.4.4";
+export const version = "v0.4.6";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {

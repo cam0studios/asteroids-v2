@@ -61,13 +61,15 @@ const weapons = [
       damage: 1,
       speed: 500,
       amount: 1,
-      spread: 0.1
+      spread: 0.1,
+      piercing: 0
     },
     upgrades: [
-      { name: "Damage", desc: "Damage up", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
+      { name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
       { name: "Fire Rate", desc: "Shoot faster", func: (w) => { w.fireRate *= 1.25 }, max: 5, weight: 1 },
       { name: "Projectile Speed", desc: "Bullets move faster", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
-      { name: "Multi-shot", desc: "Shoot more bullets", func: (w) => { w.amount++ }, max: 5, weight: 0.2 }
+      { name: "Multi-shot", desc: "Shoot more bullets at a time", func: (w) => { w.amount++ }, max: 5, weight: 0.2 },
+      { name: "Piercing", desc: "Bullets pass through an additional enemy", func: (w) => { w.piercing++ }, max: 3, weight: 0.6 }
       // { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
     ],
     tick: (weapon) => {
@@ -78,7 +80,7 @@ const weapons = [
         if (weapon.reload <= 0 && player.dodge.cooldown <= 0) {
           weapon.reload = 1 / weapon.fireRate;
           for (let i = 0; i < weapon.amount; i++) {
-            new projectileTypes[projectileEnums.playerBullet]({ pos: player.pos.copy, dir: player.dir + weapon.spread * (i - (weapon.amount - 1) / 2), damage: weapon.damage, speed: weapon.speed });
+            new projectileTypes[projectileEnums.playerBullet]({ pos: player.pos.copy, dir: player.dir + weapon.spread * (i - (weapon.amount - 1) / 2), damage: weapon.damage, speed: weapon.speed, piercing: weapon.piercing });
             // new projectileTypes[0]({ pos: player.pos.copy, vel: new Vector(weapon.speed, 0).rotate(player.dir + weapon.spread * (i - (weapon.multishot - 1) / 2))["+"](player.vel), damage: weapon.damage });
           }
         }

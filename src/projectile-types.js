@@ -18,10 +18,7 @@ const projectileTypes = [
         data.dir = data.vel.heading;
         data.speed = data.vel.mag;
       }
-      this.pos = data.pos;
-      this.dir = data.dir;
-      this.damage = data.damage;
-      this.speed = data.speed;
+      Object.assign(this, data);
       projectiles.push(this);
     }
 
@@ -53,13 +50,21 @@ const projectileTypes = [
 
     enemyTick(i, enemy, enemyI) {
       if ((this.pos)["-"](enemy.pos).mag < enemy.size + 10) {
+        if (this.ignore && this.ignore.includes(enemy.id)) return; // Don't hit the same enemy twice with piercing
         if (enemy.hp - this.damage > 0) {
           playSound("hit")
         }
         enemy.hp -= this.damage;
         enemy.hitDir = this.dir;
-        projectiles.splice(i, 1);
-        i--;
+        if (this.piercing > 0) {
+          this.piercing--;
+          if (!this.ignore) {
+            this.ignore = [enemy.id]
+          }
+        } else {
+          projectiles.splice(i, 1);
+          i--;
+        }
       }
     }
   },
