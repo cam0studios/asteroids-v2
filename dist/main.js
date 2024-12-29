@@ -20072,6 +20072,13 @@
       sketch.noStroke();
       sketch.textSize(35);
       sketch.text(formatTime(time), size.x / 2, 10);
+      if (devMode) {
+        sketch.textAlign("left", "bottom");
+        sketch.textFont("monospace");
+        sketch.fill(255, 102, 51);
+        sketch.textSize(15);
+        sketch.text("Developer Mode", 10, size.y - 10);
+      }
       sketch.push();
       sketch.stroke(255);
       sketch.strokeWeight(5);

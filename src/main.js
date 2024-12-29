@@ -561,6 +561,15 @@ const sketchFunc = (sk) => {
     sketch.textSize(35);
     sketch.text(formatTime(time), size.x / 2, 10);
 
+    // dev mode text
+    if (devMode) {
+      sketch.textAlign("left", "bottom");
+      sketch.textFont("monospace");
+      sketch.fill(255, 102, 51);
+      sketch.textSize(15);
+      sketch.text("Developer Mode", 10, size.y - 10);
+    }
+
     // cursor
     sketch.push();
     sketch.stroke(255);
