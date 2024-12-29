@@ -14,6 +14,7 @@ class Weapon {
    * @param {string} data.name - The name of the weapon.
    * @param {number} data.id - The ID of the weapon.
    * @param {Function} data.tick - The tick function for the weapon.
+   * @param {number} data.weight - The relative weight of the weapon when leveling up.
    * 
    * @param {Object} data.props - The properties of the weapon.
    * @param {number} data.props.reload - The reload time of the weapon.
@@ -35,6 +36,7 @@ class Weapon {
     this.props = data.props;
     this.tick = data.tick;
     this.upgrades = data.upgrades;
+    this.weight = data.weight;
   }
 
   givePlayer() {
@@ -51,10 +53,13 @@ class Weapon {
   }
 }
 
+let bulletsFired = 0;
+
 const weapons = [
   new Weapon({
     name: "Gun",
     id: "gun",
+    weight: 0.1,
     props: {
       reload: 0,
       fireRate: 5,
@@ -62,14 +67,16 @@ const weapons = [
       speed: 500,
       amount: 1,
       spread: 0.1,
-      piercing: 0
+      piercing: 0,
+      ice: 10,
     },
     upgrades: [
-      { name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
-      { name: "Fire Rate", desc: "Shoot faster", func: (w) => { w.fireRate *= 1.25 }, max: 5, weight: 1 },
+      { name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.5 }, max: 4, weight: 1 },
+      { name: "Fire Rate", desc: "Shoot faster", func: (w) => { w.fireRate *= 1.35 }, max: 4, weight: 1 },
       { name: "Projectile Speed", desc: "Bullets move faster", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
       { name: "Multi-shot", desc: "Shoot more bullets at a time", func: (w) => { w.amount++ }, max: 5, weight: 0.2 },
-      { name: "Piercing", desc: ["50% chance for bullets to pierce enemies", "100% chance for bullets to pierce enemies", "50% chance for bullets to pierce two enemies", "100% chance for bullets to pierce two enemies"], func: (w) => { w.piercing += 0.5 }, max: 4, weight: 0.4 }
+      { name: "Piercing", desc: ["50% chance for bullets to pierce enemies", "100% chance for bullets to pierce enemies", "50% chance for bullets to pierce two enemies", "100% chance for bullets to pierce two enemies"], func: (w) => { w.piercing += 0.5 }, max: 4, weight: 0.4 },
+      { name: "Ice Shot", desc: `Bullets can freeze enemies`, incompatible: ["Fire Shot"], func: (w) => w.ice--, weight: 0.6, max: 3
       // { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
     ],
     tick: (weapon) => {
@@ -80,7 +87,18 @@ const weapons = [
         if (weapon.reload <= 0 && player.dodge.cooldown <= 0) {
           weapon.reload = 1 / weapon.fireRate;
           for (let i = 0; i < weapon.amount; i++) {
-            new projectileTypes[projectileEnums.playerBullet]({ pos: player.pos.copy, dir: player.dir + weapon.spread * (i - (weapon.amount - 1) / 2), damage: weapon.damage, speed: weapon.speed, piercing: weapon.piercing });
+            bulletsFired++;
+
+            const data = {
+              pos: player.pos.copy,
+              dir: player.dir + weapon.spread * (i - (weapon.amount - 1) / 2),
+              damage: weapon.damage,
+              speed: weapon.speed,
+              piercing: weapon.piercing,
+              ice: bulletsFired % weapon.ice == 0
+            }
+
+            new projectileTypes[projectileEnums.playerBullet](data);
             // new projectileTypes[0]({ pos: player.pos.copy, vel: new Vector(weapon.speed, 0).rotate(player.dir + weapon.spread * (i - (weapon.multishot - 1) / 2))["+"](player.vel), damage: weapon.damage });
           }
         }

@@ -23,6 +23,7 @@ export const settingsStore = new EasyStorage({
   default: {
     toggleFire: false,
     doScreenShake: true,
+    isMuted: false,
     dimBG: false,
     starDetail: "1"
   },
@@ -87,8 +88,8 @@ function stopGame() {
 var stars = [];
 
 var playerUpgrades = [
-  { name: "Speed", desc: "Makes you faster", func: () => player.speed += 100, max: 5, weight: 1 },
-  { name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.15; player.hp += 20 }, max: 5, weight: 0.8 },
+  { name: "Speed", desc: "Makes you faster", func: () => player.speed += 120, max: 3, weight: 1 },
+  { name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
   { name: "Shield", desc: "Make shield better", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
@@ -141,6 +142,7 @@ const sketchFunc = (sk) => {
     { name: "Do Screen Shake", var: "doScreenShake", type: "checkbox" },
     { name: "Dim Background", var: "dimBG", type: "checkbox" },
     { name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] },
+    { name: "Mute", var: "isMuted", type: "checkbox" }
   ];
   currentLevel.start.forEach(start => {
     for (let i = 0; i < start.count; i++) {
@@ -288,6 +290,10 @@ const sketchFunc = (sk) => {
         player.weapons.forEach((weapon, weaponI) => {
           weapon.upgrades.filter(upgrade => upgrade.times < upgrade.max).forEach(upgrade => { for (let _ = 0; _ < upgrade.weight; _ += 0.05) choices.push({ type: 1, val: upgrade, i: weaponI }) });
         });
+        weapons.forEach(weapon => {
+          if (player.weapons.find(e => e.id == weapon.id)) return;
+          for (let _ = 0; _ < weapon.weight; _ += 0.05) choices.push({ type: 2, id: weapon.id });
+        });
 
         let chosen = [];
         for (let _ = 0; _ < 3; _++) {
@@ -315,13 +321,19 @@ const sketchFunc = (sk) => {
         chosen.forEach((option, optionI) => {
           document.getElementById(`option${optionI}`).addEventListener("click", () => {
             player.hp += 15;
-            option.val.func(function () {
-              switch (option.type) {
-                case 0: return player;
-                case 1: return player.weapons[option.i]
-              }
-            }());
-            option.val.times++;
+            switch (option.type) {
+              case 0:
+                option.val.times++;
+                option.val.func(player);
+                break;
+              case 1:
+                option.val.times++;
+                option.val.func(player.weapons[option.i]);
+                break;
+              case 2:
+                addWeapon(option.id);
+                break;
+            }
             document.getElementById("upgradeMenu").close();
             sketch.loop();
             paused = false;

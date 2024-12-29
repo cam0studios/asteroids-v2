@@ -7,6 +7,10 @@
 ## 0.4.8
 - Nerfed the piercing upgrade by giving it 4 levels of 0.5
 
+## 0.4.7
+- Added ice shot upgrade
+- Added mute setting
+
 ## 0.4.6
 - Added the piercing upgrade
 

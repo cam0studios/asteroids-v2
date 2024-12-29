@@ -1,3 +1,5 @@
+import { settings } from "./main";
+
 const sounds = {
     dash: [
         { sound: "dash/dash.wav", volume: 0.8 },
@@ -29,6 +31,8 @@ for (let type in sounds) {
 }
 
 export function playSound(soundType) {
+    if (settings.isMuted) return;
+    
     if (sounds[soundType]) {
         if (Array.isArray(sounds[soundType])) {
             const randomSound = loadedSounds[soundType][Math.floor(Math.random() * loadedSounds[soundType].length)];

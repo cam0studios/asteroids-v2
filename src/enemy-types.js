@@ -30,18 +30,30 @@ const enemyTypes = [
       this.spawn = spawn;
       this.type = 0;
       this.id = Math.floor(Math.random() * 1e6);
+      this.effectTime = 0;
       enemies.push(this);
     }
     tick(i) {
       this.time += clampTime;
       if (this.time > 1 || !this.spawn) {
-        this.pos["+="]((this.vel)["*"](clampTime));
+        if (!this.frozen) {
+          this.pos["+="]((this.vel)["*"](clampTime));
+        } else {
+          this.effectTime -= clampTime;
+          if (this.effectTime <= 0) {
+            this.frozen = false;
+          }
+        }
+
         applyBorder(this);
+        
+
         projectiles.forEach((p, pI) => {
           p.enemyTick(pI, this, i);
         });
+        
         let dif = (this.pos)["-"](player.pos);
-        if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
+        if (dif.mag < this.size + 25 && player.dodge.time <= 0 && !this.frozen) {
           let hitStr = (player.vel)["-"](this.vel).mag;
           this.hp--;
           this.pos["-="](player.pos);
@@ -52,6 +64,7 @@ const enemyTypes = [
           this.vel["+="](d);
           player.vel["-="](d);
           this.hitDir = dif.heading;
+
           damagePlayer((this.size > 10 ? 25 : 15) * (hitStr / 250 + 0.5));
         }
         if (this.hp <= 0) {
@@ -108,6 +121,9 @@ const enemyTypes = [
           } else {
             sketch.fill(0);
             sketch.stroke(255);
+
+            if (this.frozen) sketch.stroke(35, 178, 246)
+
             sketch.strokeWeight(5);
             sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
           }
@@ -151,13 +167,20 @@ const enemyTypes = [
     tick(i) {
       this.time += clampTime;
       if (this.time > 1 || !this.spawn) {
-        // this.pos["+="]((this.vel)["*"](clampTime));
-        // applyBorder(this);
         projectiles.forEach((p, pI) => {
           p.enemyTick(pI, this, i);
         });
+
+        if (this.frozen) {
+          this.effectTime -= clampTime;
+          if (this.effectTime <= 0) {
+            this.frozen = false;
+          }
+        }
+
         let dif = (this.pos)["-"](player.pos);
-        if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
+
+        if (dif.mag < this.size + 25 && player.dodge.time <= 0 && !this.frozen) {
           let hitStr = (player.vel)["-"](this.vel).mag;
           this.hp--;
           this.pos["-="](player.pos);
@@ -173,7 +196,7 @@ const enemyTypes = [
 
         if (this.cooldown > 0) {
           this.cooldown -= clampTime;
-        } else if (this.pos["-"](player.pos).mag < 1000) {
+        } else if (this.pos["-"](player.pos).mag < 1000 && !this.frozen) {
           this.reload -= clampTime;
           let d = (player.pos)["-"](this.pos);
           d["+="]((player.vel)["*"](0.7));
@@ -217,6 +240,9 @@ const enemyTypes = [
             sketch.fill(0);
             sketch.stroke(255);
             sketch.strokeWeight(5);
+
+            if (this.frozen) sketch.stroke(35, 178, 246)
+
             sketch.line(-this.size, -this.size, this.size, this.size);
             sketch.line(-this.size, this.size, this.size, -this.size);
             sketch.rect(0, 0, this.size * 1.5, this.size * 1.5);
@@ -306,58 +332,67 @@ const enemyTypes = [
     tick(i) {
       this.time += clampTime;
 
-      this.children.forEach((child, childIndex) => {
-        child.pos = this.pos.copy;
-        let multiplicationVector = new Vector(2, 0).rotate(((2 * Math.PI) / this.children.length) * childIndex + new Date().getTime() / 1000);
-        // console.log(multiplicationVector)
-        multiplicationVector.mag = 100;
-        child.pos = child.pos["+="](multiplicationVector);
-      })
+      if (!this.frozen) {
+        this.children.forEach((child, childIndex) => {
+          child.pos = this.pos.copy;
+          let multiplicationVector = new Vector(2, 0).rotate(((2 * Math.PI) / this.children.length) * childIndex + new Date().getTime() / 1000);
+          // console.log(multiplicationVector)
+          multiplicationVector.mag = 100;
+          child.pos = child.pos["+="](multiplicationVector);
+        })
 
-      if (this.time > 1 || !this.spawn) {
-        this.pos["+="]((this.vel)["*"](clampTime));
-        applyBorder(this);
-        projectiles.forEach((p, pI) => {
-          p.enemyTick(pI, this, i);
-        });
-        let dif = (this.pos)["-"](player.pos);
-        if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
-          let hitStr = (player.vel)["-"](this.vel).mag;
-          this.hp--;
-          this.pos["-="](player.pos);
-          this.pos.mag = this.size + 30;
-          this.pos["+="](player.pos);
-          let d = dif.copy;
-          d.mag = hitStr;
-          this.vel["+="](d);
-          player.vel["-="](d);
-          this.hitDir = dif.heading;
-          damagePlayer((this.size > 10 ? 25 : 15) * (hitStr / 250 + 0.5));
-        }
-        if (this.hp <= 0) {
-          enemies.splice(i, 1);
-          i--;
-          player.kills++;
-          playSound("kill")
-          if (this.size > 10) {
-            for (let r = -1; r <= 1; r += 1) {
-              new enemyTypes[0]({ pos: this.pos, vel: (this.vel)["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });
+        if (this.time > 1 || !this.spawn) {
+          this.pos["+="]((this.vel)["*"](clampTime));
+          applyBorder(this);
+          projectiles.forEach((p, pI) => {
+            p.enemyTick(pI, this, i);
+          });
+          let dif = (this.pos)["-"](player.pos);
+          if (dif.mag < this.size + 25 && player.dodge.time <= 0) {
+            let hitStr = (player.vel)["-"](this.vel).mag;
+            this.hp--;
+            this.pos["-="](player.pos);
+            this.pos.mag = this.size + 30;
+            this.pos["+="](player.pos);
+            let d = dif.copy;
+            d.mag = hitStr;
+            this.vel["+="](d);
+            player.vel["-="](d);
+            this.hitDir = dif.heading;
+            damagePlayer((this.size > 10 ? 25 : 15) * (hitStr / 250 + 0.5));
+          }
+          if (this.hp <= 0) {
+            enemies.splice(i, 1);
+            i--;
+            player.kills++;
+            playSound("kill")
+            if (this.size > 10) {
+              for (let r = -1; r <= 1; r += 1) {
+                new enemyTypes[0]({ pos: this.pos, vel: (this.vel)["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });
+              }
             }
+            let newScreenshake = (this.size > 20 ? 12 : 7) / ((this.pos)["-"](player.pos).mag / 500 + 1);
+            if (get("screenshake") < newScreenshake) {
+              set("screenshake", newScreenshake);
+            } else {
+              set("screenshake", get("screenshake") + newScreenshake / 5);
+            }
+            player.xp += this.size > 15 ? 5 : 3;
+            player.score += this.size > 15 ? 5 : this.size > 10 ? 3 : 1;
+  
+            this.children.map(child => child.hp = 0)
+            rumble(this.size > 15 ? 0.15 : this.size > 10 ? 0.1 : 0.05, this.size > 15 ? 0.5 : this.size > 10 ? 0.4 : 0.3);
+            explode(this.pos, this.size > 15 ? 30 : this.size > 10 ? 20 : 10);
           }
-          let newScreenshake = (this.size > 20 ? 12 : 7) / ((this.pos)["-"](player.pos).mag / 500 + 1);
-          if (get("screenshake") < newScreenshake) {
-            set("screenshake", newScreenshake);
-          } else {
-            set("screenshake", get("screenshake") + newScreenshake / 5);
-          }
-          player.xp += this.size > 15 ? 5 : 3;
-          player.score += this.size > 15 ? 5 : this.size > 10 ? 3 : 1;
-
-          this.children.map(child => child.hp = 0)
-          rumble(this.size > 15 ? 0.15 : this.size > 10 ? 0.1 : 0.05, this.size > 15 ? 0.5 : this.size > 10 ? 0.4 : 0.3);
-          explode(this.pos, this.size > 15 ? 30 : this.size > 10 ? 20 : 10);
+        }
+      } else {
+        this.effectTime -= clampTime * 3;
+        if (this.effectTime <= 0) {
+          this.frozen = false;
         }
       }
+
+
     }
     beforeDraw(i) {
       if (getOnScreen(this.pos, this.size)) {
@@ -392,6 +427,12 @@ const enemyTypes = [
             sketch.fill("rgb(70, 10, 0)");
             sketch.stroke("rgb(250, 100, 100)");
             sketch.strokeWeight(5);
+
+            if (this.frozen) {
+              sketch.stroke(35, 178, 246)
+              sketch.fill(15, 118, 186)
+            }
+
             sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
           }
         } else {
