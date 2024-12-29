@@ -17606,7 +17606,6 @@
     }
   }
   function playSound(soundType) {
-    console.log(soundType);
     if (sounds[soundType]) {
       if (Array.isArray(sounds[soundType])) {
         const randomSound = loadedSounds[soundType][Math.floor(Math.random() * loadedSounds[soundType].length)];
