@@ -4,8 +4,8 @@
   "description": "Asteroids but newer",
   "main": "main.js",
   "scripts": {
-    "build": "esbuild src/main.js --bundle --outdir=./dist --sourcemap",
-    "dev": "esbuild src/main.js --bundle --outdir=./dist --watch --sourcemap --serve --servedir=./"
+    "build": "esbuild src/main.js --bundle --outdir=./dist --minify --sourcemap; cp -r public/* dist/",
+    "dev": "esbuild src/main.js --bundle --outdir=./public --watch --sourcemap --serve --servedir=./public"
   },
   "repository": {
     "type": "git",
