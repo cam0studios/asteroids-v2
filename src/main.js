@@ -51,13 +51,15 @@ export var clampTime,
   mouse = Vector.zero,
   screenshake,
   cursorContract,
-  devMode = false,
   paused,
   score,
   posted,
   started = false,
   starCol = 100,
   editableSettings = {};
+
+export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
+window.ASTEROIDS_IS_DEVELOPMENT = devMode;
 
 var isFirstLevelup = true;
 
@@ -131,7 +133,7 @@ const sketchFunc = (sk) => {
   if (!location.href.includes("https://cam0studios.github.io/")) {
     window.playerLink = player;
     window.setTime = (val) => time = val;
-    devMode = true;
+    // console.log("%cDeveloper Mode", "color: rgb(255, 102, 51); font-size: 18px; font-weight: bold; margin-bottom: 3px;");
   }
 
   getSettings();
@@ -596,6 +598,11 @@ const sketchFunc = (sk) => {
     bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
     bar(new Vector(25, 55), 100, player.xp / player.levelUp, "rgb(40,30,0)", "rgb(220,200,0)", 15);
     bar(new Vector(25, 25), 100, player.shield.value / player.shield.maxValue, "rgb(0,40,60)", "rgb(0,150,250)", 5);
+
+    // update exposed values
+    if (devMode) {
+      window.game = { clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, settingsStore };
+    }
   }
 }
 
