@@ -332,7 +332,7 @@ const sketchFunc = (sk) => {
         }
 
         chosen.forEach((option, i) => {
-          content += `<button id="option${i}"><h2>${option.val.name}</h2><p>${option.val.desc}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
+          content += `<button id="option${i}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
         });
 
         document.getElementById("options").innerHTML = content;
