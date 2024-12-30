@@ -8,7 +8,7 @@ export const projectileEnums = {
   explosion: 1,
   enemyLaser: 2,
   dashEffect: 3,
-  sacredBlade: 4
+  // sacredBlade: 4
 }
 
 const projectileTypes = [
@@ -269,60 +269,60 @@ const projectileTypes = [
 
     }
   },
-  class {
-    constructor(data) {
-      this.pos = data.pos;
-      this.vel = new Vector(data.vel.x, data.vel.y);
-      this.dir = Vector.zero;
-      this.damage = data.damage;
-      this.speed = data.speed;
-      this.life = 0;
-      this.lifeTime = data.lifeTime;
-      projectiles.push(this);
-    }
+  // class {  // sacred blade
+  //   constructor(data) {
+  //     this.pos = data.pos;
+  //     this.vel = new Vector(data.vel.x, data.vel.y);
+  //     this.dir = Vector.zero;
+  //     this.damage = data.damage;
+  //     this.speed = data.speed;
+  //     this.life = 0;
+  //     this.lifeTime = data.lifeTime;
+  //     projectiles.push(this);
+  //   }
 
-    tick(i) {
-      this.pos["+="](this.vel["*"](clampTime));
+  //   tick(i) {
+  //     this.pos["+="](this.vel["*"](clampTime));
 
-      if (calcBorder(this).mag > 100 || (player.pos["-"](this.pos).mag < 100 && this.life > 1)) {
-        projectiles.splice(i, 1);
-        i--;
-      }
+  //     if (calcBorder(this).mag > 100 || (player.pos["-"](this.pos).mag < 100 && this.life > 1)) {
+  //       projectiles.splice(i, 1);
+  //       i--;
+  //     }
 
-      this.vel["+="](player.pos["-"](this.pos).normalized["*"](clampTime * 2000));
-      this.dir["+="](clampTime * 5);
+  //     this.vel["+="](player.pos["-"](this.pos).normalized["*"](clampTime * 2000));
+  //     this.dir["+="](clampTime * 5);
 
-      this.life += clampTime;
-    }
+  //     this.life += clampTime;
+  //   }
 
-    draw() {
-      const scale = 50;
+  //   draw() {
+  //     const scale = 50;
 
-      sketch.push()
+  //     sketch.push()
 
-      sketch.translate(this.pos.x, this.pos.y);
-      // sketch.rotate(this.vel.heading);
-      sketch.rotate(time * 40);
-      sketch.fill(255);
+  //     sketch.translate(this.pos.x, this.pos.y);
+  //     // sketch.rotate(this.vel.heading);
+  //     sketch.rotate(time * 40);
+  //     sketch.fill(255);
 
 
-      sketch.rect(0, 0, scale * 2, scale * 0.5, 2);
-      sketch.triangle(scale, scale, scale * 2, scale, scale, 0);
+  //     sketch.rect(0, 0, scale * 2, scale * 0.5, 2);
+  //     sketch.triangle(scale, scale, scale * 2, scale, scale, 0);
       
-      sketch.pop();
+  //     sketch.pop();
 
-    }
+  //   }
 
-    enemyTick(i, enemy, enemyI) {
-      if ((this.pos)["-"](enemy.pos).mag < enemy.size + 100) {
-        enemy.hp -= this.damage;
-        enemy.hitDir = this.dir;
-        // projectiles.splice(i, 1);
-        i--;
-      }
-    }
+  //   enemyTick(i, enemy, enemyI) {
+  //     if ((this.pos)["-"](enemy.pos).mag < enemy.size + 100) {
+  //       enemy.hp -= this.damage;
+  //       enemy.hitDir = this.dir;
+  //       // projectiles.splice(i, 1);
+  //       i--;
+  //     }
+  //   }
 
-  }
+  // }
 ];
 
 export default projectileTypes;

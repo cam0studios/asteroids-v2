@@ -115,6 +115,7 @@ const weapons = [
   // new Weapon({
   //   id: "sacred-blade",
   //   name: "Sacred Blade",
+  //   weight: 0.1,
   //   props: {
   //     amount: 1,
   //     damage: 5,
@@ -141,8 +142,6 @@ const weapons = [
 
   //     weapon.reload -= clampTime;
   //   },
-    
-
-  // })
+  // }),
 ];
 export default weapons;

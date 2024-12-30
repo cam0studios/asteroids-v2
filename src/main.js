@@ -313,7 +313,7 @@ const sketchFunc = (sk) => {
         });
         weapons.forEach(weapon => {
           if (player.weapons.find(e => e.id == weapon.id)) return;
-          for (let _ = 0; _ < weapon.weight; _ += 0.05) choices.push({ type: 2, id: weapon.id });
+          for (let _ = 0; _ < weapon.weight; _ += 0.05) choices.push({ type: 2, id: weapon.id, val: weapon });
         });
 
         let chosen = [];
@@ -332,7 +332,7 @@ const sketchFunc = (sk) => {
         }
 
         chosen.forEach((option, i) => {
-          content += `<button id="option${i}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p><p>${option.val.times}/${option.val.max}</p></button>`;
+          content += `<button id="option${i}"><h2>${option.val.name}</h2><p>${option.val.desc}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
         });
 
         document.getElementById("options").innerHTML = content;
