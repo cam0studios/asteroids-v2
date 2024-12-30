@@ -1,5 +1,6 @@
 import PocketBase from "pocketbase";
-import { devMode, formatTime, getVersion } from "./main";
+import Toastify from "toastify";
+import { devMode, formatTime, getVersion, settings, settingsStore } from "./main";
 const url = "https://asteroids.pockethost.io";
 export const pb = new PocketBase(url);
 
@@ -57,6 +58,7 @@ export async function updateStats({ score, level, kills, time }) {
 }
 
 export async function postFeed(event) {
+  if (!settings.sendFeedEvents) return;
   try {
     return await pb.collection("feed").create({
       user: user.id,
@@ -67,6 +69,23 @@ export async function postFeed(event) {
   } catch (err) {
     console.error(err);
   }
+}
+
+let feedConnected = false
+Toastify.setOption("position", "bottom-left")
+export async function subscribeToFeed() {
+  if (feedConnected) return;
+  pb.collection('feed').subscribe('*', function (e) {
+    console.log(e.action);
+    console.log(e.record);
+    if (e.action == "create" && e.record.type == "death" && settings.showFeed) {
+      Toastify.info(e.record.expand.user.name + " died", formatTime(e.record.data.time) + " / " + e.record.data.score, 5000);
+    }
+  }, { expand: "user" }).then(function () {
+    console.log("Connected to live feed successfully")
+    feedConnected = true
+    window.ASTEROIDS_FEED_CONNECTED = true
+  });
 }
 
 export async function getUsers() {

@@ -4,7 +4,7 @@ import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes, { explode, projectileEnums } from "./projectile-types";
-import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats } from "./pocketbase";
+import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { playSound } from "./sound";
 import EasyStorage from "@pikapower9080/easy-storage";
@@ -25,7 +25,9 @@ export const settingsStore = new EasyStorage({
     doScreenShake: true,
     isMuted: false,
     dimBG: false,
-    starDetail: "1"
+    starDetail: "1",
+    sendFeedEvents: true,
+    showFeed: true
   },
   migration: {
     enabled: true,
@@ -78,6 +80,7 @@ function startGame(level) {
   currentLevel = levels[level];
   let p5Inst = new p5(sketchFunc);
   started = true;
+  subscribeToFeed();
 }
 function stopGame() {
   sketch.noLoop();
@@ -143,8 +146,10 @@ const sketchFunc = (sk) => {
     { name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
     { name: "Do Screen Shake", var: "doScreenShake", type: "checkbox" },
     { name: "Dim Background", var: "dimBG", type: "checkbox" },
+    { name: "Send Feed Events", var: "sendFeedEvents", type: "checkbox" },
+    { name: "Show Feed", var: "showFeed", type: "checkbox" },
+    { name: "Mute", var: "isMuted", type: "checkbox" },
     { name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] },
-    { name: "Mute", var: "isMuted", type: "checkbox" }
   ];
   currentLevel.start.forEach(start => {
     for (let i = 0; i < start.count; i++) {
@@ -714,7 +719,6 @@ async function die() {
   } else {
     document.getElementById("signInDiv").innerHTML = `<p> <b> Sign in to save score </b> </p> <button id="signInBtn"> Sign in </button> <!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
     document.getElementById("stats").innerHTML = "<p> <b> Sign in to see stats </b> </p>";
-    // await new Promise(setTimout(()=>{}, 1000));
     setTimeout(() => {
       document.getElementById("signInBtn").addEventListener("click", async () => {
         let res = await signIn();

@@ -20,7 +20,8 @@
   "dependencies": {
     "@pikapower9080/easy-storage": "^1.0.4",
     "p5": "^1.10.0",
-    "pocketbase": "^0.21.5"
+    "pocketbase": "^0.21.5",
+    "toastify": "^2.0.1"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"
