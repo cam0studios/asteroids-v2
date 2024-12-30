@@ -4,6 +4,9 @@
 
 ## v0.4
 
+# 0.4.10
+- Added resistance upgrade
+
 # 0.4.9
 - Added fire shot upgrade
 
