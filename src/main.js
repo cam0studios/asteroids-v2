@@ -36,11 +36,15 @@ export const settingsStore = new EasyStorage({
 })
 
 // global vars
+/**
+ * @type {p5}
+ */
+export var sketch
+
 export var clampTime,
   enemies,
   player,
   projectiles,
-  sketch,
   size = new Vector(innerWidth, innerHeight),
   cam,
   currentLevel,
@@ -178,6 +182,7 @@ const sketchFunc = (sk) => {
     sketch.frameRate(240);
     document.getElementById("defaultCanvas0").focus();
   }
+
   sketch.draw = () => {
     // ********************  vars  ******************** //
     deltaTime = sketch.deltaTime / 1000;
