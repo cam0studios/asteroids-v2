@@ -24,6 +24,7 @@
     "toastify": "^2.0.1"
   },
   "devDependencies": {
+    "@types/p5": "^1.7.6",
     "esbuild": "^0.24.0"
   }
 }
