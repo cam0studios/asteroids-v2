@@ -9,7 +9,7 @@ import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { playSound } from "./sound";
 import EasyStorage from "@pikapower9080/easy-storage";
 
-export const version = "v0.4.7";
+export const version = "v0.4.10";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {
@@ -88,9 +88,10 @@ function stopGame() {
 var stars = [];
 
 var playerUpgrades = [
-  { name: "Speed", desc: "Makes you faster", func: () => player.speed += 120, max: 3, weight: 1 },
+  { name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
   { name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
-  { name: "Shield", desc: "Make shield better", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
+  { name: "Shield", desc: "Increase shield regen speed and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
+  { name: "Resistance", desc: ["Take 5% less damage (-5% total)", "Take 5% less damage (-10% total)", "Take 5% less damage (-15% total)", "Take 5% less damage (-20% total)"], func: () => player.damageFactor -= 0.05, max: 4, weight:0.8 }
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
 
@@ -125,7 +126,8 @@ const sketchFunc = (sk) => {
       cooldown: 0,
       vel: Vector.zero,
       time: 0
-    }
+    },
+    damageFactor: 1
   };
   paused = false;
   score = 0;
@@ -134,7 +136,6 @@ const sketchFunc = (sk) => {
   if (!location.href.includes("https://cam0studios.github.io/")) {
     window.playerLink = player;
     window.setTime = (val) => time = val;
-    // console.log("%cDeveloper Mode", "color: rgb(255, 102, 51); font-size: 18px; font-weight: bold; margin-bottom: 3px;");
   }
 
   getSettings();
@@ -204,6 +205,9 @@ const sketchFunc = (sk) => {
       fpsTime -= deltaTime;
       nextFps.push(1 / deltaTime);
     }
+
+    // blood overlay
+    document.querySelector(".vignette-red").classList.toggle("hidden", !((player.hp / player.maxHp) < .25));
 
     // waves
     currentLevel.waves.forEach(wave => {
@@ -289,7 +293,18 @@ const sketchFunc = (sk) => {
         let choices = [];
         playerUpgrades.filter(upgrade => upgrade.times < upgrade.max).forEach(upgrade => { for (let _ = 0; _ < upgrade.weight; _ += 0.05) choices.push({ type: 0, val: upgrade }) });
         player.weapons.forEach((weapon, weaponI) => {
-          weapon.upgrades.filter(upgrade => upgrade.times < upgrade.max).forEach(upgrade => { for (let _ = 0; _ < upgrade.weight; _ += 0.05) choices.push({ type: 1, val: upgrade, i: weaponI }) });
+          weapon.upgrades
+            .filter(upgrade => {
+              return upgrade.times < upgrade.max && 
+                     !weapon.upgrades
+                       .filter(x => x.times > 0)
+                       .some(x => x.incompatible?.includes(upgrade.name));
+            })
+            .forEach(upgrade => {
+              for (let _ = 0; _ < upgrade.weight; _ += 0.05) {
+                choices.push({ type: 1, val: upgrade, i: weaponI });
+              }
+            });
         });
         weapons.forEach(weapon => {
           if (player.weapons.find(e => e.id == weapon.id)) return;
@@ -304,7 +319,12 @@ const sketchFunc = (sk) => {
             choices = choices.filter(e => JSON.stringify(e) != JSON.stringify(choices[rand]));
           }
         }
-        if (chosen.length == 0) chosen.push({ type: -1, val: { name: "Recover", desc: "Recover some hp", func: () => player.hp += 40, max: 1, times: 0 } });
+        if (chosen.length == 0) chosen.push({ type: -1, val: { name: "Healing", desc: "Heal 40 HP", func: () => player.hp += 40, max: 1, times: 0 } });
+
+        function getDescription(option) {
+          if (typeof option.val.desc == "string") return option.val.desc;
+          if (Array.isArray(option.val.desc)) return option.val.desc[option.val.times] || option.val.desc[option.val.desc.length - 1];
+        }
 
         chosen.forEach((option, i) => {
           content += `<button id="option${i}"><h2>${option.val.name}</h2><p>${option.val.desc}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
@@ -819,6 +839,7 @@ export function damagePlayer(amount, source) {
   }
   amount -= player.shield.value;
   player.shield.value = 0;
+  amount *= player.damageFactor;
   player.hp -= amount;
   playSound(source == "border" ? "border" : "hurt")
   if (player.hp > 0) {

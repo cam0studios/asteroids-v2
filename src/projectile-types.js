@@ -40,6 +40,7 @@ const projectileTypes = [
       sketch.fill(0);
       
       if (this.ice) sketch.stroke(35, 178, 246);
+      if (this.fire) sketch.stroke(230, 102, 72);
 
       if (settings.emojiMovie) {
         sketch.textAlign("center", "center");
@@ -60,17 +61,38 @@ const projectileTypes = [
         enemy.hp -= this.damage;
         enemy.hitDir = this.dir;
 
-        if (!enemy.frozen) enemy.frozen = this.ice;
-        enemy.effectTime = 3;
+        if (this.fire || this.ice) {
+          if (!enemy.frozen) enemy.frozen = this.ice;
+          if (!enemy.burning) enemy.burning = this.fire;
 
-        if (this.piercing > 0) {
-          this.piercing--;
-          if (!this.ignore) {
-            this.ignore = [enemy.id]
-          }
-        } else {
+          enemy.effectTime = 3;
+        }
+
+        function remove() {
           projectiles.splice(i, 1);
           i--;
+        }
+        function pierce(that) {
+          if (!that.ignore) {
+            that.ignore = [enemy.id]
+          } else {
+            that.ignore.push(enemy.id);
+          }
+        }
+        if (this.piercing > 0) {
+          if (this.piercing >= 1) {
+            pierce(this);
+            this.piercing--;
+          } else {
+            if (Math.random() < this.piercing) {
+              this.piercing = 0;
+              pierce(this);
+            } else {
+              remove();
+            }
+          }
+        } else {
+          remove();
         }
       }
     }

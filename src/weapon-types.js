@@ -69,14 +69,16 @@ const weapons = [
       spread: 0.1,
       piercing: 0,
       ice: 10,
+      fire: 10
     },
     upgrades: [
       { name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.5 }, max: 4, weight: 1 },
-      { name: "Fire Rate", desc: "Shoot faster", func: (w) => { w.fireRate *= 1.35 }, max: 4, weight: 1 },
-      { name: "Projectile Speed", desc: "Bullets move faster", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
-      { name: "Multi-shot", desc: "Shoot more bullets at a time", func: (w) => { w.amount++ }, max: 4, weight: 0.2 },
-      { name: "Piercing", desc: "Bullets pass through an additional enemy", func: (w) => { w.piercing++ }, max: 3, weight: 0.6 },
-      { name: "Ice Shot", desc: `Bullets can freeze enemies`, incompatible: ["Fire Shot"], func: (w) => w.ice--, weight: 0.6, max: 3}
+      { name: "Fire Rate", desc: ["Fire more frequently", "Fire even more frequently"], func: (w) => { w.fireRate *= 1.35 }, max: 4, weight: 1 },
+      { name: "Projectile Speed", desc: ["Bullets travel faster", "Bullets travel even faster"], func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
+      { name: "Multi-shot", desc: "+1 bullet in volley", func: (w) => { w.amount++ }, max: 5, weight: 0.2 },
+      { name: "Piercing", desc: ["50% chance for bullets to pierce enemies", "100% chance for bullets to pierce enemies", "50% chance for bullets to pierce two enemies", "100% chance for bullets to pierce two enemies"], func: (w) => { w.piercing += 0.5 }, max: 4, weight: 0.4 },
+      { name: "Ice Shot", desc: ["Every 9th bullet freezes enemies", "Every 8th bullet freezes enemies", "Every 7th Bullet freezes enemies"], incompatible: ["Fire Shot"], func: (w) => w.ice--, weight: 0.6, max: 3 },
+      { name: "Fire Shot", desc: ["Every 9th bullet burns enemies", "Every 8th bullet burns enemies", "Every 7th Bullet burns enemies"], incompatible: ["Ice Shot"], func: (w) => w.fire--, weight: 0.6, max: 3 },
       // { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
     ],
     tick: (weapon) => {
@@ -95,11 +97,11 @@ const weapons = [
               damage: weapon.damage,
               speed: weapon.speed,
               piercing: weapon.piercing,
-              ice: bulletsFired % weapon.ice == 0
+              ice: weapon.ice != 10 && bulletsFired % weapon.ice == 0,
+              fire: weapon.fire != 10 && (bulletsFired + 1) % weapon.fire == 0
             }
 
             new projectileTypes[projectileEnums.playerBullet](data);
-            // new projectileTypes[0]({ pos: player.pos.copy, vel: new Vector(weapon.speed, 0).rotate(player.dir + weapon.spread * (i - (weapon.multishot - 1) / 2))["+"](player.vel), damage: weapon.damage });
           }
         }
       } else {
