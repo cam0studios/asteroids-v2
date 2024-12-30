@@ -206,6 +206,9 @@ const sketchFunc = (sk) => {
       nextFps.push(1 / deltaTime);
     }
 
+    // blood overlay
+    document.querySelector(".vignette-red").classList.toggle("hidden", !((player.hp / player.maxHp) < .25));
+
     // waves
     currentLevel.waves.forEach(wave => {
       if (!("passed" in wave)) wave.passed = false;
