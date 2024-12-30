@@ -288,7 +288,18 @@ const sketchFunc = (sk) => {
         let choices = [];
         playerUpgrades.filter(upgrade => upgrade.times < upgrade.max).forEach(upgrade => { for (let _ = 0; _ < upgrade.weight; _ += 0.05) choices.push({ type: 0, val: upgrade }) });
         player.weapons.forEach((weapon, weaponI) => {
-          weapon.upgrades.filter(upgrade => upgrade.times < upgrade.max).forEach(upgrade => { for (let _ = 0; _ < upgrade.weight; _ += 0.05) choices.push({ type: 1, val: upgrade, i: weaponI }) });
+          weapon.upgrades
+            .filter(upgrade => {
+              return upgrade.times < upgrade.max && 
+                     !weapon.upgrades
+                       .filter(x => x.times > 0)
+                       .some(x => x.incompatible?.includes(upgrade.name));
+            })
+            .forEach(upgrade => {
+              for (let _ = 0; _ < upgrade.weight; _ += 0.05) {
+                choices.push({ type: 1, val: upgrade, i: weaponI });
+              }
+            });
         });
         weapons.forEach(weapon => {
           if (player.weapons.find(e => e.id == weapon.id)) return;

@@ -40,6 +40,7 @@ const projectileTypes = [
       sketch.fill(0);
       
       if (this.ice) sketch.stroke(35, 178, 246);
+      if (this.fire) sketch.stroke(230, 102, 72);
 
       if (settings.emojiMovie) {
         sketch.textAlign("center", "center");
@@ -59,8 +60,13 @@ const projectileTypes = [
 
         enemy.hp -= this.damage;
         enemy.hitDir = this.dir;
-        if (!enemy.frozen) enemy.frozen = this.ice;
-        enemy.effectTime = 3;
+
+        if (this.fire || this.ice) {
+          if (!enemy.frozen) enemy.frozen = this.ice;
+          if (!enemy.burning) enemy.burning = this.fire;
+
+          enemy.effectTime = 3;
+        }
 
         function remove() {
           projectiles.splice(i, 1);

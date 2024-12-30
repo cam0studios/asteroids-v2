@@ -35,14 +35,20 @@ const enemyTypes = [
     }
     tick(i) {
       this.time += clampTime;
+
+      if (this.burning) {
+        this.hp -= (this.maxHp / 20 + 0.2) * clampTime;
+      }
+
+      this.effectTime -= clampTime;
+      if (this.effectTime <= 0) {
+        this.frozen = false;
+        this.burning = false;
+      }
+
       if (this.time > 1 || !this.spawn) {
         if (!this.frozen) {
           this.pos["+="]((this.vel)["*"](clampTime));
-        } else {
-          this.effectTime -= clampTime;
-          if (this.effectTime <= 0) {
-            this.frozen = false;
-          }
         }
 
         applyBorder(this);
@@ -123,6 +129,7 @@ const enemyTypes = [
             sketch.stroke(255);
 
             if (this.frozen) sketch.stroke(35, 178, 246)
+            if (this.burning) sketch.stroke(230, 102, 72)
 
             sketch.strokeWeight(5);
             sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
@@ -166,17 +173,22 @@ const enemyTypes = [
     }
     tick(i) {
       this.time += clampTime;
+
+      if (this.burning) {
+        this.hp -= this.maxHp / 20 * clampTime;
+      }
+
+      this.effectTime -= clampTime;
+      if (this.effectTime <= 0) {
+        this.frozen = false;
+        this.burning = false;
+      }
+
       if (this.time > 1 || !this.spawn) {
         projectiles.forEach((p, pI) => {
           p.enemyTick(pI, this, i);
         });
 
-        if (this.frozen) {
-          this.effectTime -= clampTime;
-          if (this.effectTime <= 0) {
-            this.frozen = false;
-          }
-        }
 
         let dif = (this.pos)["-"](player.pos);
 
@@ -242,6 +254,7 @@ const enemyTypes = [
             sketch.strokeWeight(5);
 
             if (this.frozen) sketch.stroke(35, 178, 246)
+            if (this.burning) sketch.stroke(230, 102, 72)
 
             sketch.line(-this.size, -this.size, this.size, this.size);
             sketch.line(-this.size, this.size, this.size, -this.size);
@@ -331,12 +344,22 @@ const enemyTypes = [
     }
     tick(i) {
       this.time += clampTime;
+      
+      if (this.burning) {
+        this.hp -= this.maxHp / 20 * clampTime;
+      }
 
+      this.effectTime -= clampTime * 3;
+      if (this.effectTime <= 0) {
+        this.frozen = false;
+        this.burning = false;
+      }
+      
       if (!this.frozen) {
         this.children.forEach((child, childIndex) => {
           child.pos = this.pos.copy;
+
           let multiplicationVector = new Vector(2, 0).rotate(((2 * Math.PI) / this.children.length) * childIndex + new Date().getTime() / 1000);
-          // console.log(multiplicationVector)
           multiplicationVector.mag = 100;
           child.pos = child.pos["+="](multiplicationVector);
         })
@@ -385,15 +408,9 @@ const enemyTypes = [
             explode(this.pos, this.size > 15 ? 30 : this.size > 10 ? 20 : 10);
           }
         }
-      } else {
-        this.effectTime -= clampTime * 3;
-        if (this.effectTime <= 0) {
-          this.frozen = false;
-        }
       }
-
-
     }
+
     beforeDraw(i) {
       if (getOnScreen(this.pos, this.size)) {
         if (this.time > 1 || !this.spawn) {
@@ -431,6 +448,11 @@ const enemyTypes = [
             if (this.frozen) {
               sketch.stroke(35, 178, 246)
               sketch.fill(15, 118, 186)
+            }
+
+            if (this.burning) {
+              sketch.stroke(230, 102, 72)
+              sketch.fill(200, 72, 32)
             }
 
             sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
