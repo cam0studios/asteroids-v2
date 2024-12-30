@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/cam0studios/asteroids-v2#readme",
   "dependencies": {
-    "@pikapower9080/easy-storage": "^1.0.4",
+    "@pikapower9080/easy-storage": "^1.0.5",
     "p5": "^1.10.0",
     "pocketbase": "^0.21.5",
     "toastify": "^2.0.1"
