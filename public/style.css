@@ -16,6 +16,10 @@ body {
   font-family: monospace;
 }
 
+h3 {
+  margin-bottom: 0;
+}
+
 dialog {
   max-height: 75%;
   min-width: 25%;
@@ -202,4 +206,20 @@ a {
 }
 .toastify .toastify-cancel-icon {
   display: none;
+}
+
+kbd {
+  display: inline-block;
+  padding: 4px;
+  font: 11px monospace;
+  line-height: 10px;
+  color: rgb(240, 240, 240);
+  vertical-align: middle;
+  background-color: #262c36;
+  border: solid 1px #3d444db3;
+  border-radius: 6px;
+}
+
+ul li {
+  text-align: left;
 }
