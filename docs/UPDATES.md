@@ -4,6 +4,9 @@
 
 ## v0.4
 
+# 0.4.9
+- Added fire shot upgrade
+
 ## 0.4.8
 - Nerfed the piercing upgrade by giving it 4 levels of 0.5
 
