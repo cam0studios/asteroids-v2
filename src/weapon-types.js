@@ -73,9 +73,9 @@ const weapons = [
     },
     upgrades: [
       { name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.5 }, max: 4, weight: 1 },
-      { name: "Fire Rate", desc: "Shoot faster", func: (w) => { w.fireRate *= 1.35 }, max: 4, weight: 1 },
-      { name: "Projectile Speed", desc: "Bullets move faster", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
-      { name: "Multi-shot", desc: "Shoot more bullets at a time", func: (w) => { w.amount++ }, max: 5, weight: 0.2 },
+      { name: "Fire Rate", desc: ["Fire more frequently", "Fire even more frequently"], func: (w) => { w.fireRate *= 1.35 }, max: 4, weight: 1 },
+      { name: "Projectile Speed", desc: ["Bullets travel faster", "Bullets travel even faster"], func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
+      { name: "Multi-shot", desc: "+1 bullet in volley", func: (w) => { w.amount++ }, max: 5, weight: 0.2 },
       { name: "Piercing", desc: ["50% chance for bullets to pierce enemies", "100% chance for bullets to pierce enemies", "50% chance for bullets to pierce two enemies", "100% chance for bullets to pierce two enemies"], func: (w) => { w.piercing += 0.5 }, max: 4, weight: 0.4 },
       { name: "Ice Shot", desc: ["Every 9th bullet freezes enemies", "Every 8th bullet freezes enemies", "Every 7th Bullet freezes enemies"], incompatible: ["Fire Shot"], func: (w) => w.ice--, weight: 0.6, max: 3 },
       { name: "Fire Shot", desc: ["Every 9th bullet burns enemies", "Every 8th bullet burns enemies", "Every 7th Bullet burns enemies"], incompatible: ["Ice Shot"], func: (w) => w.fire--, weight: 0.6, max: 3 },

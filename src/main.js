@@ -88,9 +88,9 @@ function stopGame() {
 var stars = [];
 
 var playerUpgrades = [
-  { name: "Speed", desc: "Makes you faster", func: () => player.speed += 120, max: 3, weight: 1 },
+  { name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
   { name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
-  { name: "Shield", desc: "Make shield better", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
+  { name: "Shield", desc: "Increase shield regen speed and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
 
