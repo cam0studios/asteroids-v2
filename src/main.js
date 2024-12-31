@@ -8,6 +8,9 @@ import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, 
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { playSound } from "./sound";
 import EasyStorage from "@pikapower9080/easy-storage";
+import * as Colyseus from "colyseus.js"
+
+var client = new Colyseus.Client("ws://localhost:2567");
 
 export const version = "v0.4.10";
 
@@ -63,7 +66,9 @@ export var clampTime,
   posted,
   started = false,
   starCol = 100,
-  editableSettings = {};
+  editableSettings = {},
+  multiplayer = false,
+  room;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -75,9 +80,56 @@ var isFirstLevelup = true;
 // setTimeout(() => startGame(0), 100);
 document.getElementById("startScreen").showModal();
 started = false;
+
 document.getElementById("start").addEventListener("click", () => {
   startGame(0);
   document.getElementById("startScreen").close();
+});
+
+document.getElementById("multiplayer").addEventListener("click", async () => {
+  document.getElementById("startScreen").close();
+  document.getElementById("multiplayerScreen").showModal();
+
+  document.getElementById("createRoom").addEventListener("click", async () => {
+    room = await client.create("GameRoom", {
+      maxPlayers: 4,
+      name: pb.authStore.record?.name || "Guest",
+      private: false
+    });
+    
+    startMultiplayerGame();
+  })
+
+  Array.from(document.querySelector(".rooms").children).map(x => x.remove())
+  const availableRooms = await client.getAvailableRooms("GameRoom");
+
+
+  availableRooms.forEach(room => {
+    const roomElement = document.createElement("button");
+
+    const roomTitleElement = document.createElement("h3");
+    roomTitleElement.innerText = `${room.roomId} - (${room.clients}/${room.maxClients})`;
+
+    roomElement.appendChild(roomTitleElement);
+    roomElement.addEventListener("click", async () => {
+      room = await client.joinById(room.roomId, {
+        name: pb.authStore.record?.name || "Guest"
+      });
+
+      startMultiplayerGame();
+    })
+
+    document.querySelector(".rooms").appendChild(roomElement);
+  })
+
+  console.log(availableRooms);
+
+  function startMultiplayerGame() {
+    multiplayer = true;
+    startGame(0);
+    document.getElementById("multiplayerScreen").close();
+  }
+
 });
 
 function startGame(level) {

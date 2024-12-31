@@ -36,8 +36,6 @@ export class GameRoom extends Room<GameRoomState> {
   onJoin (client: Client, options: any) {
     console.log(`${client.sessionId} joined!`, options);
 
-
-
     this.state.players.set(client.sessionId, new Player({
       x: 0,
       y: 0,
