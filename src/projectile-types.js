@@ -143,6 +143,7 @@ const projectileTypes = [
       this.link = data.link || -1;
       this.len = 0;
       this.maxLen = currentLevel.size * 2;
+      this.fired = false
       projectiles.push(this);
     }
 
@@ -160,6 +161,10 @@ const projectileTypes = [
           this.cooldown = 0;
         }
       } else {
+        if (this.fired == false) {
+          playSound("turretFire");
+        }
+        this.fired = true
         this.firing += clampTime;
         this.len += clampTime * this.maxLen * 1.5;
         if (this.len > this.maxLen) this.len = this.maxLen;

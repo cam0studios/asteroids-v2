@@ -219,6 +219,7 @@ const enemyTypes = [
           if (this.reload <= 0) {
             this.reload = this.reloadTime;
             this.cooldown = this.cooldownTime;
+            playSound("turretAim")
             new projectileTypes[projectileEnums.enemyLaser]({ pos: this.pos.copy, dir: this.dir, link: this.id });
           }
         }
