@@ -97,7 +97,7 @@ var stars = [];
 var playerUpgrades = [
   { name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
   { name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
-  { name: "Shield", desc: "Increase shield regen speed and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
+  { name: "Shield", desc: "Improve shield regeneration and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
   { name: "Resistance", desc: ["Take 10% less damage (-10% total)", "Take 10% less damage (-20% total)", "Take 10% less damage (-30% total)", "Take 10% less damage (-40% total)"], func: () => player.damageFactor -= 0.1, max: 4, weight:0.8 }
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
@@ -844,6 +844,7 @@ export function damagePlayer(amount, source) {
   if (player.shield.value > amount) {
     rumble(0.15, 0.35);
     player.shield.value -= amount;
+    playSound("shield")
     return;
   }
   amount -= player.shield.value;
