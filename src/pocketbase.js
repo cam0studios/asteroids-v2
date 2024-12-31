@@ -76,8 +76,6 @@ Toastify.setOption("position", "bottom-left")
 export async function subscribeToFeed() {
   if (feedConnected) return;
   pb.collection('feed').subscribe('*', function (e) {
-    console.log(e.action);
-    console.log(e.record);
     if (e.action == "create" && e.record.type == "death" && settings.showFeed) {
       Toastify.info(e.record.expand.user.name + " died", formatTime(e.record.data.time) + " / " + e.record.data.score, 5000);
     }

@@ -4,6 +4,9 @@
 
 ## v0.4
 
+# 0.4.11
+- Buffed resistance to 10% per upgrade
+
 # 0.4.10
 - Added resistance upgrade
 
