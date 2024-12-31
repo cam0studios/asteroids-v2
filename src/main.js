@@ -219,7 +219,7 @@ const sketchFunc = (sk) => {
     }
 
     // blood overlay
-    document.querySelector(".vignette-red").classList.toggle("hidden", !((player.hp / player.maxHp) < .25));
+    document.querySelector(".vignette-red").style.opacity = 1 - Math.min((player.hp / player.maxHp) * 1.5, 1);
 
     // waves
     currentLevel.waves.forEach(wave => {
