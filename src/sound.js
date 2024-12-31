@@ -13,6 +13,8 @@ const sounds = {
     border: { sound: "border.wav", volume: 0.4 },
     shield: { sound: "shield.wav", volume: 0.7 },
     hover: { sound: "hover.wav", volume: 0.5 },
+    turretAim: { sound: "turret/aim.wav", volume: 0.8 },
+    turretFire: { sound: "turret/fire.wav", volume: 1 }
 }
 
 const loadedSounds = {}
