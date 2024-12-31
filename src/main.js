@@ -68,6 +68,7 @@ export var clampTime,
   starCol = 100,
   editableSettings = {},
   multiplayer = false,
+  /** @type {Colyseus.Room} */
   room;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
@@ -96,7 +97,7 @@ document.getElementById("multiplayer").addEventListener("click", async () => {
       name: pb.authStore.record?.name || "Guest",
       private: false
     });
-    
+
     startMultiplayerGame();
   })
 
@@ -104,15 +105,15 @@ document.getElementById("multiplayer").addEventListener("click", async () => {
   const availableRooms = await client.getAvailableRooms("GameRoom");
 
 
-  availableRooms.forEach(room => {
+  availableRooms.forEach(availableRoom => {
     const roomElement = document.createElement("button");
 
     const roomTitleElement = document.createElement("h3");
-    roomTitleElement.innerText = `${room.roomId} - (${room.clients}/${room.maxClients})`;
+    roomTitleElement.innerText = `${availableRoom.roomId} - (${availableRoom.clients}/${availableRoom.maxClients})`;
 
     roomElement.appendChild(roomTitleElement);
     roomElement.addEventListener("click", async () => {
-      room = await client.joinById(room.roomId, {
+      room = await client.joinById(availableRoom.roomId, {
         name: pb.authStore.record?.name || "Guest"
       });
 
@@ -126,8 +127,9 @@ document.getElementById("multiplayer").addEventListener("click", async () => {
 
   function startMultiplayerGame() {
     multiplayer = true;
-    startGame(0);
+
     document.getElementById("multiplayerScreen").close();
+    startGame(0);
   }
 
 });
@@ -150,7 +152,7 @@ var playerUpgrades = [
   { name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
   { name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
   { name: "Shield", desc: "Improve shield regeneration and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
-  { name: "Resistance", desc: ["Take 10% less damage (-10% total)", "Take 10% less damage (-20% total)", "Take 10% less damage (-30% total)", "Take 10% less damage (-40% total)"], func: () => player.damageFactor -= 0.1, max: 4, weight:0.8 }
+  { name: "Resistance", desc: ["Take 10% less damage (-10% total)", "Take 10% less damage (-20% total)", "Take 10% less damage (-30% total)", "Take 10% less damage (-40% total)"], func: () => player.damageFactor -= 0.1, max: 4, weight: 0.8 }
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
 
@@ -305,6 +307,8 @@ const sketchFunc = (sk) => {
         // new projectileTypes[projectileEnums.dashEffect]({ pos: player.pos.copy, type: 1 });
       }
 
+      room.send("move", { pos: player.pos, dir: player.dir });
+
       player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire
 
       if (gamepadConnected) {
@@ -357,10 +361,10 @@ const sketchFunc = (sk) => {
         player.weapons.forEach((weapon, weaponI) => {
           weapon.upgrades
             .filter(upgrade => {
-              return upgrade.times < upgrade.max && 
-                     !weapon.upgrades
-                       .filter(x => x.times > 0)
-                       .some(x => x.incompatible?.includes(upgrade.name));
+              return upgrade.times < upgrade.max &&
+                !weapon.upgrades
+                  .filter(x => x.times > 0)
+                  .some(x => x.incompatible?.includes(upgrade.name));
             })
             .forEach(upgrade => {
               for (let _ = 0; _ < upgrade.weight; _ += 0.05) {
@@ -579,6 +583,31 @@ const sketchFunc = (sk) => {
       sketch.pop();
     });
 
+    if (multiplayer) {
+      for (const [ id, player] of room.state.players) {
+        if (id == room.sessionId) continue;
+        console.log(player);
+
+        sketch.push();
+        sketch.translate(player.pos.x, player.pos.y);
+
+        sketch.rotate(player.dir);
+        sketch.stroke(255);
+        sketch.strokeWeight(5);
+        sketch.fill(0);
+
+        if (settings.emojiMovie) {
+          sketch.textAlign("center", "center");
+          sketch.rotate(Math.PI / 4);
+          sketch.textSize(50);
+          sketch.text("🚀", 0, 0);
+        } else {
+          sketch.triangle(-15, -15, 20, 0, -15, 15);
+        }
+        sketch.pop();
+      }
+    }
+
     // player
     if (player.hp > 0) {
       sketch.push();
@@ -599,6 +628,7 @@ const sketchFunc = (sk) => {
       }
       sketch.pop();
     }
+
 
     sketch.pop();
 
@@ -1075,7 +1105,7 @@ addEventListener("resize", () => {
   size["="](innerWidth, innerHeight);
   if (sketch) sketch.resizeCanvas(size.x, size.y);
 });
-addEventListener("blur", pause);
+// addEventListener("blur", pause);
 
 function setKey(event, state) {
   keys[event.key] = state;

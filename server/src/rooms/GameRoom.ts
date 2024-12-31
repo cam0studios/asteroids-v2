@@ -2,6 +2,7 @@ import { Room, Client } from "@colyseus/core";
 import { GameRoomState, Player } from "./schema/GameRoomState";
 import { Schema, MapSchema, type } from "@colyseus/schema";
 import { generateUsername } from "unique-username-generator";
+import Vector from "../../../vector-library/vector";
 
 export class GameRoom extends Room<GameRoomState> {
 	maxClients = 4;
@@ -20,8 +21,10 @@ export class GameRoom extends Room<GameRoomState> {
 		this.onMessage("move", (client, message) => {
 			const player = this.state.players.get(client.sessionId);
 
-			player.x = message.pos.x;
-			player.y = message.pos.y;
+			console.log(message)
+
+			player.pos.x = message.pos.x;
+			player.pos.y = message.pos.y;
 			player.dir = message.dir;
 		})
 
@@ -37,8 +40,7 @@ export class GameRoom extends Room<GameRoomState> {
 		console.log(`${client.sessionId} joined!`, options);
 
 		this.state.players.set(client.sessionId, new Player({
-			x: 0,
-			y: 0,
+			pos: new Vector(0, 0),
 			name: options.name !== "Guest" ? options.name : generateUsername("-", 3),
 		}));
 

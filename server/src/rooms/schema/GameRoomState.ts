@@ -1,10 +1,11 @@
 import { Schema, Context, type, MapSchema } from "@colyseus/schema";
+import { Vector } from "../types/Vector";
+
 
 export class Player extends Schema {
 	@type("string") name: string;
 
-	@type("number") x: number;
-	@type("number") y: number;
+	@type(Vector) pos: Vector = new Vector(0, 0);
 
 	@type("number") lastX: number;
 	@type("number") lastY: number;
@@ -23,16 +24,16 @@ export class Player extends Schema {
 }
 
 export class Projectile extends Schema {
-	@type("number") x: number;
-	@type("number") y: number;
+	@type(Vector) pos: Vector = new Vector(0, 0);
+
 	@type("number") angle: number;
 	@type("number") speed: number;
 	@type("number") playerId: number;
 }
 
 export class Enemy extends Schema {
-	@type("number") x: number;
-	@type("number") y: number;
+	@type(Vector) pos: Vector = new Vector(0, 0);
+	
 	@type("number") size: number;
 	@type("number") hp: number;
 	@type("number") maxHp: number;
