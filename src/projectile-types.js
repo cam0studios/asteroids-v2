@@ -11,66 +11,113 @@ export const projectileEnums = {
   // sacredBlade: 4
 }
 
-const projectileTypes = [
-  class {  // player bullet
-    constructor(data) {
-      if (data.vel) {
-        data.dir = data.vel.heading;
-        data.speed = data.vel.mag;
-      }
-      Object.assign(this, data);
-      projectiles.push(this);
+/**
+ * Represents a type of projectile.
+ * @class
+ */
+class ProjectileType {
+  /**
+   * Creates an instance of ProjectileType.
+   * @param {string} name - The name of the projectile type.
+   * @param {Function} tick - The tick function for the projectile type.
+   * @param {Function} draw - The draw function for the projectile type.
+   * @param {Function} enemyTick - The enemy tick function for the projectile type.
+   * @param {Object} props - The properties of the projectile type.
+   * @param {Function} [spawn] - The spawn function for the projectile type.
+   */
+  constructor({ name, tick, draw, enemyTick, props, defaults, spawn }) {
+    this.name = name;
+    this.tick = tick;
+    this.draw = draw;
+    this.enemyTick = enemyTick;
+    this.props = props;
+    this.defaults = defaults;
+    if (spawn) this.spawn = spawn;
+  }
+  create(props) {
+    let projectile = {};
+    for (let prop in this.props) {
+      if (prop in props) projectile[prop] = props[prop];
     }
+    for (let prop in this.defaults) {
+      let value;
+      if (typeof this.defaults[prop] == "function") {
+        value = this.defaults[prop](props);
+      } else {
+        value = this.defaults[prop];
+      }
+      if (value instanceof Vector) {
+        value = value.copy;
+      }
+      projectile[prop] = value;
+    }
+    for (let prop of this.props) {
+      if (prop in props) projectile[prop] = props[prop];
+    }
+    projectile.tick = this.tick;
+    projectile.draw = this.draw;
+    projectile.enemyTick = this.enemyTick;
+    projectiles.push(projectile);
+    if ("spawn" in this) this.spawn(projectile);
+    return projectile;
+  }
+}
 
-    tick(i) {
-      this.pos["+="](new Vector(this.speed * clampTime, 0).rotate(this.dir));
+const projectileTypes = [
+  new ProjectileType({
+    name: "Player Bullet",
+    props: ["pos", "dir", "speed", "damage", "fire", "ice", "piercing", "ignore"],
+    defaults: {
+      dir: ({ vel }) => vel ? vel.heading : 0,
+      speed: ({ vel }) => vel ? vel.mag : 0
+    },
+    tick: (projectile, i) => {
+      projectile.pos["+="](new Vector(projectile.speed * clampTime, 0).rotate(projectile.dir));
 
-      if (calcBorder(this).mag > 100) {
+      if (calcBorder(projectile).mag > 100) {
         projectiles.splice(i, 1);
         i--;
       }
-    }
-
-    draw() {
-      let lastPos = this.pos.copy;
-      lastPos["+="](new Vector(20, 0).rotate(this.dir));
+    },
+    draw: (projectile) => {
+      let lastPos = projectile.pos.copy;
+      lastPos["+="](new Vector(20, 0).rotate(projectile.dir));
 
       sketch.stroke(255);
       sketch.strokeWeight(5);
       sketch.fill(0);
-      
-      if (this.ice) sketch.stroke(35, 178, 246);
-      if (this.fire) sketch.stroke(230, 102, 72);
+
+      if (projectile.ice) sketch.stroke(35, 178, 246);
+      if (projectile.fire) sketch.stroke(230, 102, 72);
 
       if (settings.emojiMovie) {
         sketch.textAlign("center", "center");
         sketch.textSize(10);
-        sketch.text("⚪", this.pos.x, this.pos.y)
+        sketch.text("⚪", projectile.pos.x, projectile.pos.y)
       } else {
-        sketch.line(this.pos.x, this.pos.y, lastPos.x, lastPos.y);
+        sketch.line(projectile.pos.x, projectile.pos.y, lastPos.x, lastPos.y);
       }
-    }
-
-    enemyTick(i, enemy, enemyI) {
-      if ((this.pos)["-"](enemy.pos).mag < enemy.size + 10) {
-        if (this.ignore && this.ignore.includes(enemy.id)) return; // Don't hit the same enemy twice with piercing
-        if (enemy.hp - this.damage > 0) {
+    },
+    enemyTick(projectile, projectileI, enemy, enemyI) {
+      if ((projectile.pos)["-"](enemy.pos).mag < enemy.size + 10) {
+        if (projectile.ignore && projectile.ignore.includes(enemy.id)) return; // Don't hit the same enemy twice with piercing
+        if (enemy.hp - projectile.damage > 0) {
           playSound("hit", enemy.pos)
         }
 
-        enemy.hp -= this.damage;
-        enemy.hitDir = this.dir;
+        enemy.hp -= projectile.damage;
+        enemy.hitDir = projectile.dir;
 
-        if (this.fire || this.ice) {
-          if (!enemy.frozen) enemy.frozen = this.ice;
-          if (!enemy.burning) enemy.burning = this.fire;
+        if (projectile.fire || projectile.ice) {
+          if (!enemy.frozen) enemy.frozen = projectile.ice;
+          if (!enemy.burning) enemy.burning = projectile.fire;
 
           enemy.effectTime = 3;
         }
 
         function remove() {
-          projectiles.splice(i, 1);
-          i--;
+          projectiles.splice(projectileI, 1);
+          projectileI--;
         }
         function pierce(that) {
           if (!that.ignore) {
@@ -79,14 +126,14 @@ const projectileTypes = [
             that.ignore.push(enemy.id);
           }
         }
-        if (this.piercing > 0) {
-          if (this.piercing >= 1) {
-            pierce(this);
-            this.piercing--;
+        if (projectile.piercing > 0) {
+          if (projectile.piercing >= 1) {
+            pierce(projectile);
+            projectile.piercing--;
           } else {
-            if (Math.random() < this.piercing) {
-              this.piercing = 0;
-              pierce(this);
+            if (Math.random() < projectile.piercing) {
+              projectile.piercing = 0;
+              pierce(projectile);
             } else {
               remove();
             }
@@ -96,169 +143,155 @@ const projectileTypes = [
         }
       }
     }
-  },
-  class {  // explosion
-    constructor(data) {
-      this.pos = data.pos;
-      this.size = data.size;
-      this.maxSize = data.maxSize;
-      projectiles.push(this);
-    }
-
-    tick(i) {
-      if (this.size > this.maxSize) {
+  }),
+  new ProjectileType({
+    name: "Explosion",
+    props: ["pos", "size", "maxSize"],
+    defaults: {},
+    tick: (projectile, i) => {
+      if (projectile.size > projectile.maxSize) {
         projectiles.splice(i, 1);
         i--;
       } else {
-        this.size += clampTime * 30 * Math.sqrt(this.maxSize);
+        projectile.size += clampTime * 30 * Math.sqrt(projectile.maxSize);
       }
-    }
-
-    draw() {
+    },
+    draw: (projectile) => {
       if (settings.emojiMovie) {
         sketch.textAlign("center", "center");
         sketch.textSize(10);
         sketch.noStroke();
         sketch.fill(255);
-        sketch.text("", this.pos.x, this.pos.y);
+        sketch.text("", projectile.pos.x, projectile.pos.y);
       } else {
         sketch.fill(250);
         sketch.stroke(200);
-        sketch.strokeWeight(this.maxSize * 0.5);
-        sketch.ellipse(this.pos.x, this.pos.y, this.size * 2, this.size * 2);
+        sketch.strokeWeight(projectile.maxSize * 0.5);
+        sketch.ellipse(projectile.pos.x, projectile.pos.y, projectile.size * 2, projectile.size * 2);
       }
-    }
+    },
+    enemyTick: (projectile, i, enemy, enemyI) => {
 
-    enemyTick(i, enemy, enemyI) {
-
     }
-  },
-  class {  // enemy laser
-    constructor(data) {
-      this.pos = data.pos;
-      this.dir = data.dir;
-      this.cooldown = 0.5;
-      this.firing = 0;
-      this.dirV = new Vector(1, 0).rotate(this.dir);
-      this.link = data.link || -1;
-      this.len = 0;
-      this.maxLen = currentLevel.size * 2;
-      this.fired = false
-      projectiles.push(this);
-    }
-
-    tick(i) {
-      let linked = enemies.find(enemy => enemy.id === this.link);
+  }),
+  new ProjectileType({
+    name: "Enemy Laser",
+    props: ["pos", "dir", "link"],
+    defaults: {
+      cooldown: 0.5,
+      firing: 0,
+      dirV: ({ dir }) => new Vector(1, 0).rotate(dir),
+      len: 0,
+      maxLen: () => currentLevel.size * 2,
+      fired: false
+    },
+    tick: (projectile, i) => {
+      let linked = enemies.find(enemy => enemy.id === projectile.link);
       if (linked) {
-        this.pos = linked.pos.copy;
-        // this.dir = linked.dir;
+        projectile.pos = linked.pos.copy;
+        // projectile.dir = linked.dir;
       }
-      this.dirV = new Vector(1, 0).rotate(this.dir);
-      if (this.cooldown > 0) {
-        this.cooldown -= clampTime;
-        if (this.cooldown <= 0) {
-          this.firing = 0;
-          this.cooldown = 0;
+      projectile.dirV = new Vector(1, 0).rotate(projectile.dir);
+      if (projectile.cooldown > 0) {
+        projectile.cooldown -= clampTime;
+        if (projectile.cooldown <= 0) {
+          projectile.firing = 0;
+          projectile.cooldown = 0;
         }
       } else {
-        if (this.fired == false) {
-          playSound("turretFire", this.pos);
+        if (projectile.fired == false) {
+          playSound("turretFire", projectile.pos);
         }
-        this.fired = true
-        this.firing += clampTime;
-        this.len += clampTime * this.maxLen * 1.5;
-        if (this.len > this.maxLen) this.len = this.maxLen;
+        projectile.fired = true
+        projectile.firing += clampTime;
+        projectile.len += clampTime * projectile.maxLen * 1.5;
+        if (projectile.len > projectile.maxLen) projectile.len = projectile.maxLen;
 
-        let int = intersections.lineCircleCollision(this.pos, (this.pos)["+"]((this.dirV)["*"](this.len)), player.pos, 25);
+        let int = intersections.lineCircleCollision(projectile.pos, (projectile.pos)["+"]((projectile.dirV)["*"](projectile.len)), player.pos, 25);
         if (int) {
-          let point = intersections.lineClosestPoint(this.pos, (this.pos)["+"]((this.dirV)["*"](this.len)), player.pos);
-          explode(point["+"](new Vector(Math.random() * 15, 0).rotate(Math.random() * 2 * Math.PI))["-"]((this.dirV)["*"](20)), 15);
+          let point = intersections.lineClosestPoint(projectile.pos, (projectile.pos)["+"]((projectile.dirV)["*"](projectile.len)), player.pos);
+          explode(point["+"](new Vector(Math.random() * 15, 0).rotate(Math.random() * 2 * Math.PI))["-"]((projectile.dirV)["*"](20)), 15);
           damagePlayer(clampTime * 10);
           player.vel["+="]((point)["-"](player.pos).normalized["*"](clampTime * 500));
-          player.vel["+="]((this.dirV)["*"](clampTime * 1000));
+          player.vel["+="]((projectile.dirV)["*"](clampTime * 1000));
         }
 
-        if (this.firing >= 1) {
+        if (projectile.firing >= 1) {
           projectiles.splice(i, 1);
           i--;
         }
       }
-    }
-
-    draw() {
+    },
+    draw: (projectile) => {
       if (settings.emojiMovie) {
         sketch.textAlign("center", "center");
         sketch.textSize(10);
         sketch.noStroke();
         sketch.fill(255);
-        sketch.text("", this.pos.x, this.pos.y);
+        sketch.text("", projectile.pos.x, projectile.pos.y);
       } else {
-        if (this.cooldown > 0) {
+        if (projectile.cooldown > 0) {
           sketch.noFill();
           sketch.stroke("rgba(255, 0, 0, 0.5)");
           sketch.strokeWeight(2);
-          sketch.translate(this.pos.x, this.pos.y);
-          sketch.line(0, 0, this.maxLen * this.dirV.x, this.maxLen * this.dirV.y);
+          sketch.translate(projectile.pos.x, projectile.pos.y);
+          sketch.line(0, 0, projectile.maxLen * projectile.dirV.x, projectile.maxLen * projectile.dirV.y);
         } else {
           sketch.noFill();
           sketch.stroke("rgb(200, 230, 255)");
           let thick = 10;
-          if (this.firing < 0.1) {
-            thick *= this.firing * 10;
+          if (projectile.firing < 0.1) {
+            thick *= projectile.firing * 10;
           }
-          if (this.firing > 0.8) {
-            thick *= (1 - this.firing) * 5;
+          if (projectile.firing > 0.8) {
+            thick *= (1 - projectile.firing) * 5;
           }
           sketch.strokeWeight(thick);
-          sketch.translate(this.pos.x, this.pos.y);
-          sketch.line(0, 0, this.len * this.dirV.x, this.len * this.dirV.y);
+          sketch.translate(projectile.pos.x, projectile.pos.y);
+          sketch.line(0, 0, projectile.len * projectile.dirV.x, projectile.len * projectile.dirV.y);
         }
       }
-    }
+    },
+    enemyTick: (projectile, i, enemy, enemyI) => {
 
-    enemyTick(i, enemy, enemyI) {
-
     }
-  },
-  class {  // dash effect
-    constructor(data) {
-      this.pos = data.pos;
-      this.type = data.type;
-      this.progress = 0;
-      projectiles.push(this);
-    }
-
-    tick(i) {
-      if (this.type == 0) {
-        this.progress += clampTime * 5;
+  }),
+  new ProjectileType({
+    name: "Dash Effect",
+    props: ["pos", "type"],
+    defaults: {
+      progress: 0
+    },
+    tick: (projectile, i) => {
+      if (projectile.type == 0) {
+        projectile.progress += clampTime * 5;
       } else {
-        this.progress += clampTime * 1;
+        projectile.progress += clampTime * 3;
         if (player.dodgeTime > 0) {
-          this.progress = 1;
+          projectile.progress = 1;
         }
       }
-      if (this.progress >= 1) {
+      if (projectile.progress >= 1) {
         projectiles.splice(i, 1);
         i--;
       }
-    }
-
-    draw() {
+    },
+    draw: (projectile) => {
       if (settings.emojiMovie) {
         sketch.textAlign("center", "center");
         sketch.textSize(10);
         sketch.noStroke();
         sketch.fill(255);
-        sketch.text("", this.pos.x, this.pos.y);
+        sketch.text("", projectile.pos.x, projectile.pos.y);
       } else {
         let alpha;
         let col = 150;
-        if (this.type == 0) {
-          alpha = (1 - this.progress) * 0.2;
+        if (projectile.type == 0) {
+          alpha = (1 - projectile.progress) * 0.2;
           if (alpha < 0) alpha = 0;
           if (alpha > 1) alpha = 1;
         } else {
-          alpha = (1 - this.progress) * 0.01;
+          alpha = (1 - projectile.progress) * 0.01;
           if (alpha < 0) alpha = 0;
           if (alpha > 1) alpha = 1;
           col = 100;
@@ -266,74 +299,19 @@ const projectileTypes = [
         alpha = Math.round(alpha * 100) / 100;
         sketch.fill(`rgba(${col}, ${col}, ${col}, ${alpha})`);
         sketch.noStroke();
-        sketch.circle(this.pos.x, this.pos.y, 30 + this.progress * 40);
+        sketch.circle(projectile.pos.x, projectile.pos.y, 30 + projectile.progress * 40);
       }
+    },
+    enemyTick: (projectile, i, enemy, enemyI) => {
+
     }
-
-    enemyTick(i, enemy, enemyI) {
-
-    }
-  },
-  // class {  // sacred blade
-  //   constructor(data) {
-  //     this.pos = data.pos;
-  //     this.vel = new Vector(data.vel.x, data.vel.y);
-  //     this.dir = Vector.zero;
-  //     this.damage = data.damage;
-  //     this.speed = data.speed;
-  //     this.life = 0;
-  //     this.lifeTime = data.lifeTime;
-  //     projectiles.push(this);
-  //   }
-
-  //   tick(i) {
-  //     this.pos["+="](this.vel["*"](clampTime));
-
-  //     if (calcBorder(this).mag > 100 || (player.pos["-"](this.pos).mag < 100 && this.life > 1)) {
-  //       projectiles.splice(i, 1);
-  //       i--;
-  //     }
-
-  //     this.vel["+="](player.pos["-"](this.pos).normalized["*"](clampTime * 2000));
-  //     this.dir["+="](clampTime * 5);
-
-  //     this.life += clampTime;
-  //   }
-
-  //   draw() {
-  //     const scale = 50;
-
-  //     sketch.push()
-
-  //     sketch.translate(this.pos.x, this.pos.y);
-  //     // sketch.rotate(this.vel.heading);
-  //     sketch.rotate(time * 40);
-  //     sketch.fill(255);
-
-
-  //     sketch.rect(0, 0, scale * 2, scale * 0.5, 2);
-  //     sketch.triangle(scale, scale, scale * 2, scale, scale, 0);
-      
-  //     sketch.pop();
-
-  //   }
-
-  //   enemyTick(i, enemy, enemyI) {
-  //     if ((this.pos)["-"](enemy.pos).mag < enemy.size + 100) {
-  //       enemy.hp -= this.damage;
-  //       enemy.hitDir = this.dir;
-  //       // projectiles.splice(i, 1);
-  //       i--;
-  //     }
-  //   }
-
-  // }
+  })
 ];
 
 export default projectileTypes;
 
 export function explode(pos, size) {
-  new projectileTypes[projectileEnums.explosion]({
+  projectileTypes[projectileEnums.explosion].create({
     pos,
     size: 0,
     maxSize: size

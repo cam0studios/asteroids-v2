@@ -161,7 +161,7 @@ const sketchFunc = (sk) => {
       for (let prop in start.props) {
         props[prop] = start.props[prop];
       }
-      new enemyTypes[start.type](props);
+      enemyTypes[start.type].create(props);
     }
   });
 
@@ -231,7 +231,7 @@ const sketchFunc = (sk) => {
               for (let prop in enemy.props) {
                 props[prop] = enemy.props[prop];
               }
-              new enemyTypes[enemy.type](props);
+              enemyTypes[enemy.type].create(props);
             }
           });
         }
@@ -250,7 +250,7 @@ const sketchFunc = (sk) => {
       player.vel["+="](joy);
       player.vel["*="](Math.pow(0.3, clampTime));
       if (joy.mag > 0) {
-        // new projectileTypes[projectileEnums.dashEffect]({ pos: player.pos.copy, type: 1 });
+        // projectileTypes[projectileEnums.dashEffect].create({ pos: player.pos.copy, type: 1 });
       }
 
       player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire
@@ -279,7 +279,7 @@ const sketchFunc = (sk) => {
           player.dodge.vel = Vector.zero;
         }
         player.vel["="](player.dodge.vel);
-        new projectileTypes[projectileEnums.dashEffect]({ pos: player.pos.copy });
+        projectileTypes[projectileEnums.dashEffect].create({ pos: player.pos.copy });
       }
 
       player.dir = mouse.heading;
@@ -305,10 +305,10 @@ const sketchFunc = (sk) => {
         player.weapons.forEach((weapon, weaponI) => {
           weapon.upgrades
             .filter(upgrade => {
-              return upgrade.times < upgrade.max && 
-                     !weapon.upgrades
-                       .filter(x => x.times > 0)
-                       .some(x => x.incompatible?.includes(upgrade.name));
+              return upgrade.times < upgrade.max &&
+                !weapon.upgrades
+                  .filter(x => x.times > 0)
+                  .some(x => x.incompatible?.includes(upgrade.name));
             })
             .forEach(upgrade => {
               for (let _ = 0; _ < upgrade.weight; _ += 0.05) {
@@ -399,12 +399,12 @@ const sketchFunc = (sk) => {
 
     // projectiles
     projectiles.forEach((projectile, projectileI) => {
-      projectile.tick(projectileI);
+      projectile.tick(projectile,projectileI);
     });
 
     // enemies
     enemies.forEach((enemy, enemyI) => {
-      enemy.tick(enemyI);
+      enemy.tick(enemy, enemyI);
     });
 
 
@@ -509,21 +509,21 @@ const sketchFunc = (sk) => {
     // enemies before draw
     enemies.forEach(enemy => {
       sketch.push();
-      enemy.beforeDraw();
+      enemy.beforeDraw(enemy);
       sketch.pop();
     });
 
     // projectiles
     projectiles.forEach(projectile => {
       sketch.push();
-      projectile.draw();
+      projectile.draw(projectile);
       sketch.pop();
     });
 
     // enemies after draw
     enemies.forEach(enemy => {
       sketch.push();
-      enemy.afterDraw();
+      enemy.afterDraw(enemy);
       sketch.pop();
     });
 
@@ -1094,7 +1094,7 @@ function setKey(event, state) {
           break;
         default:
           if ("1234567890".split("").includes(event.key)) {
-            if (enemyTypes[parseInt(event.key)]) new enemyTypes[parseInt(event.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
+            if (enemyTypes[parseInt(event.key)]) enemyTypes[parseInt(event.key)].create({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
 
           }
           break;

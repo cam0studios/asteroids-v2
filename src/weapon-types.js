@@ -101,7 +101,7 @@ const weapons = [
               fire: weapon.fire != 10 && (bulletsFired + 1) % weapon.fire == 0
             }
 
-            new projectileTypes[projectileEnums.playerBullet](data);
+            projectileTypes[projectileEnums.playerBullet].create(data);
           }
         }
       } else {
@@ -130,7 +130,7 @@ const weapons = [
   //     if (weapon.reload <= 0) {
   //       weapon.reload = 1 / weapon.fireRate;
   //       for (let i = 0; i < weapon.amount; i++) {
-  //         new projectileTypes[projectileEnums.sacredBlade]({
+  //         projectileTypes[projectileEnums.sacredBlade].create({
   //           pos: player.pos.copy,
   //           damage: weapon.damage,
   //           speed: weapon.speed,
