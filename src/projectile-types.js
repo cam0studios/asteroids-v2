@@ -119,21 +119,21 @@ const projectileTypes = [
           projectiles.splice(projectileI, 1);
           projectileI--;
         }
-        function pierce(that) {
-          if (!that.ignore) {
-            that.ignore = [enemy.id]
+        function pierce() {
+          if (!projectile.ignore) {
+            projectile.ignore = [enemy.id]
           } else {
-            that.ignore.push(enemy.id);
+            projectile.ignore.push(enemy.id);
           }
         }
         if (projectile.piercing > 0) {
           if (projectile.piercing >= 1) {
-            pierce(projectile);
+            pierce();
             projectile.piercing--;
           } else {
             if (Math.random() < projectile.piercing) {
               projectile.piercing = 0;
-              pierce(projectile);
+              pierce();
             } else {
               remove();
             }
