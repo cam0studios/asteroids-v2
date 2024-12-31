@@ -908,7 +908,14 @@ function lerp(a, b, t) {
 
 // ********************  event listeners  ******************** //
 [...document.querySelectorAll(".noClose")].forEach(elem => {
-  elem.addEventListener("cancel", ev => ev.preventDefault());
+  elem.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    setTimeout(() => {
+      if (!event.target.open) {
+        event.target.showModal();
+      }
+    }, 1)
+  });
 });
 
 [...document.querySelectorAll("button,input[type='checkbox'],input[type='radio'],select")].forEach(elem => {
