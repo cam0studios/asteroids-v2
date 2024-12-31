@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "build": "esbuild src/main.js --bundle --outdir=./dist --minify --sourcemap --define:__IS_DEVELOPMENT__=false; cp -r public/* dist/",
-    "dev": "esbuild src/main.js --bundle --outdir=./public --watch --sourcemap --serve --servedir=./public --define:__IS_DEVELOPMENT__=true"
+    "dev": "esbuild src/main.js --bundle --outdir=./public --watch --sourcemap --serve --servedir=./public --define:__IS_DEVELOPMENT__=true",
+    "start": "concurrently 'bun run dev' 'cd server && bun run start' --names 'bundle,server' --prefix '[{name}]' --prefix-colors 'bold.bgRed,bold.bgGreen'"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/p5": "^1.7.6",
+    "concurrently": "^9.1.1",
     "esbuild": "^0.24.0"
   }
 }
