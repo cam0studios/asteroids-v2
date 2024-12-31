@@ -307,7 +307,7 @@ const sketchFunc = (sk) => {
         // new projectileTypes[projectileEnums.dashEffect]({ pos: player.pos.copy, type: 1 });
       }
 
-      room.send("move", { pos: player.pos, dir: player.dir });
+      if (multiplayer) room.send("move", { pos: player.pos, dir: player.dir });
 
       player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire
 
@@ -689,7 +689,11 @@ const sketchFunc = (sk) => {
     sketch.fill(255);
     sketch.noStroke();
     sketch.textSize(35);
-    sketch.text(formatTime(time), size.x / 2, 10);
+    if (!multiplayer) {
+      sketch.text(formatTime(time), size.x / 2, 10);
+    } else {
+      sketch.text(formatTime(room.state.time), size.x / 2, 10);
+    }
 
     // dev mode text
     if (devMode) {
