@@ -342,6 +342,10 @@ const sketchFunc = (sk) => {
 
         document.getElementById("options").innerHTML = content;
 
+        document.getElementById("options").querySelectorAll("button").forEach(button => button.addEventListener("mouseenter", () => {
+          playSound("hover");
+        }))
+
         document.getElementById("options").querySelector("button").focus();
 
         chosen.forEach((option, optionI) => {
@@ -687,6 +691,7 @@ async function die() {
   document.getElementById("stats").innerHTML = "<p> <b> Loading... </b> </p>";
   if (signedIn) {
     document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${user.name} </b> </p> <button id="signOutBtn"> Sign out </button>`;
+    document.getElementById("signOutBtn").addEventListener("mouseenter", () => playSound("hover"));
     setTimeout(() => {
       document.getElementById("signOutBtn").addEventListener("click", () => {
         signOut();
@@ -735,6 +740,7 @@ async function die() {
       });
       // document.getElementById("signInWithGoogleButton").addEventListener("click", async () => await signInWithGoogle());
     }, 100);
+    document.getElementById("signInBtn").addEventListener("mouseenter", () => playSound("hover"));
   }
 
   let page = 1;
@@ -904,6 +910,12 @@ function lerp(a, b, t) {
 [...document.querySelectorAll(".noClose")].forEach(elem => {
   elem.addEventListener("cancel", ev => ev.preventDefault());
 });
+
+[...document.querySelectorAll("button,input[type='checkbox'],input[type='radio'],select")].forEach(elem => {
+  elem.addEventListener("mouseenter", () => {
+    playSound("hover");
+  })
+})
 
 document.addEventListener("keydown", event => setKey(event, true));
 document.addEventListener("keyup", event => setKey(event, false));

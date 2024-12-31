@@ -1,4 +1,4 @@
-import { settings } from "./main";
+import { settings, settingsStore } from "./main";
 
 const sounds = {
     dash: [
@@ -15,7 +15,8 @@ const sounds = {
     ],
     death: { sound: "death.wav", volume: 0.8 },
     border: { sound: "border.wav", volume: 0.8 },
-    shield: { sound: "shield.wav", volume: 0.7 }
+    shield: { sound: "shield.wav", volume: 0.7 },
+    hover: { sound: "hover.wav", volume: 0.5 },
 }
 
 const loadedSounds = {}
@@ -39,7 +40,7 @@ for (let type in sounds) {
 }
 
 export function playSound(soundType) {
-    if (settings.isMuted) return;
+    if (settingsStore.get("isMuted")) return;
     
     if (sounds[soundType]) {
         let playingSound
