@@ -77,7 +77,7 @@ const enemyTypes = [
           enemies.splice(i, 1);
           i--;
           player.kills++;
-          playSound("kill")
+          playSound("kill", this.pos)
           if (this.size > 10) {
             for (let r = -1; r <= 1; r += 1) {
               new enemyTypes[0]({ pos: this.pos, vel: (this.vel)["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });
@@ -219,13 +219,14 @@ const enemyTypes = [
           if (this.reload <= 0) {
             this.reload = this.reloadTime;
             this.cooldown = this.cooldownTime;
+            playSound("turretAim", this.pos)
             new projectileTypes[projectileEnums.enemyLaser]({ pos: this.pos.copy, dir: this.dir, link: this.id });
           }
         }
 
         if (this.hp <= 0) {
           enemies.splice(i, 1);
-          playSound("kill")
+          playSound("kill", this.pos)
           i--;
           player.kills++;
           let newScreenshake = 50 / ((this.pos)["-"](player.pos).mag / 500 + 1);
@@ -388,7 +389,7 @@ const enemyTypes = [
             enemies.splice(i, 1);
             i--;
             player.kills++;
-            playSound("kill")
+            playSound("kill", this.pos)
             if (this.size > 10) {
               for (let r = -1; r <= 1; r += 1) {
                 new enemyTypes[0]({ pos: this.pos, vel: (this.vel)["+"](new Vector(50, 0).rotate(this.hitDir + r)), size: this.size * 2 / 3, mode: 0 });

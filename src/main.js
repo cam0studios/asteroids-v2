@@ -12,7 +12,7 @@ import * as Colyseus from "colyseus.js"
 
 var client = new Colyseus.Client("ws://localhost:2567");
 
-export const version = "v0.4.10";
+export const version = "v0.4.11";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {
@@ -149,8 +149,8 @@ var stars = [];
 var playerUpgrades = [
   { name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
   { name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
-  { name: "Shield", desc: "Increase shield regen speed and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
-  { name: "Resistance", desc: ["Take 5% less damage (-5% total)", "Take 5% less damage (-10% total)", "Take 5% less damage (-15% total)", "Take 5% less damage (-20% total)"], func: () => player.damageFactor -= 0.05, max: 4, weight:0.8 }
+  { name: "Shield", desc: "Improve shield regeneration and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
+  { name: "Resistance", desc: ["Take 10% less damage (-10% total)", "Take 10% less damage (-20% total)", "Take 10% less damage (-30% total)", "Take 10% less damage (-40% total)"], func: () => player.damageFactor -= 0.1, max: 4, weight:0.8 }
   // { name: "", desc: "", func: () => {}, max: 0 }
 ];
 
@@ -393,6 +393,10 @@ const sketchFunc = (sk) => {
         });
 
         document.getElementById("options").innerHTML = content;
+
+        document.getElementById("options").querySelectorAll("button").forEach(button => button.addEventListener("mouseenter", () => {
+          playSound("hover");
+        }))
 
         document.getElementById("options").querySelector("button").focus();
 
@@ -739,6 +743,7 @@ async function die() {
   document.getElementById("stats").innerHTML = "<p> <b> Loading... </b> </p>";
   if (signedIn) {
     document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${user.name} </b> </p> <button id="signOutBtn"> Sign out </button>`;
+    document.getElementById("signOutBtn").addEventListener("mouseenter", () => playSound("hover"));
     setTimeout(() => {
       document.getElementById("signOutBtn").addEventListener("click", () => {
         signOut();
@@ -787,6 +792,7 @@ async function die() {
       });
       // document.getElementById("signInWithGoogleButton").addEventListener("click", async () => await signInWithGoogle());
     }, 100);
+    document.getElementById("signInBtn").addEventListener("mouseenter", () => playSound("hover"));
   }
 
   let page = 1;
@@ -896,6 +902,7 @@ export function damagePlayer(amount, source) {
   if (player.shield.value > amount) {
     rumble(0.15, 0.35);
     player.shield.value -= amount;
+    playSound("shield")
     return;
   }
   amount -= player.shield.value;
@@ -955,6 +962,12 @@ function lerp(a, b, t) {
 [...document.querySelectorAll(".noClose")].forEach(elem => {
   elem.addEventListener("cancel", ev => ev.preventDefault());
 });
+
+[...document.querySelectorAll("button,input[type='checkbox'],input[type='radio'],select")].forEach(elem => {
+  elem.addEventListener("mouseenter", () => {
+    playSound("hover");
+  })
+})
 
 document.addEventListener("keydown", event => setKey(event, true));
 document.addEventListener("keyup", event => setKey(event, false));
