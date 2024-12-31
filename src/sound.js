@@ -27,11 +27,13 @@ for (let type in sounds) {
             const soundData = sounds[type][i]
             audio.volume = soundData.volume || 1
             audio.loop = soundData.loop || false
+            audio.playbackRate = soundData.speed || 1
         });
     } else {
         loadedSounds[type] = new Audio("assets/sound/" + sounds[type].sound);
         loadedSounds[type].volume = sounds[type].volume || 1;
         loadedSounds[type].loop = sounds[type].loop || false;
+        loadedSounds[type].playbackRate = sounds[type].speed || 1;
     }
 }
 
