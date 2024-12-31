@@ -63,7 +63,8 @@ export var clampTime,
   posted,
   started = false,
   starCol = 100,
-  editableSettings = {};
+  editableSettings = {},
+  cheated;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -610,13 +611,12 @@ const sketchFunc = (sk) => {
     sketch.textSize(35);
     sketch.text(formatTime(time), size.x / 2, 10);
 
-    // dev mode text
-    if (devMode) {
+    if (cheated) {
       sketch.textAlign("left", "bottom");
       sketch.textFont("monospace");
       sketch.fill(255, 102, 51);
       sketch.textSize(15);
-      sketch.text("Developer Mode", 10, size.y - 10);
+      sketch.text("Cheated Run - Invalid", 10, size.y - 10);
     }
 
     // cursor
@@ -968,6 +968,7 @@ function unpause() {
 }
 function restart() {
   isFirstLevelup = true
+  cheated = false
   unpause();
   stopGame();
   startGame(0);
@@ -1052,6 +1053,7 @@ function setKey(event, state) {
       switch (event.key) {
         case "x":
           enemies.forEach(enemy => enemy.hp = 0);
+          cheated = true
           break;
 
         case "c":
@@ -1059,11 +1061,13 @@ function setKey(event, state) {
             enemy.pos.x = mousePos.x
             enemy.pos.y = mousePos.y
           });
+          cheated = true
           break;
 
         case "v":
           player.pos.x = mousePos.x
           player.pos.y = mousePos.y
+          cheated = true
           break;
         case "P":
           if (paused) unpause();
@@ -1100,10 +1104,21 @@ function setKey(event, state) {
         case "k":
           updateStars();
           break;
+        case "g":
+          player.maxHp = Infinity;
+          player.hp = Infinity;
+          cheated = true
+          break;
+        case "h":
+          player.hp = player.maxHp;
+          cheated = true
+          break;
         default:
           if ("1234567890".split("").includes(event.key)) {
-            if (enemyTypes[parseInt(event.key)]) new enemyTypes[parseInt(event.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
-
+            if (enemyTypes[parseInt(event.key)]) {
+              new enemyTypes[parseInt(event.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
+              cheated = true
+            }
           }
           break;
       }
