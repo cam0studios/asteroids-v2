@@ -14,7 +14,7 @@ const sounds = {
         { sound: "levelup/levelup3.wav" }
     ],
     death: { sound: "death.wav", volume: 0.8 },
-    border: { sound: "border.wav" },
+    border: { sound: "border.wav", volume: 0.8 },
     shield: { sound: "shield.wav", volume: 0.7 }
 }
 
