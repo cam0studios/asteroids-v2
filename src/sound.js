@@ -8,13 +8,9 @@ const sounds = {
     hit: { sound: "hit.wav", volume: 0.2 },
     hurt: { sound: "hurt.wav", volume: 0.7 },
     kill: { sound: "kill.wav", volume: 0.2 },
-    levelup: [
-        { sound: "levelup/levelup.wav" },
-        { sound: "levelup/levelup2.wav" },
-        { sound: "levelup/levelup3.wav" }
-    ],
+    levelup: { sound: "levelup.ogg" },
     death: { sound: "death.wav", volume: 0.8 },
-    border: { sound: "border.wav", volume: 0.8 },
+    border: { sound: "border.wav", volume: 0.4 },
     shield: { sound: "shield.wav", volume: 0.7 },
     hover: { sound: "hover.wav", volume: 0.5 },
 }
@@ -65,5 +61,6 @@ export function stopSound(playbackId) {
     if (playbackIds[playbackId]) {
         playbackIds[playbackId].pause();
         playbackIds[playbackId].currentTime = 0;
+        delete playbackIds[playbackId];
     }
 }
