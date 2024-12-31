@@ -1,20 +1,20 @@
-import { settings, settingsStore } from "./main";
+import { player, settings, settingsStore } from "./main";
 
 const sounds = {
     dash: [
         { sound: "dash/dash.wav", volume: 0.8 },
         { sound: "dash/dash2.wav", volume: 0.8 },
     ],
-    hit: { sound: "hit.wav", volume: 0.2 },
+    hit: { sound: "hit.wav", volume: 0.2, rolloff: 1000 },
     hurt: { sound: "hurt.wav", volume: 0.7 },
-    kill: { sound: "kill.wav", volume: 0.2 },
+    kill: { sound: "kill.wav", volume: 0.2, rolloff: 1000 },
     levelup: { sound: "levelup.ogg" },
     death: { sound: "death.wav", volume: 0.8 },
     border: { sound: "border.wav", volume: 0.4 },
     shield: { sound: "shield.wav", volume: 0.7 },
     hover: { sound: "hover.wav", volume: 0.5 },
-    turretAim: { sound: "turret/aim.wav", volume: 0.8 },
-    turretFire: { sound: "turret/fire.wav", volume: 1 }
+    turretAim: { sound: "turret/aim.wav", volume: 0.8, rolloff: 1000 },
+    turretFire: { sound: "turret/fire.wav", volume: 1, rolloff: 1000 }
 }
 
 const loadedSounds = {}
@@ -37,9 +37,23 @@ for (let type in sounds) {
     }
 }
 
-export function playSound(soundType) {
+export function playSound(soundType, position) {
     if (settingsStore.get("isMuted")) return;
     
+    let distance
+    if (position) {
+        distance = position["-"](player.pos).mag
+    }
+    if (distance && sounds[soundType].rolloff) {
+        const rolloff = sounds[soundType].rolloff
+        const volume = Math.max(0, Math.min(sounds[soundType].volume * (1 - distance / rolloff), 1))
+        if (Array.isArray(sounds[soundType])) {
+            loadedSounds[soundType].forEach(audio => audio.volume = volume)
+        } else {
+            loadedSounds[soundType].volume = volume
+        }
+    }
+
     if (sounds[soundType]) {
         let playingSound
         if (Array.isArray(sounds[soundType])) {

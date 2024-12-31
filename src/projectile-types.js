@@ -55,7 +55,7 @@ const projectileTypes = [
       if ((this.pos)["-"](enemy.pos).mag < enemy.size + 10) {
         if (this.ignore && this.ignore.includes(enemy.id)) return; // Don't hit the same enemy twice with piercing
         if (enemy.hp - this.damage > 0) {
-          playSound("hit")
+          playSound("hit", enemy.pos)
         }
 
         enemy.hp -= this.damage;
@@ -162,7 +162,7 @@ const projectileTypes = [
         }
       } else {
         if (this.fired == false) {
-          playSound("turretFire");
+          playSound("turretFire", this.pos);
         }
         this.fired = true
         this.firing += clampTime;
