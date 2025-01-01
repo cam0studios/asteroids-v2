@@ -63,6 +63,7 @@ export var clampTime,
 	posted,
 	started = false,
 	starCol = 100,
+	showHud = true,
 	editableSettings = {},
 	cheated;
 
@@ -552,64 +553,93 @@ const sketchFunc = (sk) => {
 
 		sketch.pop();
 
-		// hud
-		sketch.push();
-		sketch.fill("rgba(0,0,0,0.5)");
-		sketch.noStroke();
-		sketch.rectMode("corners");
-		sketch.rect(12.5, 12.5, 137.5, 85, 12.5);
-		sketch.rect(size.x - 12.5, 12.5, size.x - 100, 140, 12.5);
-		sketch.pop();
-
-		// minimap
-		let minimapSize = 130;
-		let minimapBorder = 10
-		sketch.push();
-		sketch.fill(0);
-		sketch.stroke(255);
-		sketch.strokeWeight(5);
-		sketch.rect(size.x - minimapSize - 20 - minimapBorder / 2, size.y - minimapSize - 20 - minimapBorder / 2, minimapSize + minimapBorder, minimapSize + minimapBorder);
-		sketch.translate(size.x - 20 - minimapSize / 2, size.y - 20 - minimapSize / 2);
-		sketch.scale(130 / 2, 130 / 2);
-
-		// minimap content
-		enemies.forEach(enemy => {
-			sketch.strokeWeight(0.002 * enemy.size * [1, 2.5, 2.5][enemy.type]);
-			sketch.stroke(["rgb(200,50,0)", "rgb(50,200,0)", "rgb(0,50,200)"][enemy.type]);
-			sketch.point(enemy.pos.x / currentLevel.size, enemy.pos.y / currentLevel.size);
-		});
-		sketch.strokeWeight(0.05);
-		sketch.stroke(255);
-		sketch.point(player.pos.x / currentLevel.size, player.pos.y / currentLevel.size);
-		sketch.pop();
-
-		// enemies left text
-		sketch.push();
-		sketch.textFont("monospace");
-		sketch.noStroke();
-		sketch.textSize(20);
-		sketch.fill(255);
-		sketch.textAlign("right", "bottom");
-		let xPos = size.x - 50;
-		sketch.text(Math.round(fps), xPos, 40);
-		sketch.text(player.kills, xPos, 70);
-		sketch.text(enemies.length, xPos, 100);
-		sketch.text(player.score, xPos, 130);
-		sketch.textAlign("left", "bottom");
-		sketch.text("💀", xPos + 5, 70);
-		sketch.text("⚔️", xPos + 5, 100);
-		sketch.text("🌟", xPos + 5, 130);
-		sketch.textSize(15);
-		sketch.text("fps", xPos + 5, 40);
-		sketch.pop();
-
-		// time
-		sketch.textAlign("center", "top");
-		sketch.textFont("monospace");
-		sketch.fill(255);
-		sketch.noStroke();
-		sketch.textSize(35);
-		sketch.text(formatTime(time), size.x / 2, 10);
+		if (showHud) {
+			// hud
+			sketch.push();
+			sketch.fill("rgba(0,0,0,0.5)");
+			sketch.noStroke();
+			sketch.rectMode("corners");
+			sketch.rect(12.5, 12.5, 137.5, 85, 12.5);
+			sketch.rect(size.x - 12.5, 12.5, size.x - 100, 140, 12.5);
+			sketch.pop();
+			
+			// minimap
+			let minimapSize = 130;
+			let minimapBorder = 10
+			sketch.push();
+			sketch.fill(0);
+			sketch.stroke(255);
+			sketch.strokeWeight(5);
+			sketch.rect(size.x - minimapSize - 20 - minimapBorder / 2, size.y - minimapSize - 20 - minimapBorder / 2, minimapSize + minimapBorder, minimapSize + minimapBorder);
+			sketch.translate(size.x - 20 - minimapSize / 2, size.y - 20 - minimapSize / 2);
+			sketch.scale(130 / 2, 130 / 2);
+	
+			// minimap content
+			enemies.forEach(enemy => {
+				sketch.strokeWeight(0.002 * enemy.size * [1, 2.5, 2.5][enemy.type]);
+				sketch.stroke(["rgb(200,50,0)", "rgb(50,200,0)", "rgb(0,50,200)"][enemy.type]);
+				sketch.point(enemy.pos.x / currentLevel.size, enemy.pos.y / currentLevel.size);
+			});
+			sketch.strokeWeight(0.05);
+			sketch.stroke(255);
+			sketch.point(player.pos.x / currentLevel.size, player.pos.y / currentLevel.size);
+			sketch.pop();
+	
+			// enemies left text
+			sketch.push();
+			sketch.textFont("monospace");
+			sketch.noStroke();
+			sketch.textSize(20);
+			sketch.fill(255);
+			sketch.textAlign("right", "bottom");
+			let xPos = size.x - 50;
+			sketch.text(Math.round(fps), xPos, 40);
+			sketch.text(player.kills, xPos, 70);
+			sketch.text(enemies.length, xPos, 100);
+			sketch.text(player.score, xPos, 130);
+			sketch.textAlign("left", "bottom");
+			sketch.text("💀", xPos + 5, 70);
+			sketch.text("⚔️", xPos + 5, 100);
+			sketch.text("🌟", xPos + 5, 130);
+			sketch.textSize(15);
+			sketch.text("fps", xPos + 5, 40);
+			sketch.pop();
+	
+			// time
+			sketch.textAlign("center", "top");
+			sketch.textFont("monospace");
+			sketch.fill(255);
+			sketch.noStroke();
+			sketch.textSize(35);
+			sketch.text(formatTime(time), size.x / 2, 10);
+	
+			// cursor
+			sketch.push();
+			sketch.stroke(255);
+			sketch.strokeWeight(5);
+			sketch.translate(size.x / 2 + mouse.x, size.y / 2 + mouse.y);
+			sketch.scale(0.7);
+	
+			let dist1 = 14 - cursorContract * 3;
+			let dist2 = 8 - cursorContract * 2;
+			sketch.line(dist1, 0, dist2, 0);
+			sketch.line(0, dist1, 0, dist2);
+			sketch.line(-dist1, 0, -dist2, 0);
+			sketch.line(0, -dist1, 0, -dist2);
+	
+			dist1 = 20;
+			dist2 = 10;
+			sketch.line(-dist1, -dist2, -dist2, -dist1);
+			sketch.line(dist2, -dist1, dist1, -dist2);
+			sketch.line(dist1, dist2, dist2, dist1);
+			sketch.line(-dist2, dist1, -dist1, dist2);
+			sketch.pop();
+	
+			// health, xp, shield
+			bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
+			bar(new Vector(25, 55), 100, player.xp / player.levelUp, "rgb(40,30,0)", "rgb(220,200,0)", 15);
+			bar(new Vector(25, 25), 100, player.shield.value / player.shield.maxValue, "rgb(0,40,60)", "rgb(0,150,250)", 5);
+		}
 
 		if (cheated) {
 			sketch.textAlign("left", "bottom");
@@ -619,36 +649,9 @@ const sketchFunc = (sk) => {
 			sketch.text("Cheated Run - Invalid", 10, size.y - 10);
 		}
 
-		// cursor
-		sketch.push();
-		sketch.stroke(255);
-		sketch.strokeWeight(5);
-		sketch.translate(size.x / 2 + mouse.x, size.y / 2 + mouse.y);
-		sketch.scale(0.7);
-
-		let dist1 = 14 - cursorContract * 3;
-		let dist2 = 8 - cursorContract * 2;
-		sketch.line(dist1, 0, dist2, 0);
-		sketch.line(0, dist1, 0, dist2);
-		sketch.line(-dist1, 0, -dist2, 0);
-		sketch.line(0, -dist1, 0, -dist2);
-
-		dist1 = 20;
-		dist2 = 10;
-		sketch.line(-dist1, -dist2, -dist2, -dist1);
-		sketch.line(dist2, -dist1, dist1, -dist2);
-		sketch.line(dist1, dist2, dist2, dist1);
-		sketch.line(-dist2, dist1, -dist1, dist2);
-		sketch.pop();
-
-		// health, xp, shield
-		bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
-		bar(new Vector(25, 55), 100, player.xp / player.levelUp, "rgb(40,30,0)", "rgb(220,200,0)", 15);
-		bar(new Vector(25, 25), 100, player.shield.value / player.shield.maxValue, "rgb(0,40,60)", "rgb(0,150,250)", 5);
-
 		// update exposed values
 		if (devMode) {
-			window.game = { clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, settingsStore };
+			window.game = { clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore };
 		} else {
 			window.game = { size, fps, deltaTime, paused, version }
 		}
@@ -940,6 +943,21 @@ document.getElementById("quit").addEventListener("click", () => {
 	player.hp = 0;
 	unpause();
 });
+
+document.getElementById("snapshot").addEventListener("click", () => {
+	showHud = false
+	const wasMuted = settingsStore.get("isMuted", false);
+	settingsStore.set("isMuted", true);
+	sketch.redraw();
+	let canvas = document.querySelector("canvas");
+	let link = document.createElement("a");
+	link.href = canvas.toDataURL();
+	link.download = `asteroids-snapshot-${new Date().toLocaleString().replace(", ", "-").replaceAll(" ", "-")}.png`;
+	link.click();
+	link.remove();
+	settingsStore.set("isMuted", wasMuted);
+	showHud = true
+})
 
 document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
