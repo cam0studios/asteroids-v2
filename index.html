@@ -2,106 +2,106 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asteroids</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Asteroids</title>
 
-  <!-- Meta Content -->
-  <meta name="og:title" content="Asteroids">
-  <meta name="description" content="Asteroids is a modern spin on the classic arcade game. Play it online and ad-free.">
-  <meta name="og:description"
-    content="Asteroids is a modern spin on the classic arcade game. Play it online and ad-free.">
-  <meta name="og:locale" content="en_US">
-  <meta name="og:site_name" content="cam0studios">
-  <meta name="og:image" content="icons/screenshot.png">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="icon" href="icons/favicon-32x32.png" type="image/png" sizes="32x32">
-  <link rel="icon" href="icons/favicon-16x16.png" type="image/png" sizes="16x16">
-  <link rel="manifest" href="site.webmanifest">
-  <meta name="theme-color" content="#000000">
-  
-  <link rel="stylesheet" href="style.css">
+	<!-- Meta Content -->
+	<meta name="og:title" content="Asteroids">
+	<meta name="description" content="Asteroids is a modern spin on the classic arcade game. Play it online and ad-free.">
+	<meta name="og:description"
+		content="Asteroids is a modern spin on the classic arcade game. Play it online and ad-free.">
+	<meta name="og:locale" content="en_US">
+	<meta name="og:site_name" content="cam0studios">
+	<meta name="og:image" content="icons/screenshot.png">
+	<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+	<link rel="icon" href="icons/favicon-32x32.png" type="image/png" sizes="32x32">
+	<link rel="icon" href="icons/favicon-16x16.png" type="image/png" sizes="16x16">
+	<link rel="manifest" href="site.webmanifest">
+	<meta name="theme-color" content="#000000">
+	
+	<link rel="stylesheet" href="style.css">
 
-  <!-- Simple Notify -->
-  <!--
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify/dist/simple-notify.css" />
-  <script src="https://cdn.jsdelivr.net/npm/simple-notify/dist/simple-notify.min.js"></script>
-  -->
+	<!-- Simple Notify -->
+	<!--
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify/dist/simple-notify.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify/dist/simple-notify.min.js"></script>
+	-->
 
-  <script src="main.js" defer></script>
-  <link rel="manifest" href="site.webmanifest">
+	<script src="main.js" defer></script>
+	<link rel="manifest" href="site.webmanifest">
 </head>
 
 <body>
-  <dialog id="startScreen" class="noClose menu">
-    <div class="centered">
-      <h1>Asteroids</h1>
-      <button id="start">
-        <h2>Start</h2>
-      </button>
-      <!-- <button id="settings">
-        <h2>Settings</h2>
-      </button> -->
-      <h3>Controls</h3>
-      <ul>
-        <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> - Player movement</li>
-        <li><kbd>LMB</kbd> or <kbd>RMB</kbd> (hold) - Shoot</li>
-        <li><kbd>Z</kbd> - Toggle Constant Fire</li>
-        <li><kbd>Space</kbd> - Dash / Dodge</li>
-      </ul>
-      <span><a href="https://github.com/cam0studios/asteroids-v2#readme" target="_blank">GitHub</a>|<a href="https://github.com/cam0studios/asteroids-v2/blob/master/docs/UPDATES.md" target="_blank" rel="noopener noreferrer">Updates</a></span>
-      <div id="startLeaderboard"></div>
-    </div>
-  </dialog>
-  <dialog id="upgradeMenu" class="noClose menu">
-    <h1>Level up!</h1>
-    <div id="options" class="centered">
+	<dialog id="startScreen" class="noClose menu">
+		<div class="centered">
+			<h1>Asteroids</h1>
+			<button id="start">
+				<h2>Start</h2>
+			</button>
+			<!-- <button id="settings">
+				<h2>Settings</h2>
+			</button> -->
+			<h3>Controls</h3>
+			<ul>
+				<li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> - Player movement</li>
+				<li><kbd>LMB</kbd> or <kbd>RMB</kbd> (hold) - Shoot</li>
+				<li><kbd>Z</kbd> - Toggle Constant Fire</li>
+				<li><kbd>Space</kbd> - Dash / Dodge</li>
+			</ul>
+			<span><a href="https://github.com/cam0studios/asteroids-v2#readme" target="_blank">GitHub</a>|<a href="https://github.com/cam0studios/asteroids-v2/blob/master/docs/UPDATES.md" target="_blank" rel="noopener noreferrer">Updates</a></span>
+			<div id="startLeaderboard"></div>
+		</div>
+	</dialog>
+	<dialog id="upgradeMenu" class="noClose menu">
+		<h1>Level up!</h1>
+		<div id="options" class="centered">
 
-    </div>
-  </dialog>
+		</div>
+	</dialog>
 
-  <dialog id="gameOver" class="noClose menu">
-    <div class="centered">
-      <h1>Game Over</h1>
-      <h2>Score: <span id="score">0</span></h2>
-      <button id="restart">
-        <h2>Restart</h2>
-      </button>
-      <div id="signInDiv"></div>
-      <h2>Stats:</h2>
-      <div id="stats"></div>
-      <h2>Leaderboard:</h2>
-      <div id="scores"></div>
-    </div>
-  </dialog>
+	<dialog id="gameOver" class="noClose menu">
+		<div class="centered">
+			<h1>Game Over</h1>
+			<h2>Score: <span id="score">0</span></h2>
+			<button id="restart">
+				<h2>Restart</h2>
+			</button>
+			<div id="signInDiv"></div>
+			<h2>Stats:</h2>
+			<div id="stats"></div>
+			<h2>Leaderboard:</h2>
+			<div id="scores"></div>
+		</div>
+	</dialog>
 
-  <dialog id="pause" class="menu">
-    <div class="centered">
-      <h1>Paused</h1>
-      <button id="resume">
-        <h2>Resume</h2>
-      </button>
-      <button id="quit">
-        <h2>Quit</h2>
-      </button>
-      <div id="settings"></div>
-    </div>
-    <div id="currentUpgrades"></div>
-  </dialog>
+	<dialog id="pause" class="menu">
+		<div class="centered">
+			<h1>Paused</h1>
+			<button id="resume">
+				<h2>Resume</h2>
+			</button>
+			<button id="quit">
+				<h2>Quit</h2>
+			</button>
+			<div id="settings"></div>
+		</div>
+		<div id="currentUpgrades"></div>
+	</dialog>
 
-  <dialog id="username">
-    <h2>Enter your username:</h2>
-    <input type="text" id="usernameIn" class="prompt">
-    <button>Continue</button>
-  </dialog>
+	<dialog id="username">
+		<h2>Enter your username:</h2>
+		<input type="text" id="usernameIn" class="prompt">
+		<button>Continue</button>
+	</dialog>
 
-  <dialog id="password">
-    <h2>Enter your password:</h2>
-    <input type="password" id="passwordIn" class="prompt">
-    <button>Continue</button>
-  </dialog>
+	<dialog id="password">
+		<h2>Enter your password:</h2>
+		<input type="password" id="passwordIn" class="prompt">
+		<button>Continue</button>
+	</dialog>
 
-  <div class="vignette-red hidden"></div>
+	<div class="vignette-red hidden"></div>
 
 </body>
 
