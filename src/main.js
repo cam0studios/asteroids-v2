@@ -6,7 +6,7 @@ import levels from "./levels";
 import projectileTypes, { explode, projectileEnums } from "./projectile-types";
 import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
-import { playSound } from "./sound";
+import { audioContext, playSound } from "./sound";
 import EasyStorage from "@pikapower9080/easy-storage";
 import * as Colyseus from "colyseus.js"
 
@@ -67,6 +67,7 @@ export var clampTime,
   started = false,
   starCol = 100,
   editableSettings = {},
+  cheated,
   multiplayer = false,
   /** @type {Colyseus.Room} */
   room;
@@ -85,6 +86,7 @@ started = false;
 document.getElementById("start").addEventListener("click", () => {
   startGame(0);
   document.getElementById("startScreen").close();
+  audioContext.resume();
 });
 
 document.getElementById("multiplayer").addEventListener("click", async () => {
@@ -271,7 +273,7 @@ const sketchFunc = (sk) => {
     }
 
     // blood overlay
-    document.querySelector(".vignette-red").classList.toggle("hidden", !((player.hp / player.maxHp) < .25));
+    document.querySelector(".vignette-red").style.opacity = 1 - Math.min((player.hp / player.maxHp) * 1.5, 1);
 
     // waves
     currentLevel.waves.forEach(wave => {
@@ -695,13 +697,12 @@ const sketchFunc = (sk) => {
       sketch.text(formatTime(room.state.time), size.x / 2, 10);
     }
 
-    // dev mode text
-    if (devMode) {
+    if (cheated) {
       sketch.textAlign("left", "bottom");
       sketch.textFont("monospace");
       sketch.fill(255, 102, 51);
       sketch.textSize(15);
-      sketch.text("Developer Mode", 10, size.y - 10);
+      sketch.text("Cheated Run - Invalid", 10, size.y - 10);
     }
 
     // cursor
@@ -994,7 +995,14 @@ function lerp(a, b, t) {
 
 // ********************  event listeners  ******************** //
 [...document.querySelectorAll(".noClose")].forEach(elem => {
-  elem.addEventListener("cancel", ev => ev.preventDefault());
+  elem.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    setTimeout(() => {
+      if (!event.target.open) {
+        event.target.showModal();
+      }
+    }, 1)
+  });
 });
 
 [...document.querySelectorAll("button,input[type='checkbox'],input[type='radio'],select")].forEach(elem => {
@@ -1046,6 +1054,7 @@ function unpause() {
 }
 function restart() {
   isFirstLevelup = true
+  cheated = false
   unpause();
   stopGame();
   startGame(0);
@@ -1130,6 +1139,7 @@ function setKey(event, state) {
       switch (event.key) {
         case "x":
           enemies.forEach(enemy => enemy.hp = 0);
+          cheated = true
           break;
 
         case "c":
@@ -1137,11 +1147,13 @@ function setKey(event, state) {
             enemy.pos.x = mousePos.x
             enemy.pos.y = mousePos.y
           });
+          cheated = true
           break;
 
         case "v":
           player.pos.x = mousePos.x
           player.pos.y = mousePos.y
+          cheated = true
           break;
         case "P":
           if (paused) unpause();
@@ -1178,10 +1190,21 @@ function setKey(event, state) {
         case "k":
           updateStars();
           break;
+        case "g":
+          player.maxHp = Infinity;
+          player.hp = Infinity;
+          cheated = true
+          break;
+        case "h":
+          player.hp = player.maxHp;
+          cheated = true
+          break;
         default:
           if ("1234567890".split("").includes(event.key)) {
-            if (enemyTypes[parseInt(event.key)]) new enemyTypes[parseInt(event.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
-
+            if (enemyTypes[parseInt(event.key)]) {
+              new enemyTypes[parseInt(event.key)]({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
+              cheated = true
+            }
           }
           break;
       }

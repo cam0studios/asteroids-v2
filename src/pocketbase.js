@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase";
 import Toastify from "toastify";
-import { devMode, formatTime, getVersion, settings, settingsStore } from "./main";
+import { cheated, devMode, formatTime, getVersion, settings, settingsStore } from "./main";
 const url = "https://asteroids.pockethost.io";
 export const pb = new PocketBase(url);
 
@@ -29,6 +29,7 @@ pb.collection("feed").subscribe("*", async (event) => {
 */
 
 export async function postScore(score, time, dev, version) {
+  if (cheated) return;
   try {
     return await pb.collection("scores").create({
       user: user.id,
@@ -59,6 +60,7 @@ export async function updateStats({ score, level, kills, time }) {
 
 export async function postFeed(event) {
   if (!settings.sendFeedEvents) return;
+  if (cheated) return;
   try {
     return await pb.collection("feed").create({
       user: user.id,
