@@ -151,7 +151,7 @@ const projectileTypes = [
 			firing: 0,
 			dirV: ({ dir }) => new Vector(1, 0).rotate(dir),
 			len: 0,
-			maxLen: () => currentLevel.size * 2,
+			maxLen: 1000,
 			fired: false
 		},
 		tick: (projectile, i) => {
