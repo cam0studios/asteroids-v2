@@ -60,7 +60,7 @@ class EnemyType {
 const enemyTypes = [
 	new EnemyType({
 		name: "Asteroid",
-		props: ["mode", "pos", "vel", "size", "spawn", "hp", "speed"],
+		props: ["mode", "pos", "vel", "size", "spawn", "hp", "speed", "maxHp"],
 		defaults: {
 			type: 0,
 			id: () => Math.floor(Math.random() * 1e6),
@@ -68,12 +68,13 @@ const enemyTypes = [
 			vel: () => new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI),
 			hp: ({ size }) => size > 30 ? 5 : size > 15 ? 3 : size > 10 ? 2 : 1,
 			speed: () => 10 + Math.random() * 30,
-			spawn: (props) => "spawn" in props ? props.spawn : props.mode == 0 ? false : props.mode == 1 ? true : false,
+			spawn: ({ mode }) => mode == 0 ? false : mode == 1 ? true : false,
 			hitDir: () => Math.random() * 2 * Math.PI,
 			time: 0,
 			effectTime: 0,
 			burning: false,
 			frozen: false,
+			maxHp: ({ }, { hp }) => hp
 		},
 		tick: (enemy, i) => {
 			enemy.time += clampTime;

@@ -42,7 +42,7 @@ class ProjectileType {
 		for (let prop in this.defaults) {
 			let value;
 			if (typeof this.defaults[prop] == "function") {
-				value = this.defaults[prop](props);
+				value = this.defaults[prop](props, projectile);
 			} else {
 				value = this.defaults[prop];
 			}
