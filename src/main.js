@@ -944,19 +944,60 @@ document.getElementById("quit").addEventListener("click", () => {
 	unpause();
 });
 
-document.getElementById("snapshot").addEventListener("click", () => {
-	showHud = false
-	const wasMuted = settingsStore.get("isMuted", false);
-	settingsStore.set("isMuted", true);
-	sketch.redraw();
+let wasMuted = false;
+function prepareSnapshot() {
+	if (!document.getElementById("snapshot-show-hud").checked) {
+		let hudWasShown = showHud
+		showHud = false
+		wasMuted = settingsStore.get("isMuted", false);
+		settingsStore.set("isMuted", true);
+		if (hudWasShown !== showHud) {
+			sketch.redraw();
+		}
+	}
 	let canvas = document.querySelector("canvas");
+    return canvas.toDataURL();	
+}
+function finishSnapshot() {
+	settingsStore.set("isMuted", wasMuted);
+	if (!document.getElementById("snapshot-show-hud").checked) {
+		showHud = true;
+	}
+	document.getElementById("snapshot-options").close()
+	document.getElementById("pause").showModal();
+}
+
+document.getElementById("snapshot").addEventListener("click", () => {
+	document.getElementById("pause").close();
+	document.getElementById("snapshot-options").showModal();
+})
+document.getElementById("snapshot-save").addEventListener("click", () => {
 	let link = document.createElement("a");
-	link.href = canvas.toDataURL();
+	link.href = prepareSnapshot();
 	link.download = `asteroids-snapshot-${new Date().toLocaleString().replace(", ", "-").replaceAll(" ", "-")}.png`;
 	link.click();
 	link.remove();
-	settingsStore.set("isMuted", wasMuted);
-	showHud = true
+	finishSnapshot();
+})
+document.getElementById("snapshot-copy").addEventListener("click", async () => {
+	const url = prepareSnapshot();
+	const blob = await (await fetch(url)).blob();
+	const item = new ClipboardItem({ "image/png": blob });
+	navigator.clipboard.write([item]).then(() => {
+		alert("Snapshot copied to clipboard!");
+		finishSnapshot();
+	}).catch(err => {
+		console.error(err);
+		alert("Failed to copy snapshot, try downloading instead.");
+		finishSnapshot();
+	});
+})
+document.getElementById("snapshot-cancel").addEventListener("click", () => {
+	document.getElementById("snapshot-options").close();
+	document.getElementById("pause").showModal();
+})
+document.getElementById("snapshot-show-hud").addEventListener('click', () => {
+	document.getElementById("snapshot-show-hud-warning").classList.toggle("hidden", document.getElementById("snapshot-show-hud").checked);
 })
 
 document.getElementById("pause").addEventListener("cancel", unpause);
