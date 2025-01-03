@@ -18,6 +18,7 @@
 	},
 	"homepage": "https://github.com/cam0studios/asteroids-v2#readme",
 	"dependencies": {
+		"@cam0studios/vector-library": "^1.0.0",
 		"@pikapower9080/easy-storage": "^1.0.5",
 		"p5": "^1.10.0",
 		"pocketbase": "^0.21.5",

@@ -1,4 +1,4 @@
-import Vector from "../vector-library/vector";
+import Vector from "@cam0studios/vector-library";
 import { rumble } from "./gamepad";
 import { enemies, clampTime, applyBorder, projectiles, player, getOnScreen, sketch, get, set, settings, damagePlayer, currentLevel, getRandomBox, calcBorder } from "./main";
 import projectileTypes, { projectileEnums } from "./projectile-types";

@@ -1,4 +1,4 @@
-import Vector from "../vector-library/vector";
+import Vector from "@cam0studios/vector-library";
 import { getRandomBox } from "./main";
 
 /**
