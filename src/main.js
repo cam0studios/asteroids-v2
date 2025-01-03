@@ -3,13 +3,14 @@ import Vector from "../vector-library/vector";
 import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
-import projectileTypes, { explode, projectileEnums } from "./projectile-types";
+import projectileTypes, { projectileEnums } from "./projectile-types";
 import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { audioContext, playSound } from "./sound";
 import EasyStorage from "@pikapower9080/easy-storage";
+import particleTypes, { explode, particleEnums } from "./particle-types";
 
-export const version = "v0.4.11";
+export const version = "v0.4.12";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {
@@ -65,7 +66,8 @@ export var clampTime,
 	starCol = 100,
 	showHud = true,
 	editableSettings = {},
-	cheated;
+	cheated,
+	particles;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -170,6 +172,7 @@ const sketchFunc = (sk) => {
 
 	addWeapon("gun");
 	projectiles = [];
+	particles = [];
 	size = new Vector(innerWidth, innerHeight);
 	cam = Vector.zero;
 	time = 0;
@@ -253,7 +256,7 @@ const sketchFunc = (sk) => {
 			player.vel["+="](joy);
 			player.vel["*="](Math.pow(0.3, clampTime));
 			if (joy.mag > 0) {
-				// projectileTypes[projectileEnums.dashEffect].create({ pos: player.pos.copy, type: 1 });
+				// projectileTypes[particleEnums.dashEffect].create({ pos: player.pos.copy, type: 1 });
 			}
 
 			player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire
@@ -282,7 +285,7 @@ const sketchFunc = (sk) => {
 					player.dodge.vel = Vector.zero;
 				}
 				player.vel["="](player.dodge.vel);
-				projectileTypes[projectileEnums.dashEffect].create({ pos: player.pos.copy });
+				particleTypes[particleEnums.dashEffect].create({ pos: player.pos.copy });
 			}
 
 			player.dir = mouse.heading;
@@ -410,6 +413,11 @@ const sketchFunc = (sk) => {
 			enemy.tick(enemy, enemyI);
 		});
 
+		// particles
+		particles.forEach((particle, particleI) => {
+			particle.tick(particle, particleI);
+		});
+
 
 		// ********************  drawing  ******************** //
 		// background
@@ -513,6 +521,13 @@ const sketchFunc = (sk) => {
 		enemies.forEach(enemy => {
 			sketch.push();
 			enemy.beforeDraw(enemy);
+			sketch.pop();
+		});
+
+		// particles
+		particles.forEach(particle => {
+			sketch.push();
+			particle.draw(particle);
 			sketch.pop();
 		});
 
@@ -651,7 +666,7 @@ const sketchFunc = (sk) => {
 
 		// update exposed values
 		if (devMode) {
-			window.game = { clampTime, enemies, player, projectiles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore };
+			window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore };
 		} else {
 			window.game = { size, fps, deltaTime, paused, version }
 		}

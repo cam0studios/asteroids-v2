@@ -2,13 +2,12 @@ import Vector from "../vector-library/vector";
 import { intersections } from "../vector-library/intersection";
 import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies, time } from "./main";
 import { playSound } from "./sound";
+import { explode } from "./particle-types";
 
 export const projectileEnums = {
 	playerBullet: 0,
-	explosion: 1,
-	enemyLaser: 2,
-	dashEffect: 3,
-	// sacredBlade: 4
+	enemyLaser: 1,
+	// sacredBlade: 2
 }
 
 /**
@@ -42,7 +41,7 @@ class ProjectileType {
 		for (let prop in this.defaults) {
 			let value;
 			if (typeof this.defaults[prop] == "function") {
-				value = this.defaults[prop](props);
+				value = this.defaults[prop](props, projectile);
 			} else {
 				value = this.defaults[prop];
 			}
@@ -145,36 +144,6 @@ const projectileTypes = [
 		}
 	}),
 	new ProjectileType({
-		name: "Explosion",
-		props: ["pos", "size", "maxSize"],
-		defaults: {},
-		tick: (projectile, i) => {
-			if (projectile.size > projectile.maxSize) {
-				projectiles.splice(i, 1);
-				i--;
-			} else {
-				projectile.size += clampTime * 30 * Math.sqrt(projectile.maxSize);
-			}
-		},
-		draw: (projectile) => {
-			if (settings.emojiMovie) {
-				sketch.textAlign("center", "center");
-				sketch.textSize(10);
-				sketch.noStroke();
-				sketch.fill(255);
-				sketch.text("", projectile.pos.x, projectile.pos.y);
-			} else {
-				sketch.fill(250);
-				sketch.stroke(200);
-				sketch.strokeWeight(projectile.maxSize * 0.5);
-				sketch.ellipse(projectile.pos.x, projectile.pos.y, projectile.size * 2, projectile.size * 2);
-			}
-		},
-		enemyTick: (projectile, i, enemy, enemyI) => {
-
-		}
-	}),
-	new ProjectileType({
 		name: "Enemy Laser",
 		props: ["pos", "dir", "link"],
 		defaults: {
@@ -182,7 +151,7 @@ const projectileTypes = [
 			firing: 0,
 			dirV: ({ dir }) => new Vector(1, 0).rotate(dir),
 			len: 0,
-			maxLen: () => currentLevel.size * 2,
+			maxLen: 1000,
 			fired: false
 		},
 		tick: (projectile, i) => {
@@ -256,64 +225,6 @@ const projectileTypes = [
 
 		}
 	}),
-	new ProjectileType({
-		name: "Dash Effect",
-		props: ["pos", "type"],
-		defaults: {
-			progress: 0
-		},
-		tick: (projectile, i) => {
-			if (projectile.type == 0) {
-				projectile.progress += clampTime * 5;
-			} else {
-				projectile.progress += clampTime * 3;
-				if (player.dodgeTime > 0) {
-					projectile.progress = 1;
-				}
-			}
-			if (projectile.progress >= 1) {
-				projectiles.splice(i, 1);
-				i--;
-			}
-		},
-		draw: (projectile) => {
-			if (settings.emojiMovie) {
-				sketch.textAlign("center", "center");
-				sketch.textSize(10);
-				sketch.noStroke();
-				sketch.fill(255);
-				sketch.text("", projectile.pos.x, projectile.pos.y);
-			} else {
-				let alpha;
-				let col = 150;
-				if (projectile.type == 0) {
-					alpha = (1 - projectile.progress) * 0.2;
-					if (alpha < 0) alpha = 0;
-					if (alpha > 1) alpha = 1;
-				} else {
-					alpha = (1 - projectile.progress) * 0.01;
-					if (alpha < 0) alpha = 0;
-					if (alpha > 1) alpha = 1;
-					col = 100;
-				}
-				alpha = Math.round(alpha * 100) / 100;
-				sketch.fill(`rgba(${col}, ${col}, ${col}, ${alpha})`);
-				sketch.noStroke();
-				sketch.circle(projectile.pos.x, projectile.pos.y, 30 + projectile.progress * 40);
-			}
-		},
-		enemyTick: (projectile, i, enemy, enemyI) => {
-
-		}
-	})
 ];
 
 export default projectileTypes;
-
-export function explode(pos, size) {
-	projectileTypes[projectileEnums.explosion].create({
-		pos,
-		size: 0,
-		maxSize: size
-	});
-}

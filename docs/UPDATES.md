@@ -4,6 +4,10 @@
 
 ## v0.4
 
+### 0.4.12
+- Buff burn damage
+- Make effects propagate to children
+
 ### 0.4.11
 - Buffed resistance to 10% per upgrade
 

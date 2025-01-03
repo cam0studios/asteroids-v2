@@ -1,7 +1,8 @@
 import Vector from "../vector-library/vector";
 import { rumble } from "./gamepad";
 import { enemies, clampTime, applyBorder, projectiles, player, getOnScreen, sketch, get, set, settings, damagePlayer, currentLevel, getRandomBox, calcBorder } from "./main";
-import projectileTypes, { explode, projectileEnums } from "./projectile-types";
+import projectileTypes, { projectileEnums } from "./projectile-types";
+import particleTypes, { explode } from "./particle-types";
 import { playSound } from './sound';
 
 /**
@@ -60,7 +61,7 @@ class EnemyType {
 const enemyTypes = [
 	new EnemyType({
 		name: "Asteroid",
-		props: ["mode", "pos", "vel", "size", "spawn", "hp", "speed"],
+		props: ["mode", "pos", "vel", "size", "spawn", "hp", "speed", "maxHp", "burning", "frozen", "effectTime"],
 		defaults: {
 			type: 0,
 			id: () => Math.floor(Math.random() * 1e6),
@@ -68,18 +69,19 @@ const enemyTypes = [
 			vel: () => new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI),
 			hp: ({ size }) => size > 30 ? 5 : size > 15 ? 3 : size > 10 ? 2 : 1,
 			speed: () => 10 + Math.random() * 30,
-			spawn: (props) => "spawn" in props ? props.spawn : props.mode == 0 ? false : props.mode == 1 ? true : false,
+			spawn: ({ mode }) => mode == 0 ? false : mode == 1 ? true : false,
 			hitDir: () => Math.random() * 2 * Math.PI,
 			time: 0,
 			effectTime: 0,
 			burning: false,
 			frozen: false,
+			maxHp: ({ }, { hp }) => hp
 		},
 		tick: (enemy, i) => {
 			enemy.time += clampTime;
 
 			if (enemy.burning) {
-				enemy.hp -= (enemy.maxHp / 20 + 0.2) * clampTime;
+				enemy.hp -= (enemy.maxHp / 15 + 0.5) * clampTime;
 			}
 
 			enemy.effectTime -= clampTime;
@@ -122,7 +124,21 @@ const enemyTypes = [
 					playSound("kill", enemy.pos);
 					if (enemy.size > 10) {
 						for (let rot = -1; rot <= 1; rot += 1) {
-							enemyTypes[0].create({ pos: enemy.pos.copy, vel: (enemy.vel)["+"](new Vector(50, 0).rotate(enemy.hitDir + rot)), size: enemy.size * 2 / 3, mode: 0 });
+							let newEnemy = {
+								pos: enemy.pos.copy,
+								vel: (enemy.vel)["+"](new Vector(50, 0).rotate(enemy.hitDir + rot)),
+								size: enemy.size * 2 / 3,
+								mode: 0
+							};
+							if (enemy.burning) {
+								newEnemy.burning = true;
+								newEnemy.effectTime = enemy.effectTime / 3;
+							}
+							if (enemy.frozen) {
+								newEnemy.frozen = true;
+								newEnemy.effectTime = enemy.effectTime / 3;
+							}
+							enemyTypes[0].create(newEnemy);
 						}
 					}
 					let newScreenshake = (enemy.size > 20 ? 12 : 7) / ((enemy.pos)["-"](player.pos).mag / 500 + 1);
