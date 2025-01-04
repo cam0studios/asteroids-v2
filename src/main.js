@@ -771,8 +771,10 @@ async function die() {
 			});
 		}, 100);
 		if (!posted) {
+			let promises = [];
 			document.getElementById("score-not-submitted").classList.toggle("no-display", true)
-			await postFeed({
+
+			promises.push(postFeed({
 				type: "death",
 				data: {
 					score: player.score,
@@ -780,10 +782,10 @@ async function die() {
 					dev: devMode
 				},
 				user: user.id
-			});
+			}));
 
 			if (player.score > 150 && time > 10 && settingsStore.get("submitScores", true)) {
-				await postScore(player.score, Math.round(time), devMode, version);
+				promises.push(postScore(player.score, Math.round(time), devMode, version));
 			} else if (player.score <= 150 || time <= 10) {
 				document.getElementById("score-not-submitted").classList.toggle("no-display", false)
 				document.getElementById("score-not-submitted").innerText = "Your score was not submitted because it was too low"
@@ -792,8 +794,9 @@ async function die() {
 				document.getElementById("score-not-submitted").innerText = "Score submission is disabled"
 			}
 
-			if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) });
+			if (!devMode) promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) }));
 
+			await Promise.all(promises);
 			posted = true;
 		}
 
