@@ -32,13 +32,13 @@ pb.collection("feed").subscribe("*", async (event) => {
 export async function postScore(score, time, dev, version) {
 	if (cheated) return;
 	try {
-		return await pb.collection("scores").create({
+		return (await pb.collection("scores").create({
 			user: user.id,
 			score,
 			time,
 			dev,
 			version
-		});
+		}));
 	} catch (err) {
 		console.error(err);
 	}

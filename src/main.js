@@ -757,6 +757,7 @@ async function die() {
 	rumble(1, 1);
 	explode(player.pos, 100);
 	playSound("death")
+	let scoreRecordId;
 
 	document.getElementById("score").innerText = player.score;
 	document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
@@ -796,7 +797,10 @@ async function die() {
 
 			if (!devMode) promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) }));
 
-			await Promise.all(promises);
+			const results = await Promise.all(promises);
+			console.log("Done posting data")
+			console.log(results)
+			if (results[1]) scoreRecordId = results[1].id;
 			posted = true;
 		}
 
@@ -826,6 +830,7 @@ async function die() {
 	}
 
 	let page = 1;
+	console.log("Getting scores")
 	const scores = await getScores(page);
 
 	const scoresContainer = document.getElementById("scores");
@@ -841,6 +846,7 @@ async function die() {
 		const scoreText = document.createTextNode(` - ${score.score} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
 		
 		if (score.version) scoreContainer.setAttribute("title", `Version: ${score.version}`);
+		if (scoreRecordId == score.id) scoreContainer.classList.add("highlight");
 
 		scoreContainer.append(scoreIndex, scoreAuthorName, scoreText);
 		scoresContainer.appendChild(scoreContainer);
