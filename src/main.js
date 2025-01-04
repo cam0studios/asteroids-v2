@@ -802,7 +802,9 @@ async function die() {
 
 		scoreAuthorName.textContent = xssFilters.inHTMLData(score.expand.user.name);
 
-		const scoreText = document.createTextNode(` - ${score.score} ${score.version ? ` (${score.version})` : ""} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
+		const scoreText = document.createTextNode(` - ${score.score} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
+		
+		if (score.version) scoreContainer.setAttribute("title", `Version: ${score.version}`);
 
 		scoreContainer.append(scoreIndex, scoreAuthorName, scoreText);
 		scoresContainer.appendChild(scoreContainer);
