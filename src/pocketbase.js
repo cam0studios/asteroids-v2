@@ -3,6 +3,7 @@ import Toastify from "toastify";
 import { cheated, devMode, formatTime, getVersion, settings, settingsStore } from "./main";
 const url = "https://asteroids.pockethost.io";
 export const pb = new PocketBase(url);
+import xssFilters from "xss-filters";
 
 export var user, signedIn = false;
 
