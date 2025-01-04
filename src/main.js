@@ -1184,6 +1184,13 @@ function setKey(event, state) {
 			pause();
 		}
 
+		if ((event.key == "ArrowUp" || event.key == "w" || event.key == "a") && paused && state) {
+			previousButton();
+		}
+		if ((event.key == "ArrowDown" || event.key == "s" || event.key == "d") && paused && state) {
+			nextButton();
+		}
+
 		if (state && devMode) {
 			const mousePos = new Vector(mouse.x + player.pos.x, player.pos.y + mouse.y);
 			switch (event.key) {
@@ -1262,6 +1269,33 @@ function setKey(event, state) {
 	}
 }
 
+function nextButton() {
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']")];
+	if (btns.length == 0) return;
+	let activeI = btns.indexOf(document.activeElement);
+	if (activeI == -1) activeI = 0;
+	else {
+		activeI++;
+		if (activeI > btns.length - 1) {
+			activeI = 0;
+		}
+	}
+	btns[activeI].focus();
+}
+function previousButton() {
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']")];
+	if (btns.length == 0) return;
+	let activeI = btns.indexOf(document.activeElement);
+	if (activeI == -1) activeI = 0;
+	else {
+		activeI--;
+		if (activeI < 0) {
+			activeI = btns.length - 1;
+		}
+	}
+	btns[activeI].focus();
+}
+
 export function onGamepadButton(button, state) {
 	if (button == "rightPause" && state && started) {
 		if (paused) unpause();
@@ -1269,28 +1303,10 @@ export function onGamepadButton(button, state) {
 	}
 
 	if (button == "dpadUp" && state) {
-		let btns = [...document.querySelector("dialog[open]").querySelectorAll("button")];
-		let activeI = btns.indexOf(document.activeElement);
-		if (activeI == -1) activeI = 0;
-		else {
-			activeI--;
-			if (activeI < 0) {
-				activeI = btns.length - 1;
-			}
-		}
-		btns[activeI].focus();
+		previousButton();
 	}
 	if (button == "dpadDown" && state) {
-		let btns = [...document.querySelector("dialog[open]").querySelectorAll("button")];
-		let activeI = btns.indexOf(document.activeElement);
-		if (activeI == -1) activeI = 0;
-		else {
-			activeI++;
-			if (activeI > btns.length - 1) {
-				activeI = 0;
-			}
-		}
-		btns[activeI].focus();
+		nextButton();
 	}
 	if (button == "bottom" && state) {
 		document.activeElement.click();
