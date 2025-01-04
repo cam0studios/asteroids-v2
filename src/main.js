@@ -750,12 +750,12 @@ async function die() {
 		}
 
 		document.getElementById("stats").innerHTML = `
-			<p> <b> Deaths: </b> ${user.deaths.toLocaleString()} </p>
-			<p> <b> Total score: </b> ${user.score.toLocaleString()} </p>
-			<p> <b> Total levelups: </b> ${user.levelups.toLocaleString()} </p>
-			<p> <b> Total kills: </b> ${user.kills.toLocaleString()} </p>
-			<p> <b> Highscore: </b> ${user.highscore.toLocaleString()} </p>
-			<p> <b> Highest time: </b> ${formatTime(user.highestTime)} </p>
+			<p> <strong> <!--<i class="fa-regular fa-burst fa-fw"></i>--> Total Deaths: </strong> ${user.deaths.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-star fa-fw"></i>--> Total score: </strong> ${user.score.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-up" fa-fw></i>--> Total levelups: </strong> ${user.levelups.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-skull fa-fw"></i>--> Total kills: </strong> ${user.kills.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-ranking-star fa-fw"></i>--> Highest score: </strong> ${user.highscore.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-clock-rotate-left fa-fw"></i>--> Longest run: </strong> ${formatTime(user.highestTime)} </p>
 		`;
 	} else {
 		document.getElementById("signInDiv").innerHTML = `<p><b>Sign in to submit your score to the leaderboard</b></p><button id="signInBtn">Sign in</button><!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
