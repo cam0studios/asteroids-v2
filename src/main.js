@@ -146,7 +146,7 @@ const sketchFunc = (sk) => {
 	score = 0;
 	playerUpgrades.forEach(upgrade => upgrade.times = 0);
 
-	if (!location.href.includes("https://cam0studios.github.io/")) {
+	if (devMode) {
 		window.playerLink = player;
 		window.setTime = (val) => time = val;
 	}
