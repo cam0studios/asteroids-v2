@@ -11,7 +11,7 @@ import EasyStorage from "@pikapower9080/easy-storage";
 import particleTypes, { explode, particleEnums } from "./particle-types";
 import xssFilters from "xss-filters";
 
-export const version = "v0.4.12";
+export const version = "v0.4.13";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {

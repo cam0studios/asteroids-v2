@@ -16,6 +16,7 @@ class Weapon {
 	 * @param {Function} data.tick - The tick function for the weapon.
 	 * @param {number} data.weight - The relative weight of the weapon when leveling up.
 	 * @param {Function} [data.upgrade] - The upgrade function for the weapon.
+	 * @param {string} [data.desc] - The description of the weapon.
 	 * 
 	 * @param {Object} data.props - The properties of the weapon.
 	 * @param {number} data.props.reload - The reload time of the weapon.
@@ -40,6 +41,7 @@ class Weapon {
 		this.upgrades = data.upgrades;
 		this.weight = data.weight;
 		this.upgrade = data.upgrade || (() => { });
+		this.desc = data.desc || "";
 	}
 
 	givePlayer() {
@@ -118,7 +120,8 @@ const weapons = [
 	new Weapon({
 		name: "Guardian",
 		id: "guardian",
-		weight: 0.1,
+		desc: "Spawns spinning blades that orbit you",
+		weight: 0.3,
 		props: {
 			reload: 0,
 			reloadTime: 15,
@@ -133,8 +136,8 @@ const weapons = [
 			{ name: "Damage", desc: "Increase damage dealt by guardians", func: (w) => { w.damage *= 1.45 }, max: 3, weight: 1 },
 			{ name: "Reload", desc: "Decrease time between guardian spawns", func: (w) => { w.reloadTime -= 1 }, max: 3, weight: 1 },
 			{ name: "Speed", desc: "Increase guardian speed", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
-			{ name: "Amount", desc: "Spawn more guardians", func: (w) => { w.amount++; w.dist *= 1.2 }, max: 3, weight: 100.2 },
-			{ name: "Duration", desc: "Increase duration guardians stay", func: (w) => { w.duration += 1 }, max: 3, weight: 0.4 },
+			{ name: "Amount", desc: "Spawn more guardians", func: (w) => { w.amount++; w.dist *= 1.2 }, max: 3, weight: 0.4 },
+			{ name: "Duration", desc: "Increase duration guardians stay", func: (w) => { w.duration += 1 }, max: 3, weight: 0.6 },
 			{ name: "Size", desc: "Increase guardian size", func: (w) => { w.size *= 1.5 }, max: 3, weight: 0.4 },
 			// { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
 		],

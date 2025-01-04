@@ -231,7 +231,8 @@ const projectileTypes = [
 		defaults: {
 			dir: 0,
 			time: 0,
-			children: []
+			children: [],
+			rad: 0
 		},
 		tick: (projectile, i) => {
 			if (projectile.time == 0) {
@@ -242,44 +243,69 @@ const projectileTypes = [
 			projectile.dir += projectile.speed * clampTime;
 			projectile.time += clampTime;
 			projectile.duration -= clampTime;
+
 			for (let rot = 0; rot < projectile.amount; rot++) {
 				let child = projectile.children[rot];
 				child.pos = new Vector(projectile.dist, 0).rotate(projectile.dir + rot * Math.PI * 2 / projectile.amount);
 				child.pos["+="](player.pos);
 				child.vel = new Vector(0, projectile.speed * projectile.dist * 2 * Math.PI * clampTime).rotate(projectile.dir + rot * Math.PI * 2 / projectile.amount);
 			}
+
+			projectile.rad = projectile.size;
+			if (projectile.time < 1) projectile.rad *= projectile.time;
+			if (projectile.duration < 1) projectile.rad *= projectile.duration;
+
 			if (projectile.duration <= 0) {
 				projectiles.splice(i, 1);
 				i--;
 			}
 		},
 		draw: (projectile) => {
-			let size = projectile.size * 2; 1
-			if (projectile.time < 1) size *= projectile.time;
-			if (projectile.duration < 1) size *= projectile.duration;
+			sketch.translate(player.pos.x, player.pos.y);
+			sketch.rotate(projectile.dir);
 			for (let rot = 0; rot < projectile.amount; rot++) {
 				sketch.push();
-				sketch.translate(player.pos.x, player.pos.y);
-				sketch.rotate(projectile.dir);
-				sketch.push();
 				sketch.rotate(rot * Math.PI * 2 / projectile.amount);
+				sketch.translate(projectile.dist, 0);
+				sketch.rotate(-projectile.dir * 2);
+
+				sketch.noStroke();
+				sketch.fill(255);
+				let spikes = 3;
+				let spikeSize = new Vector(0.3, 0.45);
+				spikeSize["*="](projectile.rad);
+				for (let spike = 0; spike < spikes; spike++) {
+					sketch.push();
+					sketch.strokeJoin("miter");
+					sketch.rotate(spike * Math.PI * 2 / spikes);
+					sketch.beginShape();
+					sketch.vertex(projectile.rad, spikeSize.x);
+					sketch.vertex(projectile.rad + spikeSize.y, 0);
+					sketch.vertex(projectile.rad, -spikeSize.x);
+					sketch.endShape();
+					sketch.pop();
+				}
+
 				sketch.stroke(255);
 				sketch.strokeWeight(5);
 				sketch.fill(0);
-				sketch.circle(projectile.dist, 0, size);
+				sketch.circle(0, 0, projectile.rad * 2);
+
+				sketch.strokeWeight(3);
+				sketch.line(-projectile.rad * 0.2, 0, projectile.rad * 0.2, 0);
+				sketch.line(0, -projectile.rad * 0.2, 0, projectile.rad * 0.2);
+
 				sketch.pop();
-				sketch.pop();
-				sketch.line(projectile.children[rot].pos.x, projectile.children[rot].pos.y, projectile.children[rot].pos.x + projectile.children[rot].vel.x, projectile.children[rot].pos.y + projectile.children[rot].vel.y);
 			}
 		},
 		enemyTick: (projectile, i, enemy, enemyI) => {
 			projectile.children.forEach(child => {
 				let dif = (enemy.pos)["-"](child.pos);
-				if (dif.mag < enemy.size + 25 && !enemy.frozen) {
+				if (dif.mag < enemy.size + projectile.rad && !enemy.frozen) {
 					let hitStr = (child.vel)["-"](enemy.vel).mag;
 					enemy.hp--;
 					enemy.pos["-="](child.pos);
-					enemy.pos.mag = enemy.size + projectile.size;
+					enemy.pos.mag = enemy.size + projectile.rad;
 					enemy.pos["+="](child.pos);
 					let hitVel = dif.copy;
 					hitVel.mag = hitStr;

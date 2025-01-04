@@ -4,6 +4,9 @@
 
 ## v0.4
 
+## 0.4.13
+- Add guardian weapon
+
 ### 0.4.12
 - Buff burn damage
 - Make effects propagate to children
