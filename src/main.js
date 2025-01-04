@@ -798,8 +798,6 @@ async function die() {
 			if (!devMode) promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) }));
 
 			const results = await Promise.all(promises);
-			console.log("Done posting data")
-			console.log(results)
 			if (results[1]) scoreRecordId = results[1].id;
 			posted = true;
 		}
@@ -830,7 +828,6 @@ async function die() {
 	}
 
 	let page = 1;
-	console.log("Getting scores")
 	const scores = await getScores(page);
 
 	const scoresContainer = document.getElementById("scores");
