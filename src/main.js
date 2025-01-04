@@ -1011,7 +1011,7 @@ document.getElementById("snapshot-copy").addEventListener("click", async () => {
 	const blob = await (await fetch(url)).blob();
 	const item = new ClipboardItem({ "image/png": blob });
 	navigator.clipboard.write([item]).then(() => {
-		alert("Snapshot copied to clipboard!");
+		alert("Snapshot copied to clipboard");
 		finishSnapshot();
 	}).catch(err => {
 		console.error(err);
