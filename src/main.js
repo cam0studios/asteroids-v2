@@ -367,6 +367,7 @@ const sketchFunc = (sk) => {
 							case 1:
 								option.val.times++;
 								option.val.func(player.weapons[option.i]);
+								player.weapons[option.i].upgrade(player.weapons[option.i]);
 								break;
 							case 2:
 								addWeapon(option.id);

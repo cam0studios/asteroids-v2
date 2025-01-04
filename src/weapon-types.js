@@ -1,6 +1,6 @@
 import Vector from "@cam0studios/vector-library";
 import { gamepad } from "./gamepad";
-import { player, mouseDown, settings, clampTime, get, set } from "./main";
+import { player, mouseDown, settings, clampTime, get, set, size } from "./main";
 import projectileTypes, { projectileEnums } from "./projectile-types";
 
 /**
@@ -15,10 +15,12 @@ class Weapon {
 	 * @param {number} data.id - The ID of the weapon.
 	 * @param {Function} data.tick - The tick function for the weapon.
 	 * @param {number} data.weight - The relative weight of the weapon when leveling up.
+	 * @param {Function} [data.upgrade] - The upgrade function for the weapon.
 	 * 
 	 * @param {Object} data.props - The properties of the weapon.
 	 * @param {number} data.props.reload - The reload time of the weapon.
-	 * @param {number} data.props.fireRate - The fire rate of the weapon.
+	 * @param {number} data.props.fireRate - The fire rate of the weapon, 1 / reloadTime.
+	 * @param {number} data.props.reloadTime - The reload time of the weapon, 1 / fireRate.
 	 * @param {number} data.props.damage - The damage of the weapon.
 	 * @param {number} data.props.speed - The speed of the weapon.
 	 * @param {number} data.props.amount - The amount of projectiles to shoot.
@@ -37,6 +39,7 @@ class Weapon {
 		this.tick = data.tick;
 		this.upgrades = data.upgrades;
 		this.weight = data.weight;
+		this.upgrade = data.upgrade || (() => { });
 	}
 
 	givePlayer() {
@@ -112,36 +115,46 @@ const weapons = [
 			weapon.reload -= clampTime;
 		}
 	}),
-	// new Weapon({
-	// 	id: "sacred-blade",
-	// 	name: "Sacred Blade",
-	// 	weight: 0.1,
-	// 	props: {
-	// 		amount: 1,
-	// 		damage: 5,
-	// 		speed: 300,
-	// 		reload: 0,
-	// 		fireRate: 3
-	// 	},
-	// 	upgrades: [
-	// 		{ name: "Damage", desc: "Damage up", func: (w) => { w.damage *= 1.35 }, max: 5, weight: 1 },
-	// 	],
-	// 	tick: (weapon) => {
-	// 		if (weapon.reload <= 0) {
-	// 			weapon.reload = 1 / weapon.fireRate;
-	// 			for (let i = 0; i < weapon.amount; i++) {
-	// 				projectileTypes[projectileEnums.sacredBlade].create({
-	// 					pos: player.pos.copy,
-	// 					damage: weapon.damage,
-	// 					speed: weapon.speed,
-	// 					life: 120,
-	// 					vel: new Vector(weapon.speed, 0).rotate(Math.random() * Math.PI * 2).mult(5),
-	// 				});
-	// 			}
-	// 		}
-
-	// 		weapon.reload -= clampTime;
-	// 	},
-	// })
+	new Weapon({
+		name: "Guardian",
+		id: "guardian",
+		weight: 0.1,
+		props: {
+			reload: 0,
+			reloadTime: 15,
+			damage: 3,
+			speed: 2,
+			amount: 3,
+			dist: 150,
+			duration: 5,
+			size: 20
+		},
+		upgrades: [
+			{ name: "Damage", desc: "Increase damage dealt by guardians", func: (w) => { w.damage *= 1.45 }, max: 3, weight: 1 },
+			{ name: "Reload", desc: "Decrease time between guardian spawns", func: (w) => { w.reloadTime -= 1 }, max: 3, weight: 1 },
+			{ name: "Speed", desc: "Increase guardian speed", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
+			{ name: "Amount", desc: "Spawn more guardians", func: (w) => { w.amount++; w.dist *= 1.2 }, max: 3, weight: 100.2 },
+			{ name: "Duration", desc: "Increase duration guardians stay", func: (w) => { w.duration += 1 }, max: 3, weight: 0.4 },
+			{ name: "Size", desc: "Increase guardian size", func: (w) => { w.size *= 1.5 }, max: 3, weight: 0.4 },
+			// { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
+		],
+		upgrade: (weapon) => {
+			weapon.reload = 0;
+		},
+		tick: (weapon) => {
+			if (weapon.reload <= 0) {
+				weapon.reload = weapon.reloadTime;
+				projectileTypes[projectileEnums.guardian].create({
+					speed: weapon.speed,
+					damage: weapon.damage,
+					dist: weapon.dist,
+					amount: weapon.amount,
+					duration: weapon.duration,
+					size: weapon.size
+				});
+			}
+			weapon.reload -= clampTime;
+		}
+	})
 ];
 export default weapons;
