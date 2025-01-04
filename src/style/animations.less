@@ -1,0 +1,51 @@
+@keyframes grow-in-vertical {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  } 
+}
+
+.grow-in-vertical {
+    animation: grow-in-vertical 0.3s;
+}
+
+@keyframes shrink-out-vertical {
+    0% {
+        transform: scaleY(1);
+    }
+    100% {
+        transform: scaleY(0);
+    }
+}
+
+.shrink-out-vertical {
+    animation: shrink-out-vertical 0.15s;
+}
+
+@keyframes scale-in {
+    0% {
+        scale: 0;
+    }
+    100% {
+        scale: 1;
+    } 
+}
+
+.scale-in {
+    animation: scale-in 0.3s;
+}
+
+@keyframes scale-out {
+    0% {
+        scale: 1;
+    }
+    100% {
+        scale: 0;
+    }
+}
+
+.scale-out {
+    animation: scale-out 0.3s;
+}

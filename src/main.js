@@ -32,7 +32,8 @@ export const settingsStore = new EasyStorage({
 		starDetail: "1",
 		sendFeedEvents: true,
 		showFeed: true,
-		submitScores: true
+		submitScores: true,
+		reticle: "0"
 	},
 	migration: {
 		enabled: true,
@@ -103,6 +104,18 @@ function stopGame() {
 	started = false;
 }
 
+const closingDialogues = [];
+function closeWithAnimation(dialog, animation, duration) {
+	if (closingDialogues.includes(dialog)) return;
+	dialog.classList.add(animation)
+	closingDialogues.push(dialog)
+	setTimeout(() => {
+		dialog.close()
+		dialog.classList.remove(animation)
+		closingDialogues.splice(closingDialogues.indexOf(dialog), 1)
+	}, duration);
+}
+
 var stars = [];
 
 var playerUpgrades = [
@@ -159,13 +172,14 @@ const sketchFunc = (sk) => {
 	getSettings();
 	editableSettings = [
 		{ name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
-		{ name: "Do Screen Shake", var: "doScreenShake", type: "checkbox" },
+		{ name: "Screen Shake", var: "doScreenShake", type: "checkbox" },
 		{ name: "Dim Background", var: "dimBG", type: "checkbox" },
 		{ name: "Submit Scores", var: "submitScores", type: "checkbox" },
 		{ name: "Send Feed Events", var: "sendFeedEvents", type: "checkbox" },
 		{ name: "Show Feed", var: "showFeed", type: "checkbox" },
 		{ name: "Mute", var: "isMuted", type: "checkbox" },
 		{ name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] },
+		{ name: "Reticle", var: "reticle", type: "select", options: [0, 1, 2, 3], labels: ["Fancy", "Crosshair", "Static", "None"] }
 	];
 	currentLevel.start.forEach(start => {
 		for (let i = 0; i < start.count; i++) {
@@ -360,7 +374,7 @@ const sketchFunc = (sk) => {
 				}
 
 				chosen.forEach((option, i) => {
-					content += `<button id="option${i}" class="${getRarity(option.val.weight)}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
+					content += `<button id="option${i}" class="upgrade-choice ${getRarity(option.val.weight)}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
 				});
 
 				document.getElementById("options").innerHTML = content;
@@ -388,9 +402,12 @@ const sketchFunc = (sk) => {
 								addWeapon(option.id);
 								break;
 						}
-						document.getElementById("upgradeMenu").close();
-						sketch.loop();
-						paused = false;
+						document.querySelectorAll(".upgrade-choice").forEach(button => button.disabled = true);
+						closeWithAnimation(document.getElementById("upgradeMenu"), "shrink-out-vertical", 150);
+						setTimeout(() => {
+							sketch.loop();
+							paused = false;
+						}, 150)
 					});
 				});
 			}
@@ -648,27 +665,43 @@ const sketchFunc = (sk) => {
 			sketch.textSize(35);
 			sketch.text(formatTime(time), size.x / 2, 10);
 	
-			// cursor
-			sketch.push();
-			sketch.stroke(255);
-			sketch.strokeWeight(5);
-			sketch.translate(size.x / 2 + mouse.x, size.y / 2 + mouse.y);
-			sketch.scale(0.7);
-	
-			let dist1 = 14 - cursorContract * 3;
-			let dist2 = 8 - cursorContract * 2;
-			sketch.line(dist1, 0, dist2, 0);
-			sketch.line(0, dist1, 0, dist2);
-			sketch.line(-dist1, 0, -dist2, 0);
-			sketch.line(0, -dist1, 0, -dist2);
-	
-			dist1 = 20;
-			dist2 = 10;
-			sketch.line(-dist1, -dist2, -dist2, -dist1);
-			sketch.line(dist2, -dist1, dist1, -dist2);
-			sketch.line(dist1, dist2, dist2, dist1);
-			sketch.line(-dist2, dist1, -dist1, dist2);
-			sketch.pop();
+			// Reticle (cursor)
+			if (settingsStore.get("reticle", "0") != "3") {
+				sketch.push();
+				sketch.stroke(255);
+				sketch.strokeWeight(5);
+				sketch.translate(size.x / 2 + mouse.x, size.y / 2 + mouse.y);
+				sketch.scale(0.7);
+		
+				if (settingsStore.get("reticle", "0") == "1" || settingsStore.get("reticle", "0") == "0") {
+					// Dynamic crosshair
+					let dist1 = 14 - cursorContract * 3;
+					let dist2 = 8 - cursorContract * 2;
+					sketch.line(dist1, 0, dist2, 0);
+					sketch.line(0, dist1, 0, dist2);
+					sketch.line(-dist1, 0, -dist2, 0);
+					sketch.line(0, -dist1, 0, -dist2);
+				} else if (settingsStore.get("reticle", "0") == "2") {
+					// Static crosshair
+					let dist1 = 8;
+					let dist2 = 3;
+					sketch.line(dist1, 0, dist2, 0);
+					sketch.line(0, dist1, 0, dist2);
+					sketch.line(-dist1, 0, -dist2, 0);
+					sketch.line(0, -dist1, 0, -dist2);
+				}
+		
+				if (settingsStore.get("reticle", "0") == "0") {
+					// Reticle decoration
+					dist1 = 20;
+					dist2 = 10;
+					sketch.line(-dist1, -dist2, -dist2, -dist1);
+					sketch.line(dist2, -dist1, dist1, -dist2);
+					sketch.line(dist1, dist2, dist2, dist1);
+					sketch.line(-dist2, dist1, -dist1, dist2);
+				}
+				sketch.pop();
+			}
 	
 			// health, xp, shield
 			bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
