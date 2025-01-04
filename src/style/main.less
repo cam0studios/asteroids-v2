@@ -3,6 +3,7 @@
 
 // Colors
 @secondary: rgb(200, 200, 200);
+@dim: rgba(180, 180, 180, 0.5);
 @warning: rgb(246, 236, 31);
 @accent: rgb(240, 239, 239);
 @border: rgb(200, 200, 200);
@@ -30,10 +31,7 @@
 	font-family: "Space Mono", monospace;
 }
 
-button {
-	user-select: none;
-}
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6, img, button, .no-select {
 	user-select: none;
 }
 
@@ -187,16 +185,16 @@ a {
 	text-align: justify;
 }
 
-kbd {
-	display: inline-block;
-	padding: 4px;
-	font: 11px monospace;
-	line-height: 10px;
-	color: rgb(240, 240, 240);
-	vertical-align: middle;
-	background-color: #262c36;
-	border: solid 1px #3d444db3;
-	border-radius: 6px;
+#controls {
+	margin-bottom: 5px;
+	margin-top: 5px;
+	padding: 5px 10px;
+
+	& h3 {
+		text-align: center;
+		margin-top: 0;
+		margin-bottom: 5px;
+	}
 }
 
 ul li {
