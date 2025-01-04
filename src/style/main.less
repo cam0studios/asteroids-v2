@@ -83,6 +83,30 @@ dialog {
 	flex-wrap: nowrap;
 }
 
+#controls {
+	text-align: left;
+
+	& > span {
+		vertical-align: middle;
+		display: flex;
+		justify-content: space-between;
+
+		& > span {
+			display: flex;
+
+			&:last-child {
+				margin-left: 10px;
+			}
+		}
+	
+		& img {
+			height: 1.5em;
+			padding: 0;
+			margin: 0;
+		}
+	}
+}
+
 #currentUpgrades {
 	position: fixed;
 	bottom: 0;
