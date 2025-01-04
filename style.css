@@ -31,7 +31,9 @@ h3 {
 .warning {
 	color: rgb(246, 236, 31);
 	&::before {
-		content: "⚠️ ";
+		font-family: "Font Awesome 6 Pro";
+		content: "\f071";
+		margin-right: 5px;
 	}
 }
 
