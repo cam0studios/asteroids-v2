@@ -615,9 +615,11 @@ const sketchFunc = (sk) => {
 			sketch.text(enemies.length, xPos, 100);
 			sketch.text(player.score, xPos, 130);
 			sketch.textAlign("left", "bottom");
-			sketch.text("💀", xPos + 5, 70);
-			sketch.text("⚔️", xPos + 5, 100);
-			sketch.text("🌟", xPos + 5, 130);
+			sketch.textFont("Font Awesome 6 Sharp")
+			sketch.text("\u{f54c}", xPos + 5, 70);
+			sketch.text("\u{f71d}", xPos + 5, 100);
+			sketch.text("\u{f2eb}", xPos + 5, 130);
+			sketch.textFont("monospace");
 			sketch.textSize(15);
 			sketch.text("fps", xPos + 5, 40);
 			sketch.pop();
