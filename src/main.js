@@ -747,11 +747,11 @@ async function die() {
 		}
 
 		document.getElementById("stats").innerHTML = `
-			<p> <b> Deaths: </b> ${user.deaths} </p>
-			<p> <b> Total score: </b> ${user.score} </p>
-			<p> <b> Total levelups: </b> ${user.levelups} </p>
-			<p> <b> Total kills: </b> ${user.kills} </p>
-			<p> <b> Highscore: </b> ${user.highscore} </p>
+			<p> <b> Deaths: </b> ${user.deaths.toLocaleString()} </p>
+			<p> <b> Total score: </b> ${user.score.toLocaleString()} </p>
+			<p> <b> Total levelups: </b> ${user.levelups.toLocaleString()} </p>
+			<p> <b> Total kills: </b> ${user.kills.toLocaleString()} </p>
+			<p> <b> Highscore: </b> ${user.highscore.toLocaleString()} </p>
 			<p> <b> Highest time: </b> ${formatTime(user.highestTime)} </p>
 		`;
 	} else {
