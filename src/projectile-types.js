@@ -173,7 +173,7 @@ const projectileTypes = [
 				}
 				projectile.fired = true
 				projectile.firing += clampTime;
-				projectile.len += clampTime * projectile.maxLen * 1.5;
+				projectile.len += clampTime * projectile.maxLen * 4;
 				if (projectile.len > projectile.maxLen) projectile.len = projectile.maxLen;
 
 				let int = intersections.lineCircleCollision(projectile.pos, (projectile.pos)["+"]((projectile.dirV)["*"](projectile.len)), player.pos, 25);
