@@ -347,18 +347,18 @@ const sketchFunc = (sk) => {
 					if (Array.isArray(option.val.desc)) return option.val.desc[option.val.times] || option.val.desc[option.val.desc.length - 1];
 				}
 
-				function getColor(weight) {
+				function getRarity(weight) {
 					if (weight < 0.25) {
-						return ["rgba(126, 87, 194, 0.7)", "rgb(236, 236, 236)"] // purple, white border
+						return "epic"
 					} else if (weight < 0.5) {
-						return ["rgba(3, 154, 229, 0.7)", "rgb(236, 236, 236)"] // blue, white border
+						return "rare"
 					} else {
-						return ["rgba(50, 50, 50, 0.7)", "rgb(150, 150, 150)"] // grey
+						return "common"
 					}
 				}
 
 				chosen.forEach((option, i) => {
-					content += `<button id="option${i}" style="background-color: ${getColor(option.val.weight)[0]}; border-color: ${getColor(option.val.weight)[1]};"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
+					content += `<button id="option${i}" class="${getRarity(option.val.weight)}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
 				});
 
 				document.getElementById("options").innerHTML = content;

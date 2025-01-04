@@ -99,6 +99,35 @@ button {
 		background-color: rgba(90, 90, 90, 0.7);
 	}
 
+	&.epic {
+		background-color: rgba(126, 87, 194, 0.7);
+		border-color: rgb(236, 236, 236);
+		&:hover {
+			background-color: rgba(146, 107, 214, 0.7);
+		}
+		&:focus {
+			background-color: rgba(146, 107, 214, 0.7);
+			border-color: rgb(255, 255, 255);
+		}
+		&:active {
+			background-color: rgba(166, 137, 234, 0.7);
+		}
+	}
+	&.rare {
+		background-color: rgba(3, 154, 229, 0.7);
+		border-color: rgb(236, 236, 236);
+		&:hover {
+			background-color: rgba(23, 174, 249, 0.7);
+		}
+		&:focus {
+			background-color: rgba(23, 174, 249, 0.7);
+			border-color: rgb(255, 255, 255);
+		}
+		&:active {
+			background-color: rgba(43, 194, 269, 0.7);
+		}
+	}
+
 	&>* {
 		margin: 5px;
 	}
