@@ -1,5 +1,4 @@
 import Vector from "../vector-library/vector";
-import { getRandomBox } from "./main";
 
 /**
  * @typedef {Object} Level

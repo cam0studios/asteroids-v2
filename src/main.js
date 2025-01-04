@@ -97,7 +97,8 @@ document.getElementById("multiplayer").addEventListener("click", async () => {
     room = await client.create("GameRoom", {
       maxPlayers: 4,
       name: pb.authStore.record?.name || "Guest",
-      private: false
+      private: false,
+      level: 0
     });
 
     startMultiplayerGame();
@@ -124,8 +125,6 @@ document.getElementById("multiplayer").addEventListener("click", async () => {
 
     document.querySelector(".rooms").appendChild(roomElement);
   })
-
-  console.log(availableRooms);
 
   function startMultiplayerGame() {
     multiplayer = true;
@@ -588,7 +587,6 @@ const sketchFunc = (sk) => {
     if (multiplayer) {
       for (const [ id, player] of room.state.players) {
         if (id == room.sessionId) continue;
-        console.log(player);
 
         sketch.push();
         sketch.translate(player.pos.x, player.pos.y);
