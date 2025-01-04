@@ -79,7 +79,7 @@ export async function subscribeToFeed() {
 	if (feedConnected) return;
 	pb.collection('feed').subscribe('*', function (e) {
 		if (e.action == "create" && e.record.type == "death" && settings.showFeed) {
-			Toastify.info(e.record.expand.user.name + " died", formatTime(e.record.data.time) + " / " + e.record.data.score, 5000);
+			Toastify.info(e.record.expand.user.name + " died", "<i class=\"fa-regular fa-clock\"></i> " + formatTime(e.record.data.time) + " / <i class=\"fa-regular fa-star\"></i> " + e.record.data.score, 5000);
 		}
 	}, { expand: "user" }).then(function () {
 		console.log("Connected to live feed successfully")
