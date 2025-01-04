@@ -4,49 +4,56 @@
 
 ## v0.4
 
-# 0.4.11
+## 0.4.13
+- Add guardian weapon
+
+### 0.4.12
+- Buff burn damage
+- Make effects propagate to children
+
+### 0.4.11
 - Buffed resistance to 10% per upgrade
 
-# 0.4.10
+### 0.4.10
 - Added resistance upgrade
 
-# 0.4.9
+### 0.4.9
 - Added fire shot upgrade
 
-## 0.4.8
+### 0.4.8
 - Nerfed the piercing upgrade by giving it 4 levels of 0.5
 
-## 0.4.7
+### 0.4.7
 - Added ice shot upgrade
 - Added mute setting
 
-## 0.4.6
+### 0.4.6
 - Added the piercing upgrade
 
-## 0.4.5
+### 0.4.5
 - Fixed a crash when using a gamepad without rumble
 
-## 0.4.4
+### 0.4.4
 - Added some basic sound effects
 
-## v0.4.3
+### v0.4.3
 - Replace grid background with stars
 - Add start screen
 
-## v0.4.2
+### v0.4.2
 - Filter leaderboard by version
 - Cap leaderboard to top 10
 
-## v0.4.1
+### v0.4.1
 - Add player stats
 
-## v0.4.0
+### v0.4.0
 - Add laser turret and boss enemies
 - Add player dash
 
 ## v0.3
 
-## v0.3.3
+### v0.3.3
 - Add player stats
 - Add explosion effect
 

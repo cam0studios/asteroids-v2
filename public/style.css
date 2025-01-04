@@ -1,51 +1,63 @@
 :root {
-  color-scheme: dark;
-  accent-color: rgb(240, 239, 239);
+	color-scheme: dark;
+	accent-color: rgb(240, 239, 239);
 }
 
 canvas {
-  margin: 0;
-  padding: 0;
-  display: block;
-  cursor: none;
+	margin: 0;
+	padding: 0;
+	display: block;
+	cursor: none;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  font-family: monospace;
-  background-color: black;
+	margin: 0;
+	padding: 0;
+	font-family: monospace;
+	background-color: black;
 }
 
 * {
-  font-family: monospace;
+	font-family: monospace;
 }
 
 h3 {
-  margin-bottom: 0;
+	margin-bottom: 0;
+}
+
+.secondary {
+	color: rgb(200, 200, 200);
+}
+.warning {
+	color: rgb(246, 236, 31);
+	&::before {
+		font-family: "Font Awesome 6 Pro";
+		content: "\f071";
+		margin-right: 5px;
+	}
 }
 
 input:focus {
-  outline: 1px solid rgb(240, 240, 240);
+	outline: 1px solid rgb(240, 240, 240);
 }
 
 dialog {
-  max-height: 75%;
-  min-width: 25%;
-  text-align: center;
-  border: 3px solid rgb(200, 200, 200);
-  border-radius: 3px;
-  background-color: black;
-  color: white;
-  outline: none;
+	max-height: 75%;
+	min-width: 25%;
+	text-align: center;
+	border: 3px solid rgb(200, 200, 200);
+	border-radius: 3px;
+	background-color: black;
+	color: white;
+	outline: none;
 
-  &::backdrop {
-    background-color: rgba(0, 0, 0, 0.7);
-  }
+	&::backdrop {
+		background-color: rgba(0, 0, 0, 0.7);
+	}
 
-  &>h1 {
-    font-size: 30px;
-  }
+	&>h1 {
+		font-size: 30px;
+	}
 
   &>h2 {
     font-size: 25px;
@@ -58,182 +70,189 @@ dialog {
 }
 
 .menu {
-  width: 350px;
-  padding: 20px;
-  padding-top: 0px;
+	width: 350px;
+	padding: 20px;
+	padding-top: 0px;
 }
 
 .centered {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  flex-direction: column;
-  flex-wrap: nowrap;
+	display: flex;
+	width: 100%;
+	align-items: center;
+	flex-direction: column;
+	flex-wrap: nowrap;
 }
 
 button {
-  background-color: rgba(50, 50, 50, 0.7);
-  color: white;
-  outline: none;
-  border: 2px solid rgb(150, 150, 150);
-  width: 100%;
-  border-radius: 2px;
-  margin: 5px;
+	background-color: rgba(50, 50, 50, 0.7);
+	color: white;
+	outline: none;
+	border: 2px solid rgb(150, 150, 150);
+	width: 100%;
+	border-radius: 2px;
+	margin: 5px;
 
-  &:hover {
-    background-color: rgba(70, 70, 70, 0.7);
-  }
+	&:hover {
+		background-color: rgba(70, 70, 70, 0.7);
+	}
 
-  &:focus {
-    background-color: rgba(70, 70, 70, 0.7);
-    border-color: rgb(170, 170, 170);
-  }
+	&:focus {
+		background-color: rgba(70, 70, 70, 0.7);
+		border-color: rgb(170, 170, 170);
+	}
 
-  &:active {
-    background-color: rgba(90, 90, 90, 0.7);
-  }
+	&:active {
+		background-color: rgba(90, 90, 90, 0.7);
+	}
 
-  &>* {
-    margin: 5px;
-  }
+	&>* {
+		margin: 5px;
+	}
 
-  &>h2 {
-    font-size: 25px;
-  }
+	&>h2 {
+		font-size: 25px;
+	}
 
-  &>p {
-    font-size: 15px;
-  }
+	&>p {
+		font-size: 15px;
+	}
 }
 
 #currentUpgrades {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  border: 2px solid rgb(200, 200, 200);
-  padding: 5px;
-  background-color: black;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	border: 2px solid rgb(200, 200, 200);
+	padding: 5px;
+	background-color: black;
 
-  &>p {
-    margin: 7px;
-    font-weight: 600;
-  }
+	&>p {
+		margin: 7px;
+		font-weight: 600;
+	}
 
-  &>div {
-    padding: 5px;
-    padding-left: 15px;
-    margin: 0;
+	&>div {
+		padding: 5px;
+		padding-left: 15px;
+		margin: 0;
 
-    &>p {
-      padding: 3px;
-      margin: 0;
-      display: flex;
-      justify-content: space-between;
+		&>p {
+			padding: 3px;
+			margin: 0;
+			display: flex;
+			justify-content: space-between;
 
-      &>span {
-        font-weight: 500;
-        margin-left: 10px;
-      }
-    }
-  }
+			&>span {
+				font-weight: 500;
+				margin-left: 10px;
+			}
+		}
+	}
 
-  text-align: left;
+	text-align: left;
 }
 
 #quit {
-  background-color: rgb(130, 20, 0);
-  border-color: rgb(180, 140, 130);
+	background-color: rgb(130, 20, 0);
+	border-color: rgb(180, 140, 130);
 
-  &:hover {
-    background-color: rgb(150, 30, 10);
-  }
+	&:hover {
+		background-color: rgb(150, 30, 10);
+	}
 
-  &:focus {
-    background-color: rgb(150, 30, 10);
-    border-color: rgb(200, 150, 140);
-  }
+	&:focus {
+		background-color: rgb(150, 30, 10);
+		border-color: rgb(200, 150, 140);
+	}
 
-  &:active {
-    background-color: rgb(170, 40, 20);
-  }
+	&:active {
+		background-color: rgb(170, 40, 20);
+	}
 }
 
 a {
-  color: white;
-  font-size: 15px;
-  margin: 5px;
+	color: white;
+	font-size: 15px;
+	margin: 5px;
 }
 
 .vignette-red {
-  background: radial-gradient(circle, rgba(23,23,23,0) 0%, rgba(23,23,23,0) 50%, rgba(194, 0, 0, 0.58) 150%);
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 999;
-  pointer-events: none;
-  transition: opacity 0.5s;
-  opacity: 1;
+	background: radial-gradient(circle, rgba(23,23,23,0) 0%, rgba(23,23,23,0) 50%, rgba(194, 0, 0, 0.58) 150%);
+	width: 100vw;
+	height: 100vh;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 999;
+	pointer-events: none;
+	transition: opacity 0.5s;
+	opacity: 1;
 }
 .hidden {
-  opacity: 0;
+	opacity: 0;
+}
+.no-display {
+	display: none;
+}
+
+#stats {
+	text-align: justify;
 }
 
 /* Toasts */
 
 .toastify {
-  font-family: monospace;
-  padding: 15px;
-  position: fixed;
-  border-radius: 3px;
-  min-width: 200px;
-  opacity: 0;
-  z-index: 998;
-  background: rgba(0, 0, 0, 0.75);
-  color: rgba(237, 237, 237, 0.75);
-  border: 1px solid rgba(237, 237, 237, 0.75);
+	font-family: monospace;
+	padding: 15px;
+	position: fixed;
+	border-radius: 3px;
+	min-width: 200px;
+	opacity: 0;
+	z-index: 998;
+	background: rgba(0, 0, 0, 0.75);
+	color: rgba(237, 237, 237, 0.75);
+	border: 1px solid rgba(237, 237, 237, 0.75);
 }
 
 .toastify.toastify-bottom-right {
-  bottom: 15px;
-  right: 15px;
+	bottom: 15px;
+	right: 15px;
 }
 .toastify.toastify-top-right {
-  top: 15px;
-  right: 15px;
+	top: 15px;
+	right: 15px;
 }
 .toastify.toastify-top-left {
-  top: 15px;
-  left: 15px;
+	top: 15px;
+	left: 15px;
 }
 .toastify.toastify-bottom-left {
-  bottom: 15px;
-  left: 15px;
+	bottom: 15px;
+	left: 15px;
 }
 .toastify span {
-  display: block;
+	display: block;
 }
 .toastify .toastify-title {
-  font-weight: bold;
-  margin-bottom: 10px;
+	font-weight: bold;
+	margin-bottom: 10px;
 }
 .toastify .toastify-cancel-icon {
-  display: none;
+	display: none;
 }
 
 kbd {
-  display: inline-block;
-  padding: 4px;
-  font: 11px monospace;
-  line-height: 10px;
-  color: rgb(240, 240, 240);
-  vertical-align: middle;
-  background-color: #262c36;
-  border: solid 1px #3d444db3;
-  border-radius: 6px;
+	display: inline-block;
+	padding: 4px;
+	font: 11px monospace;
+	line-height: 10px;
+	color: rgb(240, 240, 240);
+	vertical-align: middle;
+	background-color: #262c36;
+	border: solid 1px #3d444db3;
+	border-radius: 6px;
 }
 
 ul li {
-  text-align: left;
+	text-align: left;
 }

@@ -1,33 +1,35 @@
 {
-  "name": "asteroids-v2",
-  "version": "0.4.0",
-  "description": "Asteroids but newer",
-  "main": "main.js",
-  "scripts": {
-    "build": "esbuild src/main.js --bundle --outdir=./dist --minify --sourcemap --define:__IS_DEVELOPMENT__=false; cp -r public/* dist/",
-    "dev": "esbuild src/main.js --bundle --outdir=./public --watch --sourcemap --serve --servedir=./public --define:__IS_DEVELOPMENT__=true",
+	"name": "asteroids-v2",
+	"version": "0.4.0",
+	"description": "Asteroids but newer",
+	"main": "main.js",
+	"scripts": {
+		"build": "esbuild src/main.js --bundle --outdir=./dist --minify --sourcemap --define:__IS_DEVELOPMENT__=false; cp -r public/* dist/",
+		"dev": "esbuild src/main.js --bundle --outdir=./public --watch --sourcemap --serve --servedir=./public --define:__IS_DEVELOPMENT__=true",
     "start": "concurrently 'bun run dev' 'cd server && bun run start' --names 'bundle,server' --prefix '[{name}]' --prefix-colors 'bold.bgRed,bold.bgGreen'"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cam0studios/asteroids-v2.git"
-  },
-  "author": "cam0studios",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/cam0studios/asteroids-v2/issues"
-  },
-  "homepage": "https://github.com/cam0studios/asteroids-v2#readme",
-  "dependencies": {
-    "@pikapower9080/easy-storage": "^1.0.5",
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/cam0studios/asteroids-v2.git"
+	},
+	"author": "cam0studios",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/cam0studios/asteroids-v2/issues"
+	},
+	"homepage": "https://github.com/cam0studios/asteroids-v2#readme",
+	"dependencies": {
+		"@cam0studios/vector-library": "^1.0.0",
+		"@pikapower9080/easy-storage": "^1.1.0",
     "colyseus.js": "^0.15.26",
-    "p5": "^1.10.0",
-    "pocketbase": "^0.21.5",
-    "toastify": "^2.0.1"
-  },
-  "devDependencies": {
-    "@types/p5": "^1.7.6",
+		"p5": "^1.10.0",
+		"pocketbase": "^0.21.5",
+		"toastify": "^2.0.1",
+		"xss-filters": "^1.2.7"
+	},
+	"devDependencies": {
+		"@types/p5": "^1.7.6",
     "concurrently": "^9.1.1",
-    "esbuild": "^0.24.0"
-  }
+		"esbuild": "^0.24.0"
+	}
 }
