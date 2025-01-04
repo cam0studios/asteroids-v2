@@ -69,7 +69,8 @@ export var clampTime,
 	showHud = true,
 	editableSettings = {},
 	cheated,
-	particles;
+	particles,
+	iconFont = "Font Awesome 6 Pro";
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -616,9 +617,11 @@ const sketchFunc = (sk) => {
 			sketch.text(enemies.length, xPos, 100);
 			sketch.text(player.score, xPos, 130);
 			sketch.textAlign("left", "bottom");
-			sketch.text("💀", xPos + 5, 70);
-			sketch.text("⚔️", xPos + 5, 100);
-			sketch.text("🌟", xPos + 5, 130);
+			sketch.textFont(iconFont)
+			sketch.text("\u{f54c}", xPos + 5, 70); // Skull icon
+			sketch.text("\u{f71d}", xPos + 5, 100); // Swords icon
+			sketch.text("\u{f005}", xPos + 5, 130); // Star icon
+			sketch.textFont("monospace");
 			sketch.textSize(15);
 			sketch.text("fps", xPos + 5, 40);
 			sketch.pop();
@@ -748,12 +751,12 @@ async function die() {
 		}
 
 		document.getElementById("stats").innerHTML = `
-			<p> <b> Deaths: </b> ${user.deaths.toLocaleString()} </p>
-			<p> <b> Total score: </b> ${user.score.toLocaleString()} </p>
-			<p> <b> Total levelups: </b> ${user.levelups.toLocaleString()} </p>
-			<p> <b> Total kills: </b> ${user.kills.toLocaleString()} </p>
-			<p> <b> Highscore: </b> ${user.highscore.toLocaleString()} </p>
-			<p> <b> Highest time: </b> ${formatTime(user.highestTime)} </p>
+			<p> <strong> <!--<i class="fa-regular fa-burst fa-fw"></i>--> Total Deaths: </strong> ${user.deaths.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-star fa-fw"></i>--> Total score: </strong> ${user.score.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-up" fa-fw></i>--> Total levelups: </strong> ${user.levelups.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-skull fa-fw"></i>--> Total kills: </strong> ${user.kills.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-ranking-star fa-fw"></i>--> Highest score: </strong> ${user.highscore.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-clock-rotate-left fa-fw"></i>--> Longest run: </strong> ${formatTime(user.highestTime)} </p>
 		`;
 	} else {
 		document.getElementById("signInDiv").innerHTML = `<p><b>Sign in to submit your score to the leaderboard</b></p><button id="signInBtn">Sign in</button><!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
@@ -1009,7 +1012,7 @@ document.getElementById("snapshot-copy").addEventListener("click", async () => {
 	const blob = await (await fetch(url)).blob();
 	const item = new ClipboardItem({ "image/png": blob });
 	navigator.clipboard.write([item]).then(() => {
-		alert("Snapshot copied to clipboard!");
+		alert("Snapshot copied to clipboard");
 		finishSnapshot();
 	}).catch(err => {
 		console.error(err);
