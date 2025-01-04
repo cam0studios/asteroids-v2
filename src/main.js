@@ -9,6 +9,7 @@ import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { audioContext, playSound } from "./sound";
 import EasyStorage from "@pikapower9080/easy-storage";
 import particleTypes, { explode, particleEnums } from "./particle-types";
+import xssFilters from "xss-filters";
 
 export const version = "v0.4.12";
 
@@ -711,7 +712,7 @@ async function die() {
 	document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
 	document.getElementById("stats").innerHTML = "<p> <b> Loading... </b> </p>";
 	if (signedIn) {
-		document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${user.name} </b> </p> <button id="signOutBtn"> Sign out </button>`;
+		document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${xssFilters.inHTMLData(user.name)} </b> </p> <button id="signOutBtn"> Sign out </button>`;
 		document.getElementById("signOutBtn").addEventListener("mouseenter", () => playSound("hover"));
 		setTimeout(() => {
 			document.getElementById("signOutBtn").addEventListener("click", () => {
@@ -782,7 +783,7 @@ async function die() {
 		const scoreIndex = document.createTextNode(`${index + 1 + offset} `);
 		const scoreAuthorName = document.createElement("b");
 
-		scoreAuthorName.textContent = score.expand.user.name;
+		scoreAuthorName.textContent = xssFilters.inHTMLData(score.expand.user.name);
 
 		const scoreText = document.createTextNode(` - ${score.score} ${score.version ? ` (${score.version})` : ""} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
 
