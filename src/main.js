@@ -28,7 +28,8 @@ export const settingsStore = new EasyStorage({
 		dimBG: false,
 		starDetail: "1",
 		sendFeedEvents: true,
-		showFeed: true
+		showFeed: true,
+		submitScores: true
 	},
 	migration: {
 		enabled: true,
@@ -155,6 +156,7 @@ const sketchFunc = (sk) => {
 		{ name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
 		{ name: "Do Screen Shake", var: "doScreenShake", type: "checkbox" },
 		{ name: "Dim Background", var: "dimBG", type: "checkbox" },
+		{ name: "Submit Scores", var: "submitScores", type: "checkbox" },
 		{ name: "Send Feed Events", var: "sendFeedEvents", type: "checkbox" },
 		{ name: "Show Feed", var: "showFeed", type: "checkbox" },
 		{ name: "Mute", var: "isMuted", type: "checkbox" },
@@ -718,6 +720,7 @@ async function die() {
 			});
 		}, 100);
 		if (!posted) {
+			document.getElementById("score-not-submitted").classList.toggle("no-display", true)
 			await postFeed({
 				type: "death",
 				data: {
@@ -728,8 +731,14 @@ async function die() {
 				user: user.id
 			});
 
-			if (player.score > 150 && time > 10) {
+			if (player.score > 150 && time > 10 && settingsStore.get("submitScores", true)) {
 				await postScore(player.score, Math.round(time), devMode, version);
+			} else if (player.score <= 150 || time <= 10) {
+				document.getElementById("score-not-submitted").classList.toggle("no-display", false)
+				document.getElementById("score-not-submitted").innerText = "Your score was not submitted because it was too low"
+			} else {
+				document.getElementById("score-not-submitted").classList.toggle("no-display", false)
+				document.getElementById("score-not-submitted").innerText = "Score submission is disabled"
 			}
 
 			if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) });
@@ -746,8 +755,8 @@ async function die() {
 			<p> <b> Highest time: </b> ${formatTime(user.highestTime)} </p>
 		`;
 	} else {
-		document.getElementById("signInDiv").innerHTML = `<p> <b> Sign in to save score </b> </p> <button id="signInBtn"> Sign in </button> <!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
-		document.getElementById("stats").innerHTML = "<p> <b> Sign in to see stats </b> </p>";
+		document.getElementById("signInDiv").innerHTML = `<p><b>Sign in to submit your score to the leaderboard</b></p><button id="signInBtn">Sign in</button><!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
+		document.getElementById("stats").innerHTML = "<p><b>Sign in to see your stats</b></p>";
 		setTimeout(() => {
 			document.getElementById("signInBtn").addEventListener("click", async () => {
 				let res = await signIn();
