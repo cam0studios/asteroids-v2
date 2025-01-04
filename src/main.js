@@ -70,7 +70,8 @@ export var clampTime,
 	editableSettings = {},
 	cheated,
 	particles,
-	iconFont = "Font Awesome 6 Pro";
+	iconFont = "Font Awesome 6 Pro",
+	textFont = "Space Mono";
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -606,7 +607,7 @@ const sketchFunc = (sk) => {
 	
 			// enemies left text
 			sketch.push();
-			sketch.textFont("monospace");
+			sketch.textFont(textFont);
 			sketch.noStroke();
 			sketch.textSize(20);
 			sketch.fill(255);
@@ -621,14 +622,14 @@ const sketchFunc = (sk) => {
 			sketch.text("\u{f54c}", xPos + 5, 70); // Skull icon
 			sketch.text("\u{f71d}", xPos + 5, 100); // Swords icon
 			sketch.text("\u{f005}", xPos + 5, 130); // Star icon
-			sketch.textFont("monospace");
+			sketch.textFont(textFont);
 			sketch.textSize(15);
 			sketch.text("fps", xPos + 5, 40);
 			sketch.pop();
 	
 			// time
 			sketch.textAlign("center", "top");
-			sketch.textFont("monospace");
+			sketch.textFont(textFont);
 			sketch.fill(255);
 			sketch.noStroke();
 			sketch.textSize(35);
@@ -664,7 +665,7 @@ const sketchFunc = (sk) => {
 
 		if (cheated) {
 			sketch.textAlign("left", "bottom");
-			sketch.textFont("monospace");
+			sketch.textFont(textFont);
 			sketch.fill(255, 102, 51);
 			sketch.textSize(15);
 			sketch.text("Cheated Run - Invalid", 10, size.y - 10);
