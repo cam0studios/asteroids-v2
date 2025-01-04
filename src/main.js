@@ -104,6 +104,18 @@ function stopGame() {
 	started = false;
 }
 
+const closingDialogues = [];
+function closeWithAnimation(dialog, animation, duration) {
+	if (closingDialogues.includes(dialog)) return;
+	dialog.classList.add(animation)
+	closingDialogues.push(dialog)
+	setTimeout(() => {
+		dialog.close()
+		dialog.classList.remove(animation)
+		closingDialogues.splice(closingDialogues.indexOf(dialog), 1)
+	}, duration);
+}
+
 var stars = [];
 
 var playerUpgrades = [
@@ -362,7 +374,7 @@ const sketchFunc = (sk) => {
 				}
 
 				chosen.forEach((option, i) => {
-					content += `<button id="option${i}" class="${getRarity(option.val.weight)}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
+					content += `<button id="option${i}" class="upgrade-choice ${getRarity(option.val.weight)}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
 				});
 
 				document.getElementById("options").innerHTML = content;
@@ -390,9 +402,12 @@ const sketchFunc = (sk) => {
 								addWeapon(option.id);
 								break;
 						}
-						document.getElementById("upgradeMenu").close();
-						sketch.loop();
-						paused = false;
+						document.querySelectorAll(".upgrade-choice").forEach(button => button.disabled = true);
+						closeWithAnimation(document.getElementById("upgradeMenu"), "shrink-out-vertical", 150);
+						setTimeout(() => {
+							sketch.loop();
+							paused = false;
+						}, 150)
 					});
 				});
 			}
