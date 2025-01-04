@@ -188,6 +188,10 @@ a {
 	display: none;
 }
 
+#stats {
+	text-align: justify;
+}
+
 /* Toasts */
 
 .toastify {
