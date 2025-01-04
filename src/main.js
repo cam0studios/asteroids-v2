@@ -1056,7 +1056,7 @@ function getSettingsMenu() {
 			let settingElem = document.createElement("input");
 			settingElem.type = "checkbox";
 			settingElem.setAttribute("for", setting.var);
-			settingElem.checked = settings[setting.var];
+			settingElem.checked = settingsStore.get(setting.var, settingsStore.options.default[setting.var]);
 			settingElem.addEventListener("change", () => {
 				settings[setting.var] = settingElem.checked;
 				settingsStore.set(setting.var, settingElem.checked);
