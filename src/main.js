@@ -347,8 +347,18 @@ const sketchFunc = (sk) => {
 					if (Array.isArray(option.val.desc)) return option.val.desc[option.val.times] || option.val.desc[option.val.desc.length - 1];
 				}
 
+				function getColor(weight) {
+					if (weight < 0.25) {
+						return "rgba(126, 87, 194, 0.7)" // purple
+					} else if (weight < 0.5) {
+						return "rgba(3, 154, 229, 0.7)" // blue
+					} else {
+						return "rgba(50, 50, 50, 0.7)" // grey
+					}
+				}
+
 				chosen.forEach((option, i) => {
-					content += `<button id="option${i}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
+					content += `<button id="option${i}" style="background-color: ${getColor(option.val.weight)};"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
 				});
 
 				document.getElementById("options").innerHTML = content;
