@@ -11,6 +11,8 @@ import EasyStorage from "@pikapower9080/easy-storage";
 import particleTypes, { explode, particleEnums } from "./particle-types";
 import xssFilters from "xss-filters";
 
+import './style/main.less';
+
 export const version = "v0.4.13";
 
 export var keys = {};
@@ -36,7 +38,7 @@ export const settingsStore = new EasyStorage({
 		enabled: true,
 		old_key: "settings"
 	}
-})
+}) 
 
 // global vars
 /**

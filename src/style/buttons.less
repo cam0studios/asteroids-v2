@@ -1,0 +1,86 @@
+@epic: rgba(146, 107, 214, 0.7);
+@rare: rgba(23, 174, 249, 0.7);
+@button: rgba(50, 50, 50, 0.7);
+@danger: rgb(130, 20, 0);
+
+button {
+	background-color: @button;
+	color: white;
+	outline: none;
+	border: 2px solid rgb(150, 150, 150);
+	width: 100%;
+	border-radius: 2px;
+	margin: 5px;
+
+	&:hover {
+		background-color: lighten(@button, 10%);
+	}
+
+	&:focus {
+		background-color: lighten(@button, 10%);
+		border-color: rgb(170, 170, 170);
+	}
+
+	&:active {
+		background-color: lighten(@button, 20%);
+	}
+
+	&.epic {
+		background-color: @epic;
+		border-color: rgb(236, 236, 236);
+		&:hover {
+			background-color: lighten(@epic, 10%);
+		}
+		&:focus {
+			background-color: lighten(@epic, 10%);
+			border-color: rgb(255, 255, 255);
+		}
+		&:active {
+			background-color: lighten(@epic, 20%);
+		}
+	}
+	&.rare {
+		background-color: @rare;
+		border-color: rgb(236, 236, 236);
+		&:hover {
+			background-color: lighten(@rare, 10%);
+		}
+		&:focus {
+			background-color: lighten(@rare, 10%);
+			border-color: rgb(255, 255, 255);
+		}
+		&:active {
+			background-color: lighten(@rare, 20%);
+		}
+	}
+
+	&>* {
+		margin: 5px;
+	}
+
+	&>h2 {
+		font-size: 25px;
+	}
+
+	&>p {
+		font-size: 15px;
+	}
+}
+
+.danger, #quit {
+    background-color: @danger;
+	border-color: rgb(180, 140, 130);
+
+	&:hover {
+		background-color: lighten(@danger, 10%);
+	}
+
+	&:focus {
+		background-color: lighten(@danger, 10%);
+		border-color: rgb(200, 150, 140);
+	}
+
+	&:active {
+		background-color: lighten(@danger, 20%);
+	}
+}
