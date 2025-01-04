@@ -68,7 +68,8 @@ export var clampTime,
 	showHud = true,
 	editableSettings = {},
 	cheated,
-	particles;
+	particles,
+	iconFont = "Font Awesome 6 Pro";
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -615,10 +616,10 @@ const sketchFunc = (sk) => {
 			sketch.text(enemies.length, xPos, 100);
 			sketch.text(player.score, xPos, 130);
 			sketch.textAlign("left", "bottom");
-			sketch.textFont("Font Awesome 6 Sharp")
-			sketch.text("\u{f54c}", xPos + 5, 70);
-			sketch.text("\u{f71d}", xPos + 5, 100);
-			sketch.text("\u{f2eb}", xPos + 5, 130);
+			sketch.textFont(iconFont)
+			sketch.text("\u{f54c}", xPos + 5, 70); // Skull icon
+			sketch.text("\u{f71d}", xPos + 5, 100); // Swords icon
+			sketch.text("\u{f005}", xPos + 5, 130); // Star icon
 			sketch.textFont("monospace");
 			sketch.textSize(15);
 			sketch.text("fps", xPos + 5, 40);

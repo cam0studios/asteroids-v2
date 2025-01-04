@@ -4,16 +4,16 @@
  * Copyright 2023 Fonticons, Inc.
  */
 :root, :host {
-  --fa-style-family-sharp: 'Font Awesome 6 Sharp';
-  --fa-font-sharp-regular: normal 400 1em/1 'Font Awesome 6 Sharp'; }
+  --fa-style-family-classic: 'Font Awesome 6 Pro';
+  --fa-font-regular: normal 400 1em/1 'Font Awesome 6 Pro'; }
 
 @font-face {
-  font-family: 'Font Awesome 6 Sharp';
+  font-family: 'Font Awesome 6 Pro';
   font-style: normal;
   font-weight: 400;
   font-display: block;
-  src: url("./fa-sharp-regular-400.woff2") format("woff2"), url("./fa-sharp-regular-400.ttf") format("truetype"); }
+  src: url("./fa-regular-400.woff2") format("woff2"), url("./fa-regular-400.ttf") format("truetype"); }
 
-.fasr,
+.far,
 .fa-regular {
   font-weight: 400; }
