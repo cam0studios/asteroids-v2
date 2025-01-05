@@ -1,5 +1,5 @@
 import Vector from "@cam0studios/vector-library";
-import { intersections } from "@cam0studios/vector-library/intersection";
+import { lineCircleCollision, lineClosestPoint } from "@cam0studios/intersections";
 import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies, time } from "./main";
 import { playSound } from "./sound";
 import { explode } from "./particle-types";
@@ -176,9 +176,9 @@ const projectileTypes = [
 				projectile.len += clampTime * projectile.maxLen * 4;
 				if (projectile.len > projectile.maxLen) projectile.len = projectile.maxLen;
 
-				let int = intersections.lineCircleCollision(projectile.pos, (projectile.pos)["+"]((projectile.dirV)["*"](projectile.len)), player.pos, 25);
+				let int = lineCircleCollision(projectile.pos, (projectile.pos)["+"]((projectile.dirV)["*"](projectile.len)), player.pos, 25);
 				if (int) {
-					let point = intersections.lineClosestPoint(projectile.pos, (projectile.pos)["+"]((projectile.dirV)["*"](projectile.len)), player.pos);
+					let point = lineClosestPoint(projectile.pos, (projectile.pos)["+"]((projectile.dirV)["*"](projectile.len)), player.pos);
 					explode(point["+"](new Vector(Math.random() * 15, 0).rotate(Math.random() * 2 * Math.PI))["-"]((projectile.dirV)["*"](20)), 15);
 					damagePlayer(clampTime * 10);
 					player.vel["+="]((point)["-"](player.pos).normalized["*"](clampTime * 500));

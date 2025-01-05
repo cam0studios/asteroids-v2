@@ -1,5 +1,4 @@
 import Vector from "@cam0studios/vector-library";
-import { intersections } from "@cam0studios/vector-library/intersection";;
 import { particles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies, time } from "./main";
 import { playSound } from "./sound";
 
