@@ -146,7 +146,6 @@ export function playSound(soundType, position, cancelable = false) {
 		if (!cancelable) return
 		lastPlaybackId++;
 		playbackIds[lastPlaybackId] = playingSound
-		console.log(lastPlaybackId)
 		return lastPlaybackId
 	} else {
 		console.warn("Sound type not found: " + soundType);

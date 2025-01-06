@@ -35,7 +35,8 @@ export const settingsStore = new EasyStorage({
 		starDetail: "1",
 		sendFeedEvents: true,
 		showFeed: true,
-		submitScores: true
+		submitScores: true,
+		reticle: "0"
 	},
 	migration: {
 		enabled: true,
@@ -61,6 +62,8 @@ export var clampTime,
 	time,
 	fpsTime,
 	fps,
+	fpsHistory = [],
+	averageFps,
 	nextFps,
 	deltaTime,
 	mouse = Vector.zero,
@@ -158,6 +161,18 @@ function stopGame() {
 	started = false;
 }
 
+const closingDialogues = [];
+function closeWithAnimation(dialog, animation, duration) {
+	if (closingDialogues.includes(dialog)) return;
+	dialog.classList.add(animation)
+	closingDialogues.push(dialog)
+	setTimeout(() => {
+		dialog.close()
+		dialog.classList.remove(animation)
+		closingDialogues.splice(closingDialogues.indexOf(dialog), 1)
+	}, duration);
+}
+
 var stars = [];
 
 var playerUpgrades = [
@@ -214,13 +229,14 @@ const sketchFunc = (sk) => {
 	getSettings();
 	editableSettings = [
 		{ name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
-		{ name: "Do Screen Shake", var: "doScreenShake", type: "checkbox" },
+		{ name: "Screen Shake", var: "doScreenShake", type: "checkbox" },
 		{ name: "Dim Background", var: "dimBG", type: "checkbox" },
 		{ name: "Submit Scores", var: "submitScores", type: "checkbox" },
 		{ name: "Send Feed Events", var: "sendFeedEvents", type: "checkbox" },
 		{ name: "Show Feed", var: "showFeed", type: "checkbox" },
 		{ name: "Mute", var: "isMuted", type: "checkbox" },
 		{ name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] },
+		{ name: "Reticle", var: "reticle", type: "select", options: [0, 1, 2, 3], labels: ["Fancy", "Crosshair", "Static", "None"] }
 	];
 	currentLevel.start.forEach(start => {
 		for (let i = 0; i < start.count; i++) {
@@ -417,7 +433,7 @@ const sketchFunc = (sk) => {
 				}
 
 				chosen.forEach((option, i) => {
-					content += `<button id="option${i}" class="${getRarity(option.val.weight)}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
+					content += `<button id="option${i}" class="upgrade-choice ${getRarity(option.val.weight)}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
 				});
 
 				document.getElementById("options").innerHTML = content;
@@ -445,9 +461,12 @@ const sketchFunc = (sk) => {
 								addWeapon(option.id);
 								break;
 						}
-						document.getElementById("upgradeMenu").close();
-						sketch.loop();
-						paused = false;
+						document.querySelectorAll(".upgrade-choice").forEach(button => button.disabled = true);
+						closeWithAnimation(document.getElementById("upgradeMenu"), "shrink-out-vertical", 150);
+						setTimeout(() => {
+							sketch.loop();
+							paused = false;
+						}, 150)
 					});
 				});
 			}
@@ -734,27 +753,43 @@ const sketchFunc = (sk) => {
 				sketch.text(formatTime(room.state.time), size.x / 2, 10);
 			}
 	
-			// cursor
-			sketch.push();
-			sketch.stroke(255);
-			sketch.strokeWeight(5);
-			sketch.translate(size.x / 2 + mouse.x, size.y / 2 + mouse.y);
-			sketch.scale(0.7);
-	
-			let dist1 = 14 - cursorContract * 3;
-			let dist2 = 8 - cursorContract * 2;
-			sketch.line(dist1, 0, dist2, 0);
-			sketch.line(0, dist1, 0, dist2);
-			sketch.line(-dist1, 0, -dist2, 0);
-			sketch.line(0, -dist1, 0, -dist2);
-	
-			dist1 = 20;
-			dist2 = 10;
-			sketch.line(-dist1, -dist2, -dist2, -dist1);
-			sketch.line(dist2, -dist1, dist1, -dist2);
-			sketch.line(dist1, dist2, dist2, dist1);
-			sketch.line(-dist2, dist1, -dist1, dist2);
-			sketch.pop();
+			// Reticle (cursor)
+			if (settingsStore.get("reticle", "0") != "3") {
+				sketch.push();
+				sketch.stroke(255);
+				sketch.strokeWeight(5);
+				sketch.translate(size.x / 2 + mouse.x, size.y / 2 + mouse.y);
+				sketch.scale(0.7);
+		
+				if (settingsStore.get("reticle", "0") == "1" || settingsStore.get("reticle", "0") == "0") {
+					// Dynamic crosshair
+					let dist1 = 14 - cursorContract * 3;
+					let dist2 = 8 - cursorContract * 2;
+					sketch.line(dist1, 0, dist2, 0);
+					sketch.line(0, dist1, 0, dist2);
+					sketch.line(-dist1, 0, -dist2, 0);
+					sketch.line(0, -dist1, 0, -dist2);
+				} else if (settingsStore.get("reticle", "0") == "2") {
+					// Static crosshair
+					let dist1 = 8;
+					let dist2 = 3;
+					sketch.line(dist1, 0, dist2, 0);
+					sketch.line(0, dist1, 0, dist2);
+					sketch.line(-dist1, 0, -dist2, 0);
+					sketch.line(0, -dist1, 0, -dist2);
+				}
+		
+				if (settingsStore.get("reticle", "0") == "0") {
+					// Reticle decoration
+					dist1 = 20;
+					dist2 = 10;
+					sketch.line(-dist1, -dist2, -dist2, -dist1);
+					sketch.line(dist2, -dist1, dist1, -dist2);
+					sketch.line(dist1, dist2, dist2, dist1);
+					sketch.line(-dist2, dist1, -dist1, dist2);
+				}
+				sketch.pop();
+			}
 	
 			// health, xp, shield
 			bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
@@ -772,9 +807,9 @@ const sketchFunc = (sk) => {
 
 		// update exposed values
 		if (devMode) {
-			window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore };
+			window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo };
 		} else {
-			window.game = { size, fps, deltaTime, paused, version }
+			window.game = { size, fps, deltaTime, paused, version, getRunInfo }
 		}
 	}
 }
@@ -810,6 +845,7 @@ async function die() {
 	rumble(1, 1);
 	explode(player.pos, 100);
 	playSound("death")
+	let scoreRecordId;
 
 	document.getElementById("score").innerText = player.score;
 	document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
@@ -824,8 +860,10 @@ async function die() {
 			});
 		}, 100);
 		if (!posted) {
+			let promises = [];
 			document.getElementById("score-not-submitted").classList.toggle("no-display", true)
-			await postFeed({
+
+			promises.push(postFeed({
 				type: "death",
 				data: {
 					score: player.score,
@@ -833,10 +871,10 @@ async function die() {
 					dev: devMode
 				},
 				user: user.id
-			});
+			}));
 
 			if (player.score > 150 && time > 10 && settingsStore.get("submitScores", true)) {
-				await postScore(player.score, Math.round(time), devMode, version);
+				promises.push(postScore(player.score, Math.round(time), devMode, version));
 			} else if (player.score <= 150 || time <= 10) {
 				document.getElementById("score-not-submitted").classList.toggle("no-display", false)
 				document.getElementById("score-not-submitted").innerText = "Your score was not submitted because it was too low"
@@ -845,8 +883,10 @@ async function die() {
 				document.getElementById("score-not-submitted").innerText = "Score submission is disabled"
 			}
 
-			if (!devMode) await updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) });
+			if (!devMode) promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) }));
 
+			const results = await Promise.all(promises);
+			if (results[1]) scoreRecordId = results[1].id;
 			posted = true;
 		}
 
@@ -891,6 +931,7 @@ async function die() {
 		const scoreText = document.createTextNode(` - ${score.score} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
 		
 		if (score.version) scoreContainer.setAttribute("title", `Version: ${score.version}`);
+		if (scoreRecordId == score.id) scoreContainer.classList.add("highlight");
 
 		scoreContainer.append(scoreIndex, scoreAuthorName, scoreText);
 		scoresContainer.appendChild(scoreContainer);
@@ -1158,6 +1199,7 @@ function unpause() {
 function restart() {
 	isFirstLevelup = true
 	cheated = false
+	fpsHistory = []
 	unpause();
 	stopGame();
 	startGame(0);
@@ -1235,6 +1277,13 @@ function setKey(event, state) {
 
 		if (event.key == "Escape" && state && !paused) {
 			pause();
+		}
+
+		if ((event.key == "ArrowUp" || event.key == "w" || event.key == "a") && paused && state) {
+			previousButton();
+		}
+		if ((event.key == "ArrowDown" || event.key == "s" || event.key == "d") && paused && state) {
+			nextButton();
 		}
 
 		if (state && devMode) {
@@ -1315,6 +1364,55 @@ function setKey(event, state) {
 	}
 }
 
+setInterval(() => {
+	if (started && !paused) {
+		if (fps <= 1000) { // dumb hacky hacky solution for crazy outliers
+			fpsHistory.push(parseFloat(fps.toFixed(3)));
+		}
+	}
+}, 1000);
+
+export function getRunInfo() {
+	const result = {}
+	result.playerUpgrades = playerUpgrades.map(({ name, times, max }) => ({ name, times, max }));
+	result.weapons = player.weapons.map(({ name, upgrades }) => ({ name, upgrades: upgrades.map(({ name, times, max }) => ({ name, times, max })) }));
+	result.enemyCount = enemies.length;
+	result.kills = player.kills;
+	if (fpsHistory.length > 0) {
+		result.averageFps = parseFloat((fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length).toFixed(3));
+		result.minFps = Math.min(...fpsHistory);
+		result.maxFps = Math.max(...fpsHistory);
+	}
+	return result
+}
+
+function nextButton() {
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']")];
+	if (btns.length == 0) return;
+	let activeI = btns.indexOf(document.activeElement);
+	if (activeI == -1) activeI = 0;
+	else {
+		activeI++;
+		if (activeI > btns.length - 1) {
+			activeI = 0;
+		}
+	}
+	btns[activeI].focus();
+}
+function previousButton() {
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']")];
+	if (btns.length == 0) return;
+	let activeI = btns.indexOf(document.activeElement);
+	if (activeI == -1) activeI = 0;
+	else {
+		activeI--;
+		if (activeI < 0) {
+			activeI = btns.length - 1;
+		}
+	}
+	btns[activeI].focus();
+}
+
 export function onGamepadButton(button, state) {
 	if (button == "rightPause" && state && started) {
 		if (paused) unpause();
@@ -1322,28 +1420,10 @@ export function onGamepadButton(button, state) {
 	}
 
 	if (button == "dpadUp" && state) {
-		let btns = [...document.querySelector("dialog[open]").querySelectorAll("button")];
-		let activeI = btns.indexOf(document.activeElement);
-		if (activeI == -1) activeI = 0;
-		else {
-			activeI--;
-			if (activeI < 0) {
-				activeI = btns.length - 1;
-			}
-		}
-		btns[activeI].focus();
+		previousButton();
 	}
 	if (button == "dpadDown" && state) {
-		let btns = [...document.querySelector("dialog[open]").querySelectorAll("button")];
-		let activeI = btns.indexOf(document.activeElement);
-		if (activeI == -1) activeI = 0;
-		else {
-			activeI++;
-			if (activeI > btns.length - 1) {
-				activeI = 0;
-			}
-		}
-		btns[activeI].focus();
+		nextButton();
 	}
 	if (button == "bottom" && state) {
 		document.activeElement.click();

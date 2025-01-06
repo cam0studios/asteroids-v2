@@ -20,7 +20,8 @@
 	},
 	"homepage": "https://github.com/cam0studios/asteroids-v2#readme",
 	"dependencies": {
-		"@cam0studios/vector-library": "^1.0.0",
+		"@cam0studios/intersections": "^1.0.2",
+		"@cam0studios/vector-library": "^1.1.2",
 		"@pikapower9080/easy-storage": "^1.1.0",
     "colyseus.js": "^0.15.26",
 		"p5": "^1.10.0",

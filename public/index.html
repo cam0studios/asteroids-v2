@@ -28,55 +28,52 @@
 </head>
 
 <body>
-	<dialog id="startScreen" class="noClose menu">
+	<dialog id="startScreen" class="noClose menu grow-in-vertical">
 		<div class="centered">
 			<h1>Asteroids</h1>
 			<button id="start">
 				<h2><i class="fa-regular fa-play"></i> Start</h2>
 			</button>
-			<button id="multiplayer">
-				<h2>Multiplayer</h2>
-			</button>
-			<h3>Controls</h3>
 			<span id="controls">
+				<h3>Controls</h3>
 				<span>
 					<img src="icons/input/Keyboard & Mouse/keyboard_w.svg" alt="W key">
 					<img src="icons/input/Keyboard & Mouse/keyboard_a.svg" alt="A key">
 					<img src="icons/input/Keyboard & Mouse/keyboard_s.svg" alt="S key">
 					<img src="icons/input/Keyboard & Mouse/keyboard_d.svg" alt="D key">
-					 | 
-					<img src="icons/input/Xbox Series/xbox_stick_l.svg" alt="Left stick">
+					 <span class="no-select"> | </span>
+					<img src="icons/input/Xbox Series/xbox_stick_l.svg" alt="Left stick" title="Left stick (controller)">
 					<span>Movement</span>
 				</span>
 				<span>
 					<span>
-						<img src="icons/input/Keyboard & Mouse/mouse.svg" alt="Mouse">
-						 | 
-						<img src="icons/input/Xbox Series/xbox_stick_r.svg" alt="Right stick">
+						<img src="icons/input/Keyboard & Mouse/mouse.svg" alt="Mouse" title="Mouse movement">
+						 <span class="no-select"> | </span>
+						<img src="icons/input/Xbox Series/xbox_stick_r.svg" alt="Right stick" title="Right stick (controller)">
 					</span>
 					<span>Aim</span>
 				</span>
 				<span>
 					<span>
-						<img src="icons/input/Keyboard & Mouse/mouse_left.svg" alt="Left mouse button">
-						 | 
-						<img src="icons/input/Xbox Series/xbox_rt.svg" alt="Right trigger">
+						<img src="icons/input/Keyboard & Mouse/mouse_left.svg" alt="Left mouse button" title="Left click">
+						 <span class="no-select"> | </span>
+						<img src="icons/input/Xbox Series/xbox_rt.svg" alt="Right trigger" title="Right trigger (controller)">
 					</span>
 					<span>Shoot</span>
 				</span>
 				<span>
 					<span>
 						<img src="icons/input/Keyboard & Mouse/keyboard_z.svg" alt="Z key">
-						 |
-						<img src="icons/input/Xbox Series/xbox_lb.svg" alt="Left Bumper">
+						 <span class="no-select"> | </span>
+						<img src="icons/input/Xbox Series/xbox_rb.svg" alt="Left Bumper" title="Right bumper (controller)">
 					</span>
 					<span>Constant Fire</span>
 				</span>
 				<span>
 					<span>
-						<img src="icons/input/Keyboard & Mouse/keyboard_space_icon.svg" alt="">
-						 | 
-						<img src="icons/input/Xbox Series/xbox_lt.svg" alt="Left trigger">
+						<img src="icons/input/Keyboard & Mouse/keyboard_space_icon.svg" alt="Space key" title="Space key">
+						 <span class="no-select"> | </span>
+						<img src="icons/input/Xbox Series/xbox_lt.svg" alt="Left trigger" title="Left trigger (controller)">
 					</span>
 					<span>Dash / Dodge</span>
 				</span>
@@ -85,14 +82,14 @@
 			<div id="startLeaderboard"></div>
 		</div>
 	</dialog>
-	<dialog id="upgradeMenu" class="noClose menu">
+	<dialog id="upgradeMenu" class="noClose menu grow-in-vertical">
 		<h1>Level up!</h1>
 		<div id="options" class="centered">
 
 		</div>
 	</dialog>
 
-	<dialog id="gameOver" class="noClose menu">
+	<dialog id="gameOver" class="noClose menu grow-in-vertical">
 		<div class="centered">
 			<h1>Game Over</h1>
 			<h2>Score: <span id="score">0</span></h2>
