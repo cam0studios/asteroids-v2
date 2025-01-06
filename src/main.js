@@ -14,6 +14,8 @@ import * as Colyseus from "colyseus.js"
 
 var client = new Colyseus.Client("ws://localhost:2567");
 
+import './style/main.less';
+
 export const version = "v0.4.13";
 
 export var keys = {};
@@ -39,7 +41,7 @@ export const settingsStore = new EasyStorage({
 		enabled: true,
 		old_key: "settings"
 	}
-})
+}) 
 
 // global vars
 /**
@@ -74,9 +76,13 @@ export var clampTime,
 	cheated,
 	particles,
 	iconFont = "Font Awesome 6 Pro",
+<<<<<<< HEAD
 	multiplayer = false,
 	/** @type {Colyseus.Room} */
 	room;
+=======
+	textFont = "Space Mono";
+>>>>>>> master
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -400,8 +406,18 @@ const sketchFunc = (sk) => {
 					if (Array.isArray(option.val.desc)) return option.val.desc[option.val.times] || option.val.desc[option.val.desc.length - 1];
 				}
 
+				function getRarity(weight) {
+					if (weight < 0.25) {
+						return "epic"
+					} else if (weight < 0.5) {
+						return "rare"
+					} else {
+						return "common"
+					}
+				}
+
 				chosen.forEach((option, i) => {
-					content += `<button id="option${i}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
+					content += `<button id="option${i}" class="${getRarity(option.val.weight)}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
 				});
 
 				document.getElementById("options").innerHTML = content;
@@ -685,7 +701,7 @@ const sketchFunc = (sk) => {
 	
 			// enemies left text
 			sketch.push();
-			sketch.textFont("monospace");
+			sketch.textFont(textFont);
 			sketch.noStroke();
 			sketch.textSize(20);
 			sketch.fill(255);
@@ -700,14 +716,14 @@ const sketchFunc = (sk) => {
 			sketch.text("\u{f54c}", xPos + 5, 70); // Skull icon
 			sketch.text("\u{f71d}", xPos + 5, 100); // Swords icon
 			sketch.text("\u{f005}", xPos + 5, 130); // Star icon
-			sketch.textFont("monospace");
+			sketch.textFont(textFont);
 			sketch.textSize(15);
 			sketch.text("fps", xPos + 5, 40);
 			sketch.pop();
 	
 			// time
 			sketch.textAlign("center", "top");
-			sketch.textFont("monospace");
+			sketch.textFont(textFont);
 			sketch.fill(255);
 			sketch.noStroke();
 			sketch.textSize(35);
@@ -748,7 +764,7 @@ const sketchFunc = (sk) => {
 
 		if (cheated) {
 			sketch.textAlign("left", "bottom");
-			sketch.textFont("monospace");
+			sketch.textFont(textFont);
 			sketch.fill(255, 102, 51);
 			sketch.textSize(15);
 			sketch.text("Cheated Run - Invalid", 10, size.y - 10);
@@ -872,7 +888,9 @@ async function die() {
 
 		scoreAuthorName.textContent = xssFilters.inHTMLData(score.expand.user.name);
 
-		const scoreText = document.createTextNode(` - ${score.score} ${score.version ? ` (${score.version})` : ""} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
+		const scoreText = document.createTextNode(` - ${score.score} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
+		
+		if (score.version) scoreContainer.setAttribute("title", `Version: ${score.version}`);
 
 		scoreContainer.append(scoreIndex, scoreAuthorName, scoreText);
 		scoresContainer.appendChild(scoreContainer);

@@ -1,0 +1,42 @@
+.toastify {
+	font-family: monospace;
+	padding: 15px;
+	position: fixed;
+	border-radius: 3px;
+	min-width: 200px;
+	opacity: 0;
+	z-index: 998;
+	background: rgba(0, 0, 0, 0.75);
+	color: rgba(237, 237, 237, 0.75);
+	border: 1px solid rgba(237, 237, 237, 0.75);
+
+    & span {
+        display: block;
+    }
+
+    & .toastify-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    & .toastify-cancel-icon {
+        display: none;
+    }
+
+    &.toastify-bottom-right {
+        bottom: 15px;
+        right: 15px;
+    }
+    &.toastify-top-right {
+        top: 15px;
+        right: 15px;
+    }
+    &.toastify-top-left {
+        top: 15px;
+        left: 15px;
+    }
+    &.toastify-bottom-left {
+        bottom: 15px;
+        left: 15px;
+    }
+}
