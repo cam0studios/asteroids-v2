@@ -206,6 +206,7 @@ const enemyTypes = [
 			pos: ({ mode }) => mode == 0 ? getPosAroundPlayer() : mode == 1 ? getRandomBox(currentLevel.size) : Vector.zero,
 			vel: () => new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI),
 			hp: 15,
+			maxHp: 15,
 			size: 20,
 			hitDir: () => Math.random() * 2 * Math.PI,
 			time: 0,
