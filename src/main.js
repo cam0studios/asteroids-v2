@@ -59,6 +59,8 @@ export var clampTime,
 	time,
 	fpsTime,
 	fps,
+	fpsHistory = [],
+	averageFps,
 	nextFps,
 	deltaTime,
 	mouse = Vector.zero,
@@ -719,7 +721,7 @@ const sketchFunc = (sk) => {
 
 		// update exposed values
 		if (devMode) {
-			window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore };
+			window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo };
 		} else {
 			window.game = { size, fps, deltaTime, paused, version }
 		}
@@ -1111,6 +1113,7 @@ function unpause() {
 function restart() {
 	isFirstLevelup = true
 	cheated = false
+	fpsHistory = []
 	unpause();
 	stopGame();
 	startGame(0);
@@ -1273,6 +1276,28 @@ function setKey(event, state) {
 			}
 		}
 	}
+}
+
+setInterval(() => {
+	if (started && !paused) {
+		if (fps <= 1000) { // dumb hacky hacky solution for crazy outliers
+			fpsHistory.push(parseFloat(fps.toFixed(3)));
+		}
+	}
+}, 1000);
+
+export function getRunInfo() {
+	const result = {}
+	result.playerUpgrades = playerUpgrades.map(({ name, times, max }) => ({ name, times, max }));
+	result.weapons = player.weapons.map(({ name, upgrades }) => ({ name, upgrades: upgrades.map(({ name, times, max }) => ({ name, times, max })) }));
+	result.enemyCount = enemies.length;
+	result.kills = player.kills;
+	if (fpsHistory.length > 0) {
+		result.averageFps = parseFloat((fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length).toFixed(3));
+		result.minFps = Math.min(...fpsHistory);
+		result.maxFps = Math.max(...fpsHistory);
+	}
+	return result
 }
 
 function nextButton() {

@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase";
 import Toastify from "toastify";
-import { cheated, devMode, formatTime, getVersion, settings, settingsStore } from "./main";
+import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore } from "./main";
 const url = "https://asteroids.pockethost.io";
 export const pb = new PocketBase(url);
 import xssFilters from "xss-filters";
@@ -37,7 +37,8 @@ export async function postScore(score, time, dev, version) {
 			score,
 			time,
 			dev,
-			version
+			version,
+			runData: getRunInfo()
 		}));
 	} catch (err) {
 		console.error(err);
