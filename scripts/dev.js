@@ -42,6 +42,6 @@ console.log("Listening on port " + chalk.yellow("8000"))
 await ctx.serve({
 	servedir: "dist",
 	onRequest: (req) => {
-		console.log(`${req.remoteAddress} - ${chalk.yellow(req.method)} ${req.path} (${chalk.green(req.status)} in ${chalk.yellowBright(req.timeInMS + " ms")})`);
+		console.log(`${req.remoteAddress} - ${chalk.yellow(req.method)} ${req.path} (${chalk.green(req.status)} in ${chalk.yellowBright(req.timeInMS + "ms")})`);
 	}
 })
