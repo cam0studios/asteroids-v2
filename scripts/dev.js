@@ -38,11 +38,12 @@ const ctx = await esbuild.context({
 
 ctx.watch({})
 
-console.log("Listening on port " + chalk.yellow("8000"))
+console.log("Listening on port " + chalk.yellow(process.env?.DEV_ESBUILD_PORT || 8000));
 await ctx.serve({
 	servedir: "dist",
+	port: parseInt(process.env?.DEV_ESBUILD_PORT || '8000'),
 	onRequest: (req) => {
-        if (process.env?.DEV_DISABLE_REQUEST_LOGGING == "true") return;
+		if (process.env?.DEV_DISABLE_REQUEST_LOGGING == "true") return;
 		console.log(`${req.remoteAddress} - ${chalk.yellow(req.method)} ${req.path} (${chalk.green(req.status)} in ${chalk.yellowBright(req.timeInMS + "ms")})`);
 	}
 })
