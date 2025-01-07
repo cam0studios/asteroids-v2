@@ -42,6 +42,7 @@ console.log("Listening on port " + chalk.yellow("8000"))
 await ctx.serve({
 	servedir: "dist",
 	onRequest: (req) => {
+        if (process.env?.DEV_DISABLE_REQUEST_LOGGING == "true") return;
 		console.log(`${req.remoteAddress} - ${chalk.yellow(req.method)} ${req.path} (${chalk.green(req.status)} in ${chalk.yellowBright(req.timeInMS + "ms")})`);
 	}
 })
