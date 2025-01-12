@@ -847,6 +847,74 @@ async function die() {
 		if (score.version) scoreContainer.setAttribute("title", `Version: ${score.version}`);
 		if (scoreRecordId == score.id) scoreContainer.classList.add("highlight");
 
+		// TODO: Clean up or refactor this
+		if (score.runData) {
+			scoreContainer.style.cursor = "pointer";
+			scoreContainer.addEventListener("click", () => {
+				document.getElementById("gameOver").close();
+				document.getElementById("runData").showModal();
+
+				const keyLabels = {
+					kills: "Kills",
+					enemyCount: "Enemies",
+					averageFps: "Average FPS",
+					maxFps: "Highest FPS",
+					minFps: "Lowest FPS",
+				}
+
+				const content = document.getElementById("runDataContent");
+				for (let key in keyLabels) {
+					console.log(key, score.runData[key])
+					if (score.runData[key]) {
+						const container = document.createElement("div");
+						const keyLabel = document.createElement("strong");
+						keyLabel.innerText = keyLabels[key] + ":";
+						const value = document.createElement("span");
+						value.innerText = score.runData[key].toLocaleString();
+						container.appendChild(keyLabel);
+						container.appendChild(value);
+						content.appendChild(container);
+					}
+				}
+				const upgradesContent = document.getElementById("runDataUpgrades")
+				const upgrades = score.runData.playerUpgrades?.filter(upgrade => upgrade.times > 0);
+				if (upgrades) {
+					upgrades.forEach(upgrade => {
+						const container = document.createElement("div");
+						const keyLabel = document.createElement("strong");
+						keyLabel.innerText = upgrade.name + ":";
+						const value = document.createElement("span");
+						value.innerText = upgrade.times + "/" + upgrade.max;
+						container.appendChild(keyLabel);
+						container.appendChild(value);
+						upgradesContent.appendChild(container);
+					})
+				}
+				if (upgrades.length == 0) {
+					upgradesContent.innerText = "No upgrades"
+				}
+
+				const weaponsContent = document.getElementById("runDataWeapons")
+				const weapons = score.runData.weapons;
+				weapons.forEach((weapon) => {
+					const weaponHeader = document.createElement("h3");
+					weaponHeader.innerText = weapon.name;
+					weaponsContent.appendChild(weaponHeader);
+					const upgrades = weapon.upgrades.filter(upgrade => upgrade.times > 0);
+					upgrades.forEach(upgrade => {
+						const container = document.createElement("div");
+						const keyLabel = document.createElement("strong");
+						keyLabel.innerText = upgrade.name + ":";
+						const value = document.createElement("span");
+						value.innerText = upgrade.times + "/" + upgrade.max;
+						container.appendChild(keyLabel);
+						container.appendChild(value);
+						weaponsContent.appendChild(container);
+					})
+				})
+			})
+		}
+
 		scoreContainer.append(scoreIndex, scoreAuthorName, scoreText);
 		scoresContainer.appendChild(scoreContainer);
 	}
@@ -1028,6 +1096,15 @@ document.getElementById("quit").addEventListener("click", () => {
 	player.hp = 0;
 	unpause();
 });
+document.getElementById("runDataClose").addEventListener("click", () => {
+	document.getElementById("runData").close(); // this looks bad with an animation
+})
+document.getElementById("runData").addEventListener("close", () => {
+	document.getElementById("gameOver").showModal();
+	document.getElementById("runDataContent").innerHTML = "";
+	document.getElementById("runDataUpgrades").innerHTML = "";
+	document.getElementById("runDataWeapons").innerHTML = "";
+})
 
 let wasMuted = false;
 function prepareSnapshot() {
@@ -1089,7 +1166,7 @@ document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
 
 function pause() {
-	if (!paused && started && !document.getElementById("gameOver").open) {
+	if (!paused && started && !document.getElementById("gameOver").open && !document.getElementById("runData").open) {
 		setTimeout(() => {
 			document.getElementById("pause").showModal();
 			sketch.noLoop();

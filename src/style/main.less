@@ -190,6 +190,42 @@ a {
 	text-align: justify;
 }
 
+#runData {
+	width: 300px;
+	min-width: unset;
+	max-width: unset;
+	& > div > div {
+		& > div {
+			display: flex;
+			justify-content: space-between;
+			padding-bottom: 0;
+			margin-bottom: 0;
+	
+			& > strong {
+				order: 1;
+				margin-right: 20px;
+			}
+	
+			& > span {
+				order: 2;
+			}
+		}
+		h3 {
+			margin-top: 10px;
+			text-align: left;
+			border-bottom: 1px solid @dim;
+			margin-bottom: 5px;
+		}
+		h3:first-child {
+			margin-top: 0;
+		}
+	}
+}
+#runDataClose {
+	margin-top: 20px;
+	margin-bottom: 0;
+}
+
 #controls {
 	margin-bottom: 5px;
 	margin-top: 5px;
