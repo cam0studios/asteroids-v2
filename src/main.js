@@ -106,6 +106,16 @@ function stopGame() {
 	started = false;
 }
 
+export function getRarity(weight) {
+	if (weight < 0.25) {
+		return "epic"
+	} else if (weight < 0.5) {
+		return "rare"
+	} else {
+		return "common"
+	}
+}
+
 const closingDialogues = [];
 function closeWithAnimation(dialog, animation, duration) {
 	if (closingDialogues.includes(dialog)) return;
@@ -363,16 +373,6 @@ const sketchFunc = (sk) => {
 				function getDescription(option) {
 					if (typeof option.val.desc == "string") return option.val.desc;
 					if (Array.isArray(option.val.desc)) return option.val.desc[option.val.times] || option.val.desc[option.val.desc.length - 1];
-				}
-
-				function getRarity(weight) {
-					if (weight < 0.25) {
-						return "epic"
-					} else if (weight < 0.5) {
-						return "rare"
-					} else {
-						return "common"
-					}
 				}
 
 				chosen.forEach((option, i) => {
@@ -884,6 +884,14 @@ async function die() {
 						keyLabel.innerText = upgrade.name + ":";
 						const value = document.createElement("span");
 						value.innerText = upgrade.times + "/" + upgrade.max;
+						const upgradeData = playerUpgrades.find(x => x.name == upgrade.name);
+						console.log(upgradeData)
+						if (upgradeData) {
+							const rarity = getRarity(upgradeData.weight);
+							if (rarity !== "common") {
+								container.classList.add(rarity);
+							}
+						}
 						container.appendChild(keyLabel);
 						container.appendChild(value);
 						upgradesContent.appendChild(container);
@@ -894,8 +902,7 @@ async function die() {
 				}
 
 				const weaponsContent = document.getElementById("runDataWeapons")
-				const weapons = score.runData.weapons;
-				weapons.forEach((weapon) => {
+				score.runData.weapons.forEach((weapon) => {
 					const weaponHeader = document.createElement("h3");
 					weaponHeader.innerText = weapon.name;
 					weaponsContent.appendChild(weaponHeader);
@@ -906,6 +913,14 @@ async function die() {
 						keyLabel.innerText = upgrade.name + ":";
 						const value = document.createElement("span");
 						value.innerText = upgrade.times + "/" + upgrade.max;
+						const upgradeData = weapons.find(x => x.name == weapon.name)?.upgrades.find(x => x.name == upgrade.name);
+						console.log(upgradeData)
+						if (upgradeData) {
+							const rarity = getRarity(upgradeData.weight);
+							if (rarity !== "common") {
+								container.classList.add(rarity);
+							}
+						}
 						container.appendChild(keyLabel);
 						container.appendChild(value);
 						weaponsContent.appendChild(container);
