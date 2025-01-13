@@ -14,7 +14,8 @@ button {
 	border-radius: 2px;
 	margin: 5px;
 
-	&:hover {
+	&:hover,
+	&:active {
 		background-color: lighten(@button, 10%);
 	}
 
@@ -30,27 +31,36 @@ button {
 	&.epic {
 		background-color: @epic;
 		border-color: @border;
-		&:hover {
+
+		&:hover,
+		&:active {
 			background-color: lighten(@epic, 10%);
 		}
+
 		&:focus {
 			background-color: lighten(@epic, 10%);
 			border-color: rgb(255, 255, 255);
 		}
+
 		&:active {
 			background-color: lighten(@epic, 20%);
 		}
 	}
+
 	&.rare {
 		background-color: @rare;
 		border-color: @border;
-		&:hover {
+
+		&:hover,
+		&:active {
 			background-color: lighten(@rare, 10%);
 		}
+
 		&:focus {
 			background-color: lighten(@rare, 10%);
 			border-color: rgb(255, 255, 255);
 		}
+
 		&:active {
 			background-color: lighten(@rare, 20%);
 		}
@@ -70,11 +80,12 @@ button {
 }
 
 button.danger {
-    background-color: @danger;
+	background-color: @danger;
 	border-color: rgb(180, 140, 130);
-    color: white;
+	color: white;
 
-	&:hover {
+	&:hover,
+	&:active {
 		background-color: lighten(@danger, 5%);
 	}
 
