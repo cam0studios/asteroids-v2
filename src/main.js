@@ -857,7 +857,6 @@ async function die() {
 				const keyLabels = {
 					kills: "Kills",
 					enemyCount: "Enemies",
-					averageFps: "Average FPS",
 					maxFps: "Highest FPS",
 					minFps: "Lowest FPS",
 				}
