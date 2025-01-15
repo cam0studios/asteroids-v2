@@ -39,7 +39,7 @@ export const settingsStore = new EasyStorage({
 		enabled: true,
 		old_key: "settings"
 	}
-}) 
+})
 
 // global vars
 /**
@@ -376,7 +376,7 @@ const sketchFunc = (sk) => {
 				}
 
 				chosen.forEach((option, i) => {
-					content += `<button id="option${i}" class="upgrade-choice ${getRarity(option.val.weight)}"><h2>${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
+					content += `<button id="option${i}" class="upgrade-choice ${getRarity(option.val.weight)}"><h2>${option.type == 1 ? `${player.weapons[option.i].name} - ` : ""}${option.val.name}</h2><p>${getDescription(option)}</p>` + (option.type != 2 ? `<p>${option.val.times}/${option.val.max}</p>` : "") + "</button>";
 				});
 
 				document.getElementById("options").innerHTML = content;
@@ -614,7 +614,7 @@ const sketchFunc = (sk) => {
 			sketch.rect(12.5, 12.5, 137.5, 85, 12.5);
 			sketch.rect(size.x - 12.5, 12.5, size.x - 100, 140, 12.5);
 			sketch.pop();
-			
+
 			// minimap
 			let minimapSize = 130;
 			let minimapBorder = 10
@@ -625,7 +625,7 @@ const sketchFunc = (sk) => {
 			sketch.rect(size.x - minimapSize - 20 - minimapBorder / 2, size.y - minimapSize - 20 - minimapBorder / 2, minimapSize + minimapBorder, minimapSize + minimapBorder);
 			sketch.translate(size.x - 20 - minimapSize / 2, size.y - 20 - minimapSize / 2);
 			sketch.scale(130 / 2, 130 / 2);
-	
+
 			// minimap content
 			enemies.forEach(enemy => {
 				sketch.strokeWeight(0.002 * enemy.size * [1, 2.5, 2.5][enemy.type]);
@@ -636,7 +636,7 @@ const sketchFunc = (sk) => {
 			sketch.stroke(255);
 			sketch.point(player.pos.x / currentLevel.size, player.pos.y / currentLevel.size);
 			sketch.pop();
-	
+
 			// enemies left text
 			sketch.push();
 			sketch.textFont(textFont);
@@ -658,7 +658,7 @@ const sketchFunc = (sk) => {
 			sketch.textSize(15);
 			sketch.text("fps", xPos + 5, 40);
 			sketch.pop();
-	
+
 			// time
 			sketch.textAlign("center", "top");
 			sketch.textFont(textFont);
@@ -666,7 +666,7 @@ const sketchFunc = (sk) => {
 			sketch.noStroke();
 			sketch.textSize(35);
 			sketch.text(formatTime(time), size.x / 2, 10);
-	
+
 			// Reticle (cursor)
 			if (settingsStore.get("reticle", "0") != "3") {
 				sketch.push();
@@ -674,7 +674,7 @@ const sketchFunc = (sk) => {
 				sketch.strokeWeight(5);
 				sketch.translate(size.x / 2 + mouse.x, size.y / 2 + mouse.y);
 				sketch.scale(0.7);
-		
+
 				if (settingsStore.get("reticle", "0") == "1" || settingsStore.get("reticle", "0") == "0") {
 					// Dynamic crosshair
 					let dist1 = 14 - cursorContract * 3;
@@ -692,7 +692,7 @@ const sketchFunc = (sk) => {
 					sketch.line(-dist1, 0, -dist2, 0);
 					sketch.line(0, -dist1, 0, -dist2);
 				}
-		
+
 				if (settingsStore.get("reticle", "0") == "0") {
 					// Reticle decoration
 					dist1 = 20;
@@ -704,7 +704,7 @@ const sketchFunc = (sk) => {
 				}
 				sketch.pop();
 			}
-	
+
 			// health, xp, shield
 			bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
 			bar(new Vector(25, 55), 100, player.xp / player.levelUp, "rgb(40,30,0)", "rgb(220,200,0)", 15);
@@ -843,7 +843,7 @@ async function die() {
 		scoreAuthorName.textContent = xssFilters.inHTMLData(score.expand.user.name);
 
 		const scoreText = document.createTextNode(` - ${score.score} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
-		
+
 		if (score.version) scoreContainer.setAttribute("title", `Version: ${score.version}`);
 		if (scoreRecordId == score.id) scoreContainer.classList.add("highlight");
 
@@ -1132,7 +1132,7 @@ function prepareSnapshot() {
 		}
 	}
 	let canvas = document.querySelector("canvas");
-    return canvas.toDataURL();	
+	return canvas.toDataURL();
 }
 function finishSnapshot() {
 	settingsStore.set("isMuted", wasMuted);
