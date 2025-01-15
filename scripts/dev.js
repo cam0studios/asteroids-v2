@@ -22,14 +22,18 @@ const ctx = await esbuild.context({
 			name: 'rebuild-notify',
 			setup(build) {
 				build.onStart(() => {
-					console.log(chalk.gray(`[watch] build started`));
+					if (process.env.DEV_DISABLE_REBUILD_LOGGING !== "true") {
+						console.log(chalk.gray(`[watch] build started`));
+					}
 				})
 				build.onEnd(result => {
-					if (result.errors.length === 0 && result.warnings.length === 0) {
-						console.log(chalk.gray(`[watch] build finished`));
-						return;
+					if (process.env.DEV_DISABLE_REBUILD_LOGGING !== "true") {
+						if (result.errors.length === 0 && result.warnings.length === 0) {
+							console.log(chalk.gray(`[watch] build finished`));
+							return;
+						}
+						console.log(`${chalk.gray(`[watch] build finished with ${chalk.redBright(result.errors.length + (result.errors.length == 1 ? " error" : " errors"))} and ${chalk.yellow(result.warnings.length + (result.warnings.length == 1 ? " warning" : " warnings"))}`)}`);
 					}
-					console.log(`${chalk.gray(`[watch] build finished with ${chalk.redBright(result.errors.length + (result.errors.length == 1 ? " error" : " errors"))} and ${chalk.yellow(result.warnings.length + (result.warnings.length == 1 ? " warning" : " warnings"))}`)}`);
 				})
 			},
 		}
