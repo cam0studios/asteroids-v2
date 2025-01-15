@@ -1,13 +1,14 @@
 import * as esbuild from 'esbuild'
 import { copy } from 'esbuild-plugin-copy';
 import { lessLoader } from 'esbuild-plugin-less';
-import common from './common';
+import { options as commonOptions, define as commonDefinitions } from './common';
 import chalk from 'chalk';
 
 const ctx = await esbuild.context({
-	...common,
+	...commonOptions,
 	define: {
 		'__IS_DEVELOPMENT__': 'true',
+		...commonDefinitions
 	},
 	plugins: [
 		copy({

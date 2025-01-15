@@ -1,15 +1,16 @@
 import esbuild from 'esbuild'
 import { copy } from 'esbuild-plugin-copy';
 import { lessLoader } from 'esbuild-plugin-less';
-import common from './common';
+import { options as commonOptions, define as commonDefinitions } from './common';
 
 console.time("Production build")
 
 esbuild.build({
-    ...common,
+    ...commonOptions,
     minify: true,
     define: {
         '__IS_DEVELOPMENT__': 'false',
+        ...commonDefinitions
     },
     plugins: [
         copy({

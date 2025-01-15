@@ -1,7 +1,7 @@
 import PocketBase from "pocketbase";
 import Toastify from "toastify";
 import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore } from "./main";
-const url = "https://asteroids.pockethost.io";
+const url = __POCKETBASE_URL__;
 export const pb = new PocketBase(url);
 import xssFilters from "xss-filters";
 
