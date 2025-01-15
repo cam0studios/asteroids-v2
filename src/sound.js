@@ -1,4 +1,5 @@
 import { player, settings, settingsStore } from "./main";
+import sounds from './data/sounds.json';
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 export const audioContext = new AudioContext(); // Will be resumed when the start button is pressed
@@ -81,23 +82,6 @@ export class Sound {
 		});
 		this.sources = [];
 	}
-}
-
-const sounds = {
-	dash: [
-		{ sound: "dash/dash.wav", volume: 0.8 },
-		{ sound: "dash/dash2.wav", volume: 0.8 },
-	],
-	hit: { sound: "hit.wav", volume: 0.2, rolloff: 1000 },
-	hurt: { sound: "hurt.wav", volume: 0.7, debounce: true },
-	kill: { sound: "kill.wav", volume: 0.2, rolloff: 1000 },
-	levelup: { sound: "levelup.ogg" },
-	death: { sound: "death.wav", volume: 0.8 },
-	border: { sound: "border.wav", volume: 0.4, debounce: true, cooldown: 200 },
-	shield: { sound: "shield.wav", volume: 0.7, debounce: true },
-	hover: { sound: "hover.wav", volume: 0.5 },
-	turretAim: { sound: "turret/aim.wav", volume: 0.8, rolloff: 1000 },
-	turretFire: { sound: "turret/fire.wav", volume: 1, rolloff: 1000 }
 }
 
 const loadedSounds = {}
