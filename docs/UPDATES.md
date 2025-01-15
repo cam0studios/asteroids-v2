@@ -10,6 +10,7 @@
 - Give gun multishot every 5 levels
 - Make weapon upgrades only show if gotten
 - Add weapon name to upgrade
+- Add shield effect
 
 ## 0.4.13
 - Add guardian weapon

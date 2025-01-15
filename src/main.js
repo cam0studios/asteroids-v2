@@ -465,7 +465,7 @@ const sketchFunc = (sk) => {
 		sketch.strokeWeight(2);
 		sketch.strokeJoin("round");
 
-		//lines
+		// lines
 		if (settings.starDetail == 3) {
 			let lineSize = 70;
 			let off = ((cam)["*"](-1))["%"](lineSize);
@@ -588,9 +588,6 @@ const sketchFunc = (sk) => {
 			sketch.translate(player.pos.x, player.pos.y);
 
 			sketch.rotate(player.dir);
-			sketch.stroke(255);
-			sketch.strokeWeight(5);
-			sketch.fill(0);
 
 			if (settings.emojiMovie) {
 				sketch.textAlign("center", "center");
@@ -598,7 +595,25 @@ const sketchFunc = (sk) => {
 				sketch.textSize(50);
 				sketch.text("🚀", 0, 0);
 			} else {
+				let shieldOpacity = (player.shield.value / 10) * 0.6 + 0.4;
+				if (shieldOpacity > 1) shieldOpacity = 1;
+				if (shieldOpacity < 0) shieldOpacity = 0;
+				if (player.shield.value > 0) {
+					sketch.stroke(`rgba(50,120,200,${0.8 * shieldOpacity})`);
+					sketch.noFill();
+					sketch.strokeWeight(5);
+					sketch.circle(0, 0, 50);
+				}
+				sketch.stroke(255);
+				sketch.strokeWeight(5);
+				sketch.fill(0);
 				sketch.triangle(-15, -15, 20, 0, -15, 15);
+				if (player.shield.value > 0) {
+					sketch.noStroke();
+					sketch.fill(`rgba(50,120,200,${0.2 * shieldOpacity})`);
+					sketch.strokeWeight(5);
+					sketch.circle(0, 0, 50);
+				}
 			}
 			sketch.pop();
 		}
