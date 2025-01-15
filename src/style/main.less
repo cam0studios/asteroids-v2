@@ -152,9 +152,19 @@ dialog {
 	padding: 5px;
 	background-color: black;
 
-	&>p {
+	& > p {
 		margin: 7px;
 		font-weight: 600;
+		font-size: 20px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 0;
+
+		& > span {
+			font-weight: 400;
+			font-size: 15px;
+		}
 	}
 
 	& > div {
@@ -163,7 +173,7 @@ dialog {
 		margin: 0;
 
 		& > p {
-			padding: 3px;
+			padding: 0px;
 			margin: 0;
 			display: flex;
 			justify-content: space-between;
@@ -190,7 +200,7 @@ a {
 	z-index: 999;
 	pointer-events: none;
 	transition: opacity 0.5s;
-	opacity: 1;
+	opacity: 0;
 }
 
 #stats {

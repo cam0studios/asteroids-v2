@@ -13,7 +13,7 @@ import xssFilters from "xss-filters";
 
 import './style/main.less';
 
-export const version = "v0.4.13";
+export const version = "v0.4.14";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {
@@ -1187,7 +1187,7 @@ function pause() {
 			paused = true;
 			document.getElementById("currentUpgrades").innerHTML = [
 				`<p> Player Upgrades </p> <div> ${playerUpgrades.map(e => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`).join("")} </div>`,
-				...player.weapons.map(weapon => `<p> ${weapon.name} </p> <div>  ${weapon.upgrades.map(upgrade => `<p> ${upgrade.name} <span> ${upgrade.times}/${upgrade.max} </span> </p>`).join("")} </div>`).join("")
+				...player.weapons.map(weapon => `<hr> <p> ${weapon.name} <span> lvl ${weapon.level} </span> </p> <div>  ${weapon.upgrades.filter(upgrade => upgrade.times > 0).map(upgrade => `<p> ${upgrade.name} <span> ${upgrade.times}/${upgrade.max} </span> </p>`).join("")} </div>`).join("")
 			].join("");
 			if (document.getElementById("settings")) document.getElementById("settings").remove();
 			document.querySelector("#pause>.centered").appendChild(getSettingsMenu());

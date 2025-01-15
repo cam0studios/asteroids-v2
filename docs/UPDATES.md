@@ -4,6 +4,12 @@
 
 ## v0.4
 
+## 0.4.14
+- Add weapon levels
+- Remove multishot upgrade
+- Give gun multishot every 5 levels
+- Make weapon upgrades only show if gotten
+
 ## 0.4.13
 - Add guardian weapon
 
