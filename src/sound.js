@@ -88,16 +88,21 @@ const loadedSounds = {}
 let playbackIds = {}
 let lastPlaybackId = 0;
 
+function getFullSoundUrl(sound) {
+	if (sound.startsWith("data:")) return sound;
+	return "assets/sound/" + sound;
+}
+
 // Load sounds
 for (let type in sounds) {
 	if (Array.isArray(sounds[type])) {
-		loadedSounds[type] = sounds[type].map(sound => new Sound("assets/sound/" + sound.sound, sound));
+		loadedSounds[type] = sounds[type].map(sound => new Sound(getFullSoundUrl(sound.sound), sound));
 		loadedSounds[type].forEach((audio, i) => {
 			audio.load()
 			// const soundData = sounds[type][i]
 		});
 	} else {
-		loadedSounds[type] = new Sound("assets/sound/" + sounds[type].sound, sounds[type]);
+		loadedSounds[type] = new Sound(getFullSoundUrl(sounds[type].sound), sounds[type]);
 		loadedSounds[type].load()
 	}
 }
