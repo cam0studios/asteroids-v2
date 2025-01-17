@@ -28,6 +28,7 @@ jobs:
         bun install
         cp .env.example .env
         bun run build
+        bun run singlefile
     
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4
