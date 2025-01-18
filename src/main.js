@@ -216,6 +216,9 @@ const sketchFunc = (sk) => {
 	mouseDown = false;
 	cursorContract = 0;
 	updateStars();
+	if (!devMode) {
+		sketch.disableFriendlyErrors = true
+	}
 	sketch.setup = () => {
 		sketch.createCanvas(size.x, size.y);
 		sketch.frameRate(240);
