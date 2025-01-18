@@ -4,8 +4,14 @@ import { lessLoader } from 'esbuild-plugin-less';
 import { options as commonOptions, define as commonDefinitions } from './common';
 import jsdom from 'jsdom';
 import fs from 'fs';
+import { $ } from 'bun';
 
 console.time("Single file build")
+
+const shaOut = await $`git rev-parse HEAD`.quiet();
+const sha = shaOut.stdout.toString().trim();
+
+const contentScriptText = fs.readFileSync(`scripts/singlefile.content.js`, 'utf-8');
 
 esbuild.build({
     ...commonOptions,
@@ -91,6 +97,9 @@ esbuild.build({
 						const base64 = contents.toString('base64');
 						img.src = `data:${mime};base64,${base64}`;
 					})
+
+					dom.window.document.querySelector("#start").disabled = true;
+					dom.window.document.body.appendChild(dom.window.document.createElement('script')).textContent = contentScriptText.replace('__CURRENT_SHA__', '"' + sha + '"');
 
 					dom.window.document.body.appendChild(dom.window.document.createElement('script')).textContent = js;
 					dom.window.document.head.appendChild(dom.window.document.createElement('style')).textContent = css;
