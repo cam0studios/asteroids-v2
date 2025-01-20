@@ -12,6 +12,7 @@ import particleTypes, { explode, particleEnums } from "./particle-types";
 import xssFilters from "xss-filters";
 
 import './style/main.less';
+import { showRunInfo } from "./util/run-info";
 
 export const version = "v0.4.14";
 
@@ -130,7 +131,7 @@ function closeWithAnimation(dialog, animation, duration) {
 
 var stars = [];
 
-var playerUpgrades = [
+export var playerUpgrades = [
 	{ name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
 	{ name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
 	{ name: "Shield", desc: "Improve shield regeneration and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
@@ -869,81 +870,7 @@ async function die() {
 		if (score.runData) {
 			scoreContainer.style.cursor = "pointer";
 			scoreContainer.addEventListener("click", () => {
-				document.getElementById("gameOver").close();
-				document.getElementById("runData").showModal();
-
-				const keyLabels = {
-					kills: "Kills",
-					enemyCount: "Enemies",
-					maxFps: "Highest FPS",
-					minFps: "Lowest FPS",
-				}
-
-				const content = document.getElementById("runDataContent");
-				for (let key in keyLabels) {
-					console.log(key, score.runData[key])
-					if (score.runData[key]) {
-						const container = document.createElement("div");
-						const keyLabel = document.createElement("strong");
-						keyLabel.innerText = keyLabels[key] + ":";
-						const value = document.createElement("span");
-						value.innerText = score.runData[key].toLocaleString();
-						container.appendChild(keyLabel);
-						container.appendChild(value);
-						content.appendChild(container);
-					}
-				}
-				const upgradesContent = document.getElementById("runDataUpgrades")
-				const upgrades = score.runData.playerUpgrades?.filter(upgrade => upgrade.times > 0);
-				if (upgrades) {
-					upgrades.forEach(upgrade => {
-						const container = document.createElement("div");
-						const keyLabel = document.createElement("strong");
-						keyLabel.innerText = upgrade.name + ":";
-						const value = document.createElement("span");
-						value.innerText = upgrade.times + "/" + upgrade.max;
-						const upgradeData = playerUpgrades.find(x => x.name == upgrade.name);
-						console.log(upgradeData)
-						if (upgradeData) {
-							const rarity = getRarity(upgradeData.weight);
-							if (rarity !== "common") {
-								container.classList.add(rarity);
-							}
-						}
-						container.appendChild(keyLabel);
-						container.appendChild(value);
-						upgradesContent.appendChild(container);
-					})
-				}
-				if (upgrades.length == 0) {
-					upgradesContent.innerText = "No upgrades"
-				}
-
-				const weaponsContent = document.getElementById("runDataWeapons")
-				score.runData.weapons.forEach((weapon) => {
-					const weaponHeader = document.createElement("h3");
-					weaponHeader.innerText = weapon.name;
-					weaponsContent.appendChild(weaponHeader);
-					const upgrades = weapon.upgrades.filter(upgrade => upgrade.times > 0);
-					upgrades.forEach(upgrade => {
-						const container = document.createElement("div");
-						const keyLabel = document.createElement("strong");
-						keyLabel.innerText = upgrade.name + ":";
-						const value = document.createElement("span");
-						value.innerText = upgrade.times + "/" + upgrade.max;
-						const upgradeData = weapons.find(x => x.name == weapon.name)?.upgrades.find(x => x.name == upgrade.name);
-						console.log(upgradeData)
-						if (upgradeData) {
-							const rarity = getRarity(upgradeData.weight);
-							if (rarity !== "common") {
-								container.classList.add(rarity);
-							}
-						}
-						container.appendChild(keyLabel);
-						container.appendChild(value);
-						weaponsContent.appendChild(container);
-					})
-				})
+				showRunInfo(score);
 			})
 		}
 
