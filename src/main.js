@@ -77,7 +77,8 @@ export var clampTime,
 	cheated,
 	particles,
 	iconFont = "Font Awesome 6 Pro",
-	textFont = "Space Mono";
+	textFont = "Space Mono",
+	lastScore;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -780,6 +781,10 @@ async function die() {
 	playSound("death")
 	let scoreRecordId;
 
+	lastScore = {
+		score: player.score, time: Math.round(time), devMode, version, runData: getRunInfo()
+	}
+
 	document.getElementById("score").innerText = player.score;
 	document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
 	document.getElementById("stats").innerHTML = "<p> <b> Loading... </b> </p>";
@@ -902,7 +907,11 @@ async function die() {
 	gameOverElement.addEventListener("scroll", loadMoreScores);
 }
 
-
+document.getElementById("viewRunInfo").addEventListener("click", () => {
+	if (lastScore) {
+		showRunInfo(lastScore)
+	}
+})
 
 export function applyBorder(obj) {
 	if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15, "border");
