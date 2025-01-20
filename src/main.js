@@ -1243,8 +1243,8 @@ function setKey(event, state) {
 }
 
 setInterval(() => {
-	if (started && !paused) {
-		if (fps <= maxFps) {
+	if (started && sketch.isLooping()) {
+		if (fps <= maxFps && fps > 0) {
 			fpsHistory.push(parseFloat(fps.toFixed(3)));
 		}
 	}

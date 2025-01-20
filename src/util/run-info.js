@@ -14,8 +14,7 @@ export function showRunInfo(score) {
 
 	const content = document.getElementById("runDataContent");
 	for (let key in keyLabels) {
-		console.log(key, score.runData[key])
-		if (score.runData[key]) {
+		if (Object.hasOwn(score.runData, key) && Object.hasOwn(keyLabels, key)) {
 			const container = document.createElement("div");
 			const keyLabel = document.createElement("strong");
 			keyLabel.innerText = keyLabels[key] + ":";
