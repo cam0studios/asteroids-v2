@@ -78,7 +78,8 @@ export var clampTime,
 	particles,
 	iconFont = "Font Awesome 6 Pro",
 	textFont = "Space Mono",
-	lastScore;
+	lastScore,
+	maxFps = 240;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -223,7 +224,7 @@ const sketchFunc = (sk) => {
 	}
 	sketch.setup = () => {
 		sketch.createCanvas(size.x, size.y);
-		sketch.frameRate(240);
+		sketch.frameRate(maxFps);
 		document.getElementById("defaultCanvas0").focus();
 	}
 
@@ -871,7 +872,6 @@ async function die() {
 		if (score.version) scoreContainer.setAttribute("title", `Version: ${score.version}`);
 		if (scoreRecordId == score.id) scoreContainer.classList.add("highlight");
 
-		// TODO: Clean up or refactor this
 		if (score.runData) {
 			scoreContainer.style.cursor = "pointer";
 			scoreContainer.addEventListener("click", () => {
@@ -1325,7 +1325,7 @@ function setKey(event, state) {
 
 setInterval(() => {
 	if (started && !paused) {
-		if (fps <= 1000) { // dumb hacky hacky solution for crazy outliers
+		if (fps <= maxFps) {
 			fpsHistory.push(parseFloat(fps.toFixed(3)));
 		}
 	}
