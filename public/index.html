@@ -28,7 +28,7 @@
 </head>
 
 <body>
-	<dialog id="startScreen" class="noClose menu grow-in-vertical">
+	<dialog id="startScreen" class="noClose noPause menu grow-in-vertical">
 		<div class="centered">
 			<h1>Asteroids</h1>
 			<button id="start">
@@ -82,14 +82,14 @@
 			<div id="startLeaderboard"></div>
 		</div>
 	</dialog>
-	<dialog id="upgradeMenu" class="noClose menu grow-in-vertical">
+	<dialog id="upgradeMenu" class="noClose noPause menu grow-in-vertical">
 		<h1>Level up!</h1>
 		<div id="options" class="centered">
 
 		</div>
 	</dialog>
 
-	<dialog id="gameOver" class="noClose menu grow-in-vertical">
+	<dialog id="gameOver" class="noClose noPause menu grow-in-vertical">
 		<div class="centered">
 			<h1>Game Over</h1>
 			<h2>Score: <span id="score">0</span></h2>
@@ -108,7 +108,7 @@
 		</div>
 	</dialog>
 
-	<dialog id="runData" class="menu grow-in-vertical">
+	<dialog id="runData" class="noPause menu grow-in-vertical">
 		<div class="centered">
 			<h2>Run Info</h2>
 			<div id="runDataContent"></div>
@@ -137,7 +137,7 @@
 		<div id="currentUpgrades"></div>
 	</dialog>
 
-	<dialog id="snapshot-options" class="menu noClose">
+	<dialog id="snapshot-options" class="menu noClose noPause">
 		<div>
 			<h1>Snapshot</h1>
 			<input type="checkbox" id="snapshot-show-hud" checked>
@@ -155,13 +155,13 @@
 		</div>
 	</dialog>
 
-	<dialog id="username">
+	<dialog id="username" class="noPause">
 		<h2>Enter your username:</h2>
 		<input type="text" id="usernameIn" class="prompt">
 		<button>Continue</button>
 	</dialog>
 
-	<dialog id="password">
+	<dialog id="password" class="noPause">
 		<h2>Enter your password:</h2>
 		<input type="password" id="passwordIn" class="prompt">
 		<button>Continue</button>

@@ -1049,7 +1049,7 @@ document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
 
 function pause() {
-	if (!paused && started && !document.getElementById("gameOver").open && !document.getElementById("runData").open) {
+	if (!paused && started && !document.querySelector("dialog[open].noPause")) {
 		setTimeout(() => {
 			document.getElementById("pause").showModal();
 			sketch.noLoop();
