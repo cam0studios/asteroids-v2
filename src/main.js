@@ -1153,10 +1153,10 @@ function setKey(event, state) {
 			pause();
 		}
 
-		if ((event.key == "ArrowUp" || event.key == "w" || event.key == "a") && paused && state) {
+		if ((event.key == "ArrowUp" || event.key == "w" || event.key == "a") && document.querySelector("dialog[open]") && state) {
 			previousButton();
 		}
-		if ((event.key == "ArrowDown" || event.key == "s" || event.key == "d") && paused && state) {
+		if ((event.key == "ArrowDown" || event.key == "s" || event.key == "d") && document.querySelector("dialog[open]") && state) {
 			nextButton();
 		}
 
