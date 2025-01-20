@@ -1310,6 +1310,10 @@ function setKey(event, state) {
 					player.hp = player.maxHp;
 					cheated = true
 					break;
+				case "i":
+					player.xp = player.levelUp;
+					cheated = true
+					break;
 				default:
 					if ("1234567890".split("").includes(event.key)) {
 						if (enemyTypes[parseInt(event.key)]) {
