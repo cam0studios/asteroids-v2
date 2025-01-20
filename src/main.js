@@ -655,7 +655,7 @@ const sketchFunc = (sk) => {
 
 		// update exposed values
 		if (devMode) {
-			window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo };
+			window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo, levelUp, showRunInfo };
 		} else {
 			window.game = { size, fps, deltaTime, paused, version, getRunInfo }
 		}
