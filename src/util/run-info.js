@@ -1,4 +1,4 @@
-import { getRarity, playerUpgrades } from "../main";
+import { formatTime, getRarity, playerUpgrades } from "../main";
 import weapons from "../weapon-types";
 
 export function showRunInfo(score) {
@@ -7,44 +7,61 @@ export function showRunInfo(score) {
 
 	const keyLabels = {
 		kills: "Kills",
-		enemyCount: "Enemies",
 		maxFps: "Highest FPS",
 		minFps: "Lowest FPS",
 	}
 
 	const content = document.getElementById("runDataContent");
+
+	function addLabel(key, value, parent) {
+		const container = document.createElement("div");
+		const keyLabel = document.createElement("strong");
+		keyLabel.innerText = key + ":";
+		const valueElement = document.createElement("span");
+		valueElement.innerText = value;
+		container.appendChild(keyLabel);
+		container.appendChild(valueElement);
+		parent.appendChild(container);
+		return container;
+	}
+	const scoreValueOrder = ["user", "version", "score", "time"];
+	scoreValueOrder.forEach((key) => {
+		if (Object.hasOwn(score, key)) {
+			switch (key) {
+				case "user":
+					addLabel("User", score.expand.user.name, content);
+					break;
+				case "score":
+					addLabel("Score", score.score.toLocaleString(), content);
+					break;
+				case "time":
+					addLabel("Time", formatTime(score.time), content);
+					break;
+				case "version":
+					addLabel("Version", score.version.replace("v", ""), content);
+					break;
+				default:
+					break;
+			}
+		}
+	})
 	for (let key in keyLabels) {
 		if (Object.hasOwn(score.runData, key) && Object.hasOwn(keyLabels, key)) {
-			const container = document.createElement("div");
-			const keyLabel = document.createElement("strong");
-			keyLabel.innerText = keyLabels[key] + ":";
-			const value = document.createElement("span");
-			value.innerText = score.runData[key].toLocaleString();
-			container.appendChild(keyLabel);
-			container.appendChild(value);
-			content.appendChild(container);
+			addLabel(keyLabels[key], score.runData[key], content);
 		}
 	}
 	const upgradesContent = document.getElementById("runDataUpgrades")
 	const upgrades = score.runData.playerUpgrades?.filter(upgrade => upgrade.times > 0);
 	if (upgrades) {
 		upgrades.forEach(upgrade => {
-			const container = document.createElement("div");
-			const keyLabel = document.createElement("strong");
-			keyLabel.innerText = upgrade.name + ":";
-			const value = document.createElement("span");
-			value.innerText = upgrade.times + "/" + upgrade.max;
+			const container = addLabel(upgrade.name, upgrade.times + "/" + upgrade.max, upgradesContent);
 			const upgradeData = playerUpgrades.find(x => x.name == upgrade.name);
-			console.log(upgradeData)
 			if (upgradeData) {
 				const rarity = getRarity(upgradeData.weight);
 				if (rarity !== "common") {
 					container.classList.add(rarity);
 				}
 			}
-			container.appendChild(keyLabel);
-			container.appendChild(value);
-			upgradesContent.appendChild(container);
 		})
 	}
 	if (upgrades.length == 0) {
@@ -58,22 +75,14 @@ export function showRunInfo(score) {
 		weaponsContent.appendChild(weaponHeader);
 		const upgrades = weapon.upgrades.filter(upgrade => upgrade.times > 0);
 		upgrades.forEach(upgrade => {
-			const container = document.createElement("div");
-			const keyLabel = document.createElement("strong");
-			keyLabel.innerText = upgrade.name + ":";
-			const value = document.createElement("span");
-			value.innerText = upgrade.times + "/" + upgrade.max;
+			const container = addLabel(upgrade.name, upgrade.times + "/" + upgrade.max, weaponsContent);
 			const upgradeData = weapons.find(x => x.name == weapon.name)?.upgrades.find(x => x.name == upgrade.name);
-			console.log(upgradeData)
 			if (upgradeData) {
 				const rarity = getRarity(upgradeData.weight);
 				if (rarity !== "common") {
 					container.classList.add(rarity);
 				}
 			}
-			container.appendChild(keyLabel);
-			container.appendChild(value);
-			weaponsContent.appendChild(container);
 		})
 	})
 }
