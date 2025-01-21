@@ -281,7 +281,7 @@ const enemyTypes = [
 
 				if (enemy.hp <= 0) {
 					enemies.splice(i, 1);
-					playSound("kill", enemy.pos);
+					playSound("turretDeath", enemy.pos);
 					i--;
 					player.kills++;
 					let newScreenshake = 50 / ((enemy.pos)["-"](player.pos).mag / 500 + 1);

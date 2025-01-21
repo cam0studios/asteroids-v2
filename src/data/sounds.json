@@ -12,5 +12,6 @@
 	"shield": { "sound": "shield.wav", "volume": 0.7, "debounce": true },
 	"hover": { "sound": "hover.wav", "volume": 0.5 },
 	"turretAim": { "sound": "turret/aim.wav", "volume": 0.8, "rolloff": 1000 },
-	"turretFire": { "sound": "turret/fire.wav", "volume": 1, "rolloff": 1000 }
+	"turretFire": { "sound": "turret/fire.wav", "volume": 1, "rolloff": 1000 },
+	"turretDeath": { "sound": "turret/death.wav", "volume": 0.7, "rolloff": 1000 }
 }
