@@ -1144,6 +1144,8 @@ function setKey(event, state) {
 
 	//extra keybinds
 	if (started) {
+		if (document.querySelector("input[type='text']:focus")) return;
+
 		if (event.key == "z" && state) {
 			settings.toggleFire = !settings.toggleFire
 			settingsStore.set("toggleFire", settings.toggleFire);
