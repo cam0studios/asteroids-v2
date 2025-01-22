@@ -688,11 +688,11 @@ export function calcBorder(obj) {
 	return (vec)["*"](-1);
 }
 
-async function die() {
+async function die(silent) {
 	paused = true;
 	rumble(1, 1);
 	explode(player.pos, 100);
-	playSound("death")
+	if (!silent) playSound("death")
 	let scoreRecordId;
 
 	lastScore = {
@@ -708,7 +708,7 @@ async function die() {
 		setTimeout(() => {
 			document.getElementById("signOutBtn").addEventListener("click", () => {
 				signOut();
-				die();
+				die(true);
 			});
 		}, 100);
 		if (!posted) {
@@ -757,7 +757,7 @@ async function die() {
 			document.getElementById("signInBtn").addEventListener("click", async () => {
 				let res = await signIn();
 				if (res) {
-					die();
+					die(true);
 				} else {
 					document.getElementById("signInDiv").querySelector("b").innerText = "Sign in failed";
 				}
