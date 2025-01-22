@@ -5,7 +5,7 @@ const updateUrl = "https://raw.githubusercontent.com/cam0studios/asteroids-v2/re
 // check for updates
 fetch(commitsUrl).then(res => res.json()).then(data => {
 	if (data && data[0] && data[0].sha) {
-		console.log(`Latest sha: ${data[0].sha}\nCurrent sha: ${current_sha}`)
+		console.debug(`Latest sha: ${data[0].sha}\nCurrent sha: ${current_sha}`)
 		if (data[0].sha !== current_sha) {
 			function getVersionAge() {
 				let age
@@ -19,7 +19,7 @@ fetch(commitsUrl).then(res => res.json()).then(data => {
 				}
 				return age
 			}
-			console.log("Update available")
+			console.debug("Update available")
 			document.getElementById("startScreen").remove();
 			// download attribute does not work on cross origin resources
 			fetch(updateUrl).then((res) => {
@@ -35,7 +35,7 @@ fetch(commitsUrl).then(res => res.json()).then(data => {
 				})
 			})
 		} else {
-			console.log("Up to date")
+			console.debug("Up to date")
 			document.querySelector("#start").disabled = false;
 		}
 	}

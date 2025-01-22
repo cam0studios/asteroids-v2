@@ -214,7 +214,7 @@ const enemyTypes = [
 			cooldown: 0,
 			cooldownTime: 1.3,
 			reload: ({ index, max }, { reloadTime, cooldownTime }) => {
-				console.log(index, max, reloadTime, cooldownTime);
+				console.debug(index, max, reloadTime, cooldownTime);
 				return ((index + (Math.random() - 0.5) * 0.5) * 2 + 1) / (max * 2) * (reloadTime + cooldownTime)
 			},
 			spawn: false,

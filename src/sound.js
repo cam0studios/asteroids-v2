@@ -30,7 +30,7 @@ export class Sound {
 			request.onload = () => {
 				context.decodeAudioData(request.response, (buffer) => {
 					if (!buffer) {
-						console.log(`Sound decoding error: ${ this.url }`);
+						console.warn(`Sound decoding error: ${ this.url }`);
 						reject(new Error(`Sound decoding error: ${ this.url }`));
 						return;
 					}
@@ -39,7 +39,7 @@ export class Sound {
 				});
 			};
 			request.onerror = (err) => {
-				console.log('Error loading sound:', err);
+				console.warn('Error loading sound:', err);
 				reject(err);
 			};
 			request.send();

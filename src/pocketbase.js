@@ -16,19 +16,6 @@ if (pb.authStore.model) {
 	signedIn = true;
 }
 
-/*
-pb.collection("feed").subscribe("*", async (event) => {
-  const record = await pb.collection("feed").getOne(event.record.id, {
-	expand: "user"
-  })
-
-  console.log(record)
-  new Notify({
-	title: record.expand.user.name + " died in " + formatTime(record.data.time) + " with a score of " + record.data.score,
-  })
-})
-*/
-
 export async function postScore(score, time, dev, version) {
 	if (cheated) return;
 	try {
@@ -84,7 +71,7 @@ export async function subscribeToFeed() {
 			Toastify.info(xssFilters.inHTMLData(e.record.expand.user.name) + " died", "<i class=\"fa-regular fa-clock\"></i> " + formatTime(e.record.data.time) + " / <i class=\"fa-regular fa-star\"></i> " + xssFilters.inHTMLData(e.record.data.score), 5000);
 		}
 	}, { expand: "user" }).then(function () {
-		console.log("Connected to live feed successfully")
+		console.debug("Connected to live feed successfully")
 		feedConnected = true
 		window.ASTEROIDS_FEED_CONNECTED = true
 	});
@@ -111,7 +98,6 @@ export async function signIn() {
 		if (!password) return;
 		try {
 			let authData = await pb.collection('users').authWithPassword(username, password);
-			console.log(authData);
 			user = authData.record;
 			signedIn = true;
 			return authData;
@@ -125,7 +111,6 @@ export async function signIn() {
 		user = await pb.collection('users').create({ username, password, name: username, passwordConfirm: password });
 		try {
 			let authData = await pb.collection('users').authWithPassword(username, password);
-			console.log(authData);
 			user = authData.record;
 			signedIn = true;
 			return authData;

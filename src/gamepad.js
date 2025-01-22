@@ -92,11 +92,11 @@ export function updateGamepad() {
 }
 
 addEventListener("gamepadconnected", () => {
-	console.log("connect");
+	console.debug("Gamepad connected");
 	gamepadConnected = true;
 });
 addEventListener("gamepaddisconnected", () => {
-	console.log("disconnect");
+	console.debug("Gamepad disconnected");
 	gamepadConnected = false;
 });
 
