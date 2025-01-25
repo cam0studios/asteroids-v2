@@ -663,6 +663,11 @@ const sketchFunc = (sk) => {
 			sketch.text("Cheated Run - Invalid", 10, size.y - 10);
 		}
 
+		// fps history
+		if (time % 1 < deltaTime && fps <= maxFps && fps > 0) {
+			fpsHistory.push(parseFloat(fps.toFixed(3)));
+		}
+
 		// update exposed values
 		if (devMode) {
 			window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo, levelUp, showRunInfo };
@@ -1253,14 +1258,6 @@ function setKey(event, state) {
 		}
 	}
 }
-
-setInterval(() => {
-	if (started && sketch.isLooping()) {
-		if (fps <= maxFps && fps > 0) {
-			fpsHistory.push(parseFloat(fps.toFixed(3)));
-		}
-	}
-}, 1000);
 
 export function getRunInfo() {
 	const result = {}
