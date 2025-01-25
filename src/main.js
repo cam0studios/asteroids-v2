@@ -15,7 +15,7 @@ import './style/main.less';
 import { showRunInfo } from "./util/run-info";
 import { levelUp } from "./util/level-up";
 
-export const version = "v0.4.14";
+export const version = "v0.4.15";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {

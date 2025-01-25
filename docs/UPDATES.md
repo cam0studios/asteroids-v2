@@ -4,6 +4,11 @@
 
 ## v0.4
 
+# 0.4.15
+- Add recovery upgrade
+- Turrets now have their own death sound
+- Add button to view stats for your latest run
+
 ## 0.4.14
 - Add weapon levels
 - Remove multishot upgrade
