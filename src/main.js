@@ -1243,7 +1243,7 @@ export function getRunInfo() {
 }
 
 function nextButton() {
-	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']")];
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']"), ...document.querySelectorAll("dialog[open] select")];
 	if (btns.length == 0) return;
 	let activeI = btns.indexOf(document.activeElement);
 	if (activeI == -1) activeI = 0;
@@ -1256,7 +1256,7 @@ function nextButton() {
 	btns[activeI].focus();
 }
 function previousButton() {
-	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']")];
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']"), ...document.querySelectorAll("dialog[open] select")];
 	if (btns.length == 0) return;
 	let activeI = btns.indexOf(document.activeElement);
 	if (activeI == -1) activeI = 0;
