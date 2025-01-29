@@ -4,6 +4,8 @@ import { lessLoader } from 'esbuild-plugin-less';
 import { options as commonOptions, define as commonDefinitions } from './common';
 import chalk from 'chalk';
 
+let buildStartTimestamp;
+
 const ctx = await esbuild.context({
 	...commonOptions,
 	define: {
@@ -24,16 +26,22 @@ const ctx = await esbuild.context({
 			setup(build) {
 				build.onStart(() => {
 					if (process.env.DEV_DISABLE_REBUILD_LOGGING !== "true") {
-						console.log(chalk.gray(`[watch] build started`));
+						// console.log(chalk.gray(`[watch] build started`));
+						buildStartTimestamp = Date.now();
 					}
 				})
 				build.onEnd(result => {
+					function getTime() {
+						if (!buildStartTimestamp) return "watch"
+						let time = Date.now() - buildStartTimestamp;
+						return time + 'ms';
+					}
 					if (process.env.DEV_DISABLE_REBUILD_LOGGING !== "true") {
 						if (result.errors.length === 0 && result.warnings.length === 0) {
-							console.log(chalk.gray(`[watch] build finished`));
+							console.log(chalk.gray(`[${getTime()}] build finished`));
 							return;
 						}
-						console.log(`${chalk.gray(`[watch] build finished with ${chalk.redBright(result.errors.length + (result.errors.length == 1 ? " error" : " errors"))} and ${chalk.yellow(result.warnings.length + (result.warnings.length == 1 ? " warning" : " warnings"))}`)}`);
+						console.log(`${chalk.gray(`[${getTime()}] build finished with ${chalk.redBright(result.errors.length + (result.errors.length == 1 ? " error" : " errors"))} and ${chalk.yellow(result.warnings.length + (result.warnings.length == 1 ? " warning" : " warnings"))}`)}`);
 					}
 				})
 			},
