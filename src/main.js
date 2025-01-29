@@ -35,7 +35,8 @@ export const settingsStore = new EasyStorage({
 		sendFeedEvents: true,
 		showFeed: true,
 		submitScores: true,
-		reticle: "0"
+		reticle: "0",
+		rumbleEnabled: true
 	},
 	migration: {
 		enabled: true,
@@ -193,6 +194,7 @@ const sketchFunc = (sk) => {
 		{ name: "Send Feed Events", var: "sendFeedEvents", type: "checkbox" },
 		{ name: "Show Feed", var: "showFeed", type: "checkbox" },
 		{ name: "Mute", var: "isMuted", type: "checkbox" },
+		{ name: "Rumble", var: "rumbleEnabled", type: "checkbox" },
 		{ name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] },
 		{ name: "Reticle", var: "reticle", type: "select", options: [0, 1, 2, 3], labels: ["Fancy", "Crosshair", "Static", "None"] }
 	];

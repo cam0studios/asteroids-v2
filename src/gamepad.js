@@ -1,5 +1,5 @@
 import Vector from "@cam0studios/vector-library";
-import { onGamepadButton } from "./main";
+import { onGamepadButton, settingsStore } from "./main";
 
 export var gamepads = [];
 export var gamepadConnected = false;
@@ -114,6 +114,7 @@ export function getStick(stick) {
 }
 
 export function rumble(duration, strength) {
+	if (!settingsStore.get("rumbleEnabled", true)) return;
 	if (!gamepadConnected) return;
 	if (!gamepads[0].vibrationActuator) return
 	if ("hapticActuators" in gamepads[0] && gamepads[0].hapticActuators.length > 0) {
