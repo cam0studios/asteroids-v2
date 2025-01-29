@@ -1068,6 +1068,21 @@ document.getElementById("snapshot-show-hud").addEventListener('click', () => {
 document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
 
+// Settings button
+document.getElementById("settings-button").addEventListener("click", () => {
+	// Refresh settings in case of changes
+	if (document.getElementById("settings")) document.getElementById("settings").remove();
+	document.querySelector("#settings-container").appendChild(getSettingsMenu());
+	document.getElementById("pause").close();
+	document.getElementById("settings-menu").showModal();
+})
+document.getElementById("settings-menu").addEventListener("close", () => {
+	document.getElementById("pause").showModal();
+})
+document.getElementById("settings-exit").addEventListener("click", () => {	
+	document.getElementById("settings-menu").close();
+})
+
 function pause() {
 	if (!paused && started && !document.querySelector("dialog[open].noPause")) {
 		setTimeout(() => {
@@ -1078,8 +1093,6 @@ function pause() {
 				`<p> Player Upgrades </p> <div> ${playerUpgrades.map(e => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`).join("")} </div>`,
 				...player.weapons.map(weapon => `<hr> <p> ${weapon.name} <span> lvl ${weapon.level} </span> </p> <div>  ${weapon.upgrades.filter(upgrade => upgrade.times > 0).map(upgrade => `<p> ${upgrade.name} <span> ${upgrade.times}/${upgrade.max} </span> </p>`).join("")} </div>`).join("")
 			].join("");
-			if (document.getElementById("settings")) document.getElementById("settings").remove();
-			document.querySelector("#pause>.centered").appendChild(getSettingsMenu());
 		}, 100);
 	}
 }
