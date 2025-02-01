@@ -11,6 +11,9 @@
 @accent: rgb(240, 239, 239);
 @border: rgb(200, 200, 200);
 
+// Spacing
+@heading-margin: 20px;
+
 :root {
 	color-scheme: dark;
 	accent-color: @accent;
@@ -36,6 +39,10 @@
 
 h1, h2, h3, h4, h5, h6, img, button, .no-select {
 	user-select: none;
+}
+
+dialog > h1, dialog > div > h1 {
+	margin: @heading-margin 0;
 }
 
 canvas {

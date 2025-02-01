@@ -1,4 +1,5 @@
 #settings {
+	padding-inline: 40px;
 	& > div.setting-container {
 		display: flex;
 		flex-direction: row;
@@ -6,7 +7,25 @@
 		& > label {
 			flex-grow: 1;
 			text-align: left;
-			margin-right: 10px;
 		}
+		& > input, & > select {
+			margin-left: 40px;
+		}
+
+		padding: 4px 6px;
+		border-bottom: 1px solid rgba(112, 112, 112, 0.238);
+	}
+	& > div.setting-container:last-child {
+		border-bottom: none;
+	}
+}
+
+#settings-menu {
+	width: fit-content;
+	min-width: unset;
+	padding-bottom: 0 !important;
+
+	button {
+		margin: @heading-margin !important;
 	}
 }
