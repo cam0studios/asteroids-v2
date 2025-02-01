@@ -83,7 +83,8 @@ export var clampTime,
 	textFont = "Space Mono",
 	lastScore,
 	maxFps = 240,
-	isFirstLevelup = true;
+	isFirstLevelup = true,
+	pauseLogic = false;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -238,18 +239,23 @@ const sketchFunc = (sk) => {
 		if (clampTime > 100) clampTime = 100;
 		clampTime /= 1000;
 
-		if (!player.died) time += clampTime;
+		if (!pauseLogic) {
+			if (!player.died) time += clampTime;
 
-		// cam["="](player.pos);
-		let camMove = Math.pow(1e-3, clampTime);
-		cam["*="](camMove);
-		cam["+="]((player.pos)["*"](1 - camMove));
+			// cam["="](player.pos);
+			let camMove = Math.pow(1e-3, clampTime);
+			cam["*="](camMove);
+			cam["+="]((player.pos)["*"](1 - camMove));
 
+			if (settings.mousePan) cam["+="](mouse["/"](100));
 
-		if (settings.mousePan) cam["+="](mouse["/"](100));
+			if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
+			screenshake *= Math.pow(5e-5, clampTime);
 
-		if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
-		screenshake *= Math.pow(5e-5, clampTime);
+			// blood overlay
+			document.querySelector(".vignette-red").style.opacity = 1 - Math.min((player.hp / player.maxHp) * 1.5, 1);
+
+		}
 
 		// fps
 		if (fpsTime < 0) {
@@ -264,128 +270,127 @@ const sketchFunc = (sk) => {
 			nextFps.push(1 / deltaTime);
 		}
 
-		// blood overlay
-		document.querySelector(".vignette-red").style.opacity = 1 - Math.min((player.hp / player.maxHp) * 1.5, 1);
-
-		// waves
-		currentLevel.waves.forEach(wave => {
-			if (!("passed" in wave)) wave.passed = false;
-			if (!wave.passed) {
-				if (time > wave.time) {
-					wave.passed = true;
-					wave.enemies.forEach(enemy => {
-						for (let i = 0; i < enemy.count; i++) {
-							let props = { mode: 1, index: i, max: enemy.count };
-							for (let prop in enemy.props) {
-								props[prop] = enemy.props[prop];
+		if (!pauseLogic) {
+			// waves
+			currentLevel.waves.forEach(wave => {
+				if (!("passed" in wave)) wave.passed = false;
+				if (!wave.passed) {
+					if (time > wave.time) {
+						wave.passed = true;
+						wave.enemies.forEach(enemy => {
+							for (let i = 0; i < enemy.count; i++) {
+								let props = { mode: 1, index: i, max: enemy.count };
+								for (let prop in enemy.props) {
+									props[prop] = enemy.props[prop];
+								}
+								enemyTypes[enemy.type].create(props);
 							}
-							enemyTypes[enemy.type].create(props);
-						}
-					});
+						});
+					}
 				}
-			}
-		});
-
-		// health recovery
-		if (player.hp < player.maxHp && player.hp > 0 && player.recovery > 0) {
-			// Add player.recovery every second
-			if (time % 1 < deltaTime) {
-				player.hp += player.recovery;
-			}
-		}
-
-		// ********************  physics  ******************** //
-		// player movement
-		if (player.hp > 0) {
-			player.pos["+="]((player.vel)["*"](clampTime));
-
-			let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
-			joy["+="](gamepad.leftStick);
-			if (joy.mag > 1) joy.mag = 1;
-			joy["*="](player.speed * clampTime);
-			player.vel["+="](joy);
-			player.vel["*="](Math.pow(0.3, clampTime));
-			if (joy.mag > 0) {
-				// projectileTypes[particleEnums.dashEffect].create({ pos: player.pos.copy, type: 1 });
-			}
-
-			player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire
-
-			if (gamepadConnected) {
-				if (gamepad.rightStick.mag > 0.1) {
-					let dir = gamepad.rightStick.copy;
-					dir.mag = 200;
-					mouse["="](dir);
-				}
-			}
-
-			if (player.dodge.time <= 0) {
-				player.dodge.cooldown -= clampTime;
-				if ((keys[" "] || gamepad.leftTrigger) && player.dodge.cooldown <= 0 && joy.mag > 0) {
-					// Player dodge / dash
-					player.dodge.cooldown = 0.2;
-					player.dodge.vel = joy.copy;
-					player.dodge.vel.mag = 1000;
-					player.dodge.time = .15;
-					playSound("dash");
-				}
-			} else {
-				player.dodge.time -= clampTime;
-				if (player.dodge.time <= 0) {
-					player.dodge.vel = Vector.zero;
-				}
-				player.vel["="](player.dodge.vel);
-				particleTypes[particleEnums.dashEffect].create({ pos: player.pos.copy });
-			}
-
-			player.dir = mouse.heading;
-			applyBorder(player);
-
-			// level up
-			if (player.xp >= player.levelUp) {
-				levelUp();
-			}
-
-			// player shield
-			if (player.shield.value < player.shield.maxValue) {
-				if (player.shield.regenTimeLeft < player.shield.regenTime) {
-					player.shield.regenTimeLeft += clampTime;
-				} else {
-					player.shield.value += player.shield.regenSpeed * clampTime;
-				}
-			} else if (player.shield.value > player.shield.maxValue) {
-				player.shield.value = player.shield.maxValue;
-			}
-
-			if (player.hp > player.maxHp) player.hp = player.maxHp;
-
-			// weapons
-			player.weapons.forEach(weapon => {
-				weapon.tick(weapon);
 			});
-		} else {
-			player.hp = 0;
-			if (!player.died) {
-				player.died = true;
-				die();
-				document.getElementById("gameOver").showModal();
+
+			// health recovery
+			if (player.hp < player.maxHp && player.hp > 0 && player.recovery > 0) {
+				// Add player.recovery every second
+				if (time % 1 < deltaTime) {
+					player.hp += player.recovery;
+				}
 			}
+
+			// ********************  physics  ******************** //
+			// player movement
+			if (player.hp > 0) {
+				player.pos["+="]((player.vel)["*"](clampTime));
+
+				let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
+				joy["+="](gamepad.leftStick);
+				if (joy.mag > 1) joy.mag = 1;
+				joy["*="](player.speed * clampTime);
+				player.vel["+="](joy);
+				player.vel["*="](Math.pow(0.3, clampTime));
+				if (joy.mag > 0) {
+					// projectileTypes[particleEnums.dashEffect].create({ pos: player.pos.copy, type: 1 });
+				}
+
+				player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire
+
+				if (gamepadConnected) {
+					if (gamepad.rightStick.mag > 0.1) {
+						let dir = gamepad.rightStick.copy;
+						dir.mag = 200;
+						mouse["="](dir);
+					}
+				}
+
+				if (player.dodge.time <= 0) {
+					player.dodge.cooldown -= clampTime;
+					if ((keys[" "] || gamepad.leftTrigger) && player.dodge.cooldown <= 0 && joy.mag > 0) {
+						// Player dodge / dash
+						player.dodge.cooldown = 0.2;
+						player.dodge.vel = joy.copy;
+						player.dodge.vel.mag = 1000;
+						player.dodge.time = .15;
+						playSound("dash");
+					}
+				} else {
+					player.dodge.time -= clampTime;
+					if (player.dodge.time <= 0) {
+						player.dodge.vel = Vector.zero;
+					}
+					player.vel["="](player.dodge.vel);
+					particleTypes[particleEnums.dashEffect].create({ pos: player.pos.copy });
+				}
+
+				player.dir = mouse.heading;
+				applyBorder(player);
+
+				// level up
+				if (player.xp >= player.levelUp) {
+					levelUp();
+				}
+
+				// player shield
+				if (player.shield.value < player.shield.maxValue) {
+					if (player.shield.regenTimeLeft < player.shield.regenTime) {
+						player.shield.regenTimeLeft += clampTime;
+					} else {
+						player.shield.value += player.shield.regenSpeed * clampTime;
+					}
+				} else if (player.shield.value > player.shield.maxValue) {
+					player.shield.value = player.shield.maxValue;
+				}
+
+				if (player.hp > player.maxHp) player.hp = player.maxHp;
+
+				// weapons
+				player.weapons.forEach(weapon => {
+					weapon.tick(weapon);
+				});
+			} else {
+				player.hp = 0;
+				if (!player.died) {
+					player.died = true;
+					die();
+					document.getElementById("gameOver").showModal();
+				}
+			}
+
+			// projectiles
+			projectiles.forEach((projectile, projectileI) => {
+				projectile.tick(projectile, projectileI);
+			});
+
+			// enemies
+			enemies.forEach((enemy, enemyI) => {
+				enemy.tick(enemy, enemyI);
+			});
+
+			// particles
+			particles.forEach((particle, particleI) => {
+				particle.tick(particle, particleI);
+			});
 		}
-
-		// projectiles
-		projectiles.forEach((projectile, projectileI) => {
-			projectile.tick(projectile, projectileI);
-		});
-
-		// enemies
-		enemies.forEach((enemy, enemyI) => {
-			enemy.tick(enemy, enemyI);
-		});
-
-		// particles
-		particles.forEach((particle, particleI) => {
-			particle.tick(particle, particleI);
-		});
 
 
 		// ********************  drawing  ******************** //
@@ -667,15 +672,17 @@ const sketchFunc = (sk) => {
 		}
 
 		// fps history
-		if (time % 1 < deltaTime && fps <= maxFps && fps > 0) {
+		if (!pauseLogic && time % 1 < deltaTime && fps <= maxFps && fps > 0) {
 			fpsHistory.push(parseFloat(fps.toFixed(3)));
 		}
 
 		// update exposed values
-		if (devMode) {
-			window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo, levelUp, showRunInfo };
-		} else {
-			window.game = { size, fps, deltaTime, paused, version, getRunInfo }
+		if (!pauseLogic) {
+			if (devMode) {
+				window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo, levelUp, showRunInfo, pauseLogic };
+			} else {
+				window.game = { size, fps, deltaTime, paused, version, getRunInfo }
+			}
 		}
 	}
 }
@@ -1014,6 +1021,7 @@ function prepareSnapshot() {
 	if (!document.getElementById("snapshot-show-hud").checked) {
 		let hudWasShown = showHud
 		showHud = false
+		pauseLogic = true
 		wasMuted = settingsStore.get("isMuted", false);
 		settingsStore.set("isMuted", true);
 		if (hudWasShown !== showHud) {
@@ -1030,6 +1038,7 @@ function finishSnapshot() {
 	}
 	document.getElementById("snapshot-options").close()
 	document.getElementById("pause").showModal();
+	pauseLogic = false
 }
 
 document.getElementById("snapshot").addEventListener("click", () => {
@@ -1060,9 +1069,6 @@ document.getElementById("snapshot-copy").addEventListener("click", async () => {
 document.getElementById("snapshot-cancel").addEventListener("click", () => {
 	document.getElementById("snapshot-options").close();
 	document.getElementById("pause").showModal();
-})
-document.getElementById("snapshot-show-hud").addEventListener('click', () => {
-	document.getElementById("snapshot-show-hud-warning").classList.toggle("hidden", document.getElementById("snapshot-show-hud").checked);
 })
 
 document.getElementById("pause").addEventListener("cancel", unpause);
@@ -1119,7 +1125,9 @@ function getSettings() {
 
 addEventListener("resize", () => {
 	size["="](innerWidth, innerHeight);
+	pauseLogic = true
 	if (sketch) sketch.resizeCanvas(size.x, size.y);
+	pauseLogic = false
 });
 addEventListener("blur", pause);
 
