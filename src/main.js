@@ -29,7 +29,6 @@ export const settingsStore = new EasyStorage({
 	key: "asteroids-settings",
 	default: {
 		toggleFire: false,
-		doScreenShake: true,
 		isMuted: false,
 		dimBG: false,
 		starDetail: "1",
@@ -37,7 +36,8 @@ export const settingsStore = new EasyStorage({
 		showFeed: true,
 		submitScores: true,
 		reticle: "0",
-		rumbleEnabled: true
+		rumbleEnabled: true,
+		screenShakeIntensity: 0.8,
 	},
 	migration: {
 		enabled: true,
@@ -190,13 +190,13 @@ const sketchFunc = (sk) => {
 	getSettings();
 	editableSettings = [
 		{ name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
-		{ name: "Screen Shake", var: "doScreenShake", type: "checkbox" },
 		{ name: "Dim Background", var: "dimBG", type: "checkbox", onChange: () => { pauseLogic = true; sketch.redraw(); pauseLogic = false } },
 		{ name: "Submit Scores", var: "submitScores", type: "checkbox" },
 		{ name: "Send Feed Events", var: "sendFeedEvents", type: "checkbox" },
 		{ name: "Show Feed", var: "showFeed", type: "checkbox" },
 		{ name: "Mute", var: "isMuted", type: "checkbox" },
 		{ name: "Rumble", var: "rumbleEnabled", type: "checkbox" },
+		{ name: "Screen Shake Intensity", var: "screenShakeIntensity", type: "range", min: 0, max: 1, step: 0.05 },
 		{ name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"], onChange: () => { pauseLogic = true; updateStars(); sketch.redraw(); pauseLogic = false } },
 		{ name: "Reticle", var: "reticle", type: "select", options: [0, 1, 2, 3], labels: ["Fancy", "Crosshair", "Static", "None"] }
 	];
@@ -249,7 +249,7 @@ const sketchFunc = (sk) => {
 
 			if (settings.mousePan) cam["+="](mouse["/"](100));
 
-			if (settings.doScreenShake) cam["+="](new Vector(screenshake, 0).rotate(Math.random() * 2 * Math.PI));
+			cam["+="](new Vector(screenshake * settingsStore.get("screenShakeIntensity", 0.8), 0).rotate(Math.random() * 2 * Math.PI));
 			screenshake *= Math.pow(5e-5, clampTime);
 
 			// blood overlay
@@ -1251,7 +1251,7 @@ export function getRunInfo() {
 }
 
 function nextButton() {
-	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']"), ...document.querySelectorAll("dialog[open] select")];
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox'], dialog[open] input[type='range']"), ...document.querySelectorAll("dialog[open] select")];
 	if (btns.length == 0) return;
 	let activeI = btns.indexOf(document.activeElement);
 	if (activeI == -1) activeI = 0;
@@ -1264,7 +1264,7 @@ function nextButton() {
 	btns[activeI].focus();
 }
 function previousButton() {
-	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']"), ...document.querySelectorAll("dialog[open] select")];
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox'], dialog[open] input[type='range']"), ...document.querySelectorAll("dialog[open] select")];
 	if (btns.length == 0) return;
 	let activeI = btns.indexOf(document.activeElement);
 	if (activeI == -1) activeI = 0;

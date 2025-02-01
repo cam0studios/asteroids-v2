@@ -53,6 +53,27 @@ export function getSettingsMenu() {
 
 			container.appendChild(label);
 			container.appendChild(select);
+		} else if (setting.type == "range") {
+			let label = document.createElement("label")
+			label.appendChild(document.createTextNode(setting.name));
+			
+			let range = document.createElement("input");
+			range.type = "range";
+			range.min = setting.min;
+			range.max = setting.max;
+			range.step = setting.step;
+			range.value = settingsStore.get(setting.var, settingsStore.options.default[setting.var]);
+
+			range.addEventListener("input", () => {
+				settings[setting.var] = parseFloat(range.value);
+				settingsStore.set(setting.var, parseFloat(range.value));
+				if (setting.onChange) {
+					setting.onChange();
+				}
+			})
+
+			container.appendChild(label);
+			container.appendChild(range);
 		}
 	});
 	return elem;
