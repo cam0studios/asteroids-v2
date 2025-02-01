@@ -4,6 +4,9 @@ export function getSettingsMenu() {
 	let elem = document.createElement("div");
 	elem.id = "settings";
 	editableSettings.forEach(setting => {
+		const container = document.createElement("div");
+		container.classList.add("setting-container");
+		elem.appendChild(container);
 		if (setting.type == "checkbox") {
 			let settingElem = document.createElement("input");
 			settingElem.type = "checkbox";
@@ -19,8 +22,8 @@ export function getSettingsMenu() {
 			label.setAttribute("for", setting.var);
 			label.addEventListener("click", () => settingElem.click());
 
-			elem.appendChild(settingElem);
-			elem.appendChild(label);
+			container.appendChild(label);
+			container.appendChild(settingElem);
 
 		} else if (setting.type == "select") {
 			let label = document.createElement("label");
@@ -43,10 +46,9 @@ export function getSettingsMenu() {
 				settingsStore.set(setting.var, select.value);
 			});
 
-			elem.appendChild(label);
-			elem.appendChild(select);
+			container.appendChild(label);
+			container.appendChild(select);
 		}
-		elem.appendChild(document.createElement("br"));
 	});
 	return elem;
 }
