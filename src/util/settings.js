@@ -15,6 +15,9 @@ export function getSettingsMenu() {
 			settingElem.addEventListener("change", () => {
 				settings[setting.var] = settingElem.checked;
 				settingsStore.set(setting.var, settingElem.checked);
+				if (setting.onChange) {
+					setting.onChange();
+				}
 			});
 
 			let label = document.createElement("label");
@@ -42,8 +45,10 @@ export function getSettingsMenu() {
 			});
 			select.addEventListener("change", () => {
 				settings[setting.var] = select.value;
-				if (setting.var == "starDetail") updateStars();
 				settingsStore.set(setting.var, select.value);
+				if (setting.onChange) {
+					setting.onChange();
+				}
 			});
 
 			container.appendChild(label);

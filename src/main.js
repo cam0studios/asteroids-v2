@@ -191,13 +191,13 @@ const sketchFunc = (sk) => {
 	editableSettings = [
 		{ name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
 		{ name: "Screen Shake", var: "doScreenShake", type: "checkbox" },
-		{ name: "Dim Background", var: "dimBG", type: "checkbox" },
+		{ name: "Dim Background", var: "dimBG", type: "checkbox", onChange: () => { pauseLogic = true; sketch.redraw(); pauseLogic = false } },
 		{ name: "Submit Scores", var: "submitScores", type: "checkbox" },
 		{ name: "Send Feed Events", var: "sendFeedEvents", type: "checkbox" },
 		{ name: "Show Feed", var: "showFeed", type: "checkbox" },
 		{ name: "Mute", var: "isMuted", type: "checkbox" },
 		{ name: "Rumble", var: "rumbleEnabled", type: "checkbox" },
-		{ name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"] },
+		{ name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"], onChange: () => { pauseLogic = true; updateStars(); sketch.redraw(); pauseLogic = false } },
 		{ name: "Reticle", var: "reticle", type: "select", options: [0, 1, 2, 3], labels: ["Fancy", "Crosshair", "Static", "None"] }
 	];
 	currentLevel.start.forEach(start => {
