@@ -1,6 +1,7 @@
 @import 'animations.less';
 @import 'buttons.less';
 @import 'toasts.less';
+@import 'settings.less';
 
 // Colors
 @secondary: rgb(200, 200, 200);
@@ -9,6 +10,9 @@
 @highlight: rgb(251, 192, 45);
 @accent: rgb(240, 239, 239);
 @border: rgb(200, 200, 200);
+
+// Spacing
+@heading-margin: 20px;
 
 :root {
 	color-scheme: dark;
@@ -37,17 +41,27 @@ h1, h2, h3, h4, h5, h6, img, button, .no-select {
 	user-select: none;
 }
 
+dialog > h1, dialog > div > h1 {
+	margin: @heading-margin 0;
+}
+
+h1 + h2, h2 + h3, h3 + h4, h4 + h5, h5 + h6 {
+	margin-top: 0;
+}
+
 canvas {
 	margin: 0;
 	padding: 0;
 	display: block;
 	cursor: none;
+	.full();
 }
 
 body {
 	margin: 0;
 	padding: 0;
 	background-color: black;
+	overflow: none;
 }
 
 h3 {

@@ -14,6 +14,7 @@ import xssFilters from "xss-filters";
 import './style/main.less';
 import { showRunInfo } from "./util/run-info";
 import { levelUp } from "./util/level-up";
+import { getSettingsMenu } from "./util/settings";
 
 export const version = "v0.4.15";
 
@@ -1006,6 +1007,8 @@ document.getElementById("runData").addEventListener("close", () => {
 	document.getElementById("runDataWeapons").innerHTML = "";
 })
 
+// Snapshot mode
+
 let wasMuted = false;
 function prepareSnapshot() {
 	if (!document.getElementById("snapshot-show-hud").checked) {
@@ -1065,6 +1068,21 @@ document.getElementById("snapshot-show-hud").addEventListener('click', () => {
 document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
 
+// Settings button
+document.getElementById("settings-button").addEventListener("click", () => {
+	// Refresh settings in case of changes
+	if (document.getElementById("settings")) document.getElementById("settings").remove();
+	document.querySelector("#settings-container").appendChild(getSettingsMenu());
+	document.getElementById("pause").close();
+	document.getElementById("settings-menu").showModal();
+})
+document.getElementById("settings-menu").addEventListener("close", () => {
+	document.getElementById("pause").showModal();
+})
+document.getElementById("settings-exit").addEventListener("click", () => {	
+	document.getElementById("settings-menu").close();
+})
+
 function pause() {
 	if (!paused && started && !document.querySelector("dialog[open].noPause")) {
 		setTimeout(() => {
@@ -1075,8 +1093,6 @@ function pause() {
 				`<p> Player Upgrades </p> <div> ${playerUpgrades.map(e => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`).join("")} </div>`,
 				...player.weapons.map(weapon => `<hr> <p> ${weapon.name} <span> lvl ${weapon.level} </span> </p> <div>  ${weapon.upgrades.filter(upgrade => upgrade.times > 0).map(upgrade => `<p> ${upgrade.name} <span> ${upgrade.times}/${upgrade.max} </span> </p>`).join("")} </div>`).join("")
 			].join("");
-			if (document.getElementById("settings")) document.getElementById("settings").remove();
-			document.querySelector("#pause>.centered").appendChild(getSettingsMenu());
 		}, 100);
 	}
 }
@@ -1096,56 +1112,7 @@ function restart() {
 	startGame(0);
 	document.getElementById("gameOver").close();
 }
-function getSettingsMenu() {
-	let elem = document.createElement("div");
-	elem.id = "settings";
-	editableSettings.forEach(setting => {
-		if (setting.type == "checkbox") {
-			let settingElem = document.createElement("input");
-			settingElem.type = "checkbox";
-			settingElem.setAttribute("for", setting.var);
-			settingElem.checked = settingsStore.get(setting.var, settingsStore.options.default[setting.var]);
-			settingElem.addEventListener("change", () => {
-				settings[setting.var] = settingElem.checked;
-				settingsStore.set(setting.var, settingElem.checked);
-			});
 
-			let label = document.createElement("label");
-			label.appendChild(document.createTextNode(setting.name));
-			label.setAttribute("for", setting.var);
-			label.addEventListener("click", () => settingElem.click());
-
-			elem.appendChild(settingElem);
-			elem.appendChild(label);
-
-		} else if (setting.type == "select") {
-			let label = document.createElement("label");
-			label.appendChild(document.createTextNode(setting.name));
-			label.setAttribute("for", setting.var);
-
-			let select = document.createElement("select");
-			select.setAttribute("for", setting.var);
-			setting.options.forEach((option, optionI) => {
-				let label = setting.labels[optionI];
-				let opt = document.createElement("option");
-				if (option == settings[setting.var]) opt.selected = true;
-				opt.appendChild(document.createTextNode(label));
-				opt.value = option;
-				select.appendChild(opt);
-			});
-			select.addEventListener("change", () => {
-				settings[setting.var] = select.value;
-				if (setting.var == "starDetail") updateStars();
-				settingsStore.set(setting.var, select.value);
-			});
-
-			elem.appendChild(label);
-			elem.appendChild(select);
-		}
-		elem.appendChild(document.createElement("br"));
-	});
-	return elem;
-}
 function getSettings() {
 	settings = settingsStore.getAll();
 }
@@ -1276,7 +1243,7 @@ export function getRunInfo() {
 }
 
 function nextButton() {
-	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']")];
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']"), ...document.querySelectorAll("dialog[open] select")];
 	if (btns.length == 0) return;
 	let activeI = btns.indexOf(document.activeElement);
 	if (activeI == -1) activeI = 0;
@@ -1289,7 +1256,7 @@ function nextButton() {
 	btns[activeI].focus();
 }
 function previousButton() {
-	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']")];
+	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox']"), ...document.querySelectorAll("dialog[open] select")];
 	if (btns.length == 0) return;
 	let activeI = btns.indexOf(document.activeElement);
 	if (activeI == -1) activeI = 0;

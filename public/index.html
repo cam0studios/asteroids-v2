@@ -126,15 +126,27 @@
 			<button id="resume">
 				<h2><i class="fa-regular fa-play"></i> Resume</h2>
 			</button>
+			<button id="settings-button">
+				<h2><i class="fa-regular fa-gear"></i> Settings</h2>
+			</button>
 			<button id="snapshot">
 				<h2><i class="fa-regular fa-camera"></i> Snapshot</h2>
 			</button>
 			<button id="quit" class="danger">
 				<h2><i class="fa-regular fa-power-off"></i> Quit</h2>
 			</button>
-			<div id="settings"></div>
 		</div>
 		<div id="currentUpgrades"></div>
+	</dialog>
+
+	<dialog id="settings-menu" class="menu noPause">
+		<div class="centered">
+			<h1>Settings</h1>
+			<div id="settings-container"></div>
+			<button id="settings-exit">
+				<h2><i class="fa-regular fa-xmark"></i> Close</h2>
+			</button>
+		</div>
 	</dialog>
 
 	<dialog id="snapshot-options" class="menu noClose noPause">

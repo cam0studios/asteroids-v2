@@ -1,0 +1,38 @@
+#settings {
+	padding-inline: 40px;
+	& > div.setting-container {
+		display: flex;
+		flex-direction: row;
+
+		& > label {
+			flex-grow: 1;
+			text-align: left;
+		}
+		& > input, & > select {
+			margin-left: 40px;
+		}
+		& > input[type="checkbox"] {
+			// This is a hack to make it appear 14x14 pixels but remain a square
+			width: 18px;
+			height: 18px;
+			scale: calc(14/18);
+			transform: translateX(4px);
+		}
+
+		padding: 4px 6px;
+		border-bottom: 1px solid rgba(112, 112, 112, 0.238);
+	}
+	& > div.setting-container:last-child {
+		border-bottom: none;
+	}
+}
+
+#settings-menu {
+	width: fit-content;
+	min-width: unset;
+	padding-bottom: 0 !important;
+
+	button {
+		margin: @heading-margin !important;
+	}
+}
