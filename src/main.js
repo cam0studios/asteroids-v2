@@ -1300,7 +1300,7 @@ export function deregisterBackAction() {
 
 export function onGamepadButton(button, state) {
 	if (button == "rightPause" && state && started) {
-		if (paused && !document.querySelector("dialog[open]")) unpause();
+		if (paused && !document.querySelector("dialog[open]:not(#pause)")) unpause();
 		else pause();
 	}
 
