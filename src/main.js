@@ -304,8 +304,8 @@ const sketchFunc = (sk) => {
 				player.pos["+="]((player.vel)["*"](clampTime));
 
 				let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
-				if (gamepadConnected && gamepad.leftStick) joy["+="](gamepad.leftStick);
-				if (gamepadConnected && gamepad.dpadRight) joy["+="](gamepad.dpadRight - gamepad.dpadLeft, gamepad.dpadDown - gamepad.dpadUp);
+				if (gamepadConnected && Object.hasOwn(gamepad, "leftStick")) joy["+="](gamepad.leftStick);
+				if (gamepadConnected && Object.hasOwn(gamepad, "dpadRight")) joy["+="](gamepad.dpadRight - gamepad.dpadLeft, gamepad.dpadDown - gamepad.dpadUp);
 				if (joy.mag > 1) joy.mag = 1;
 				joy["*="](player.speed * clampTime);
 				player.vel["+="](joy);
