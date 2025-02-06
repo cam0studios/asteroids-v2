@@ -1042,6 +1042,13 @@ function finishSnapshot() {
 document.getElementById("snapshot").addEventListener("click", () => {
 	document.getElementById("pause").close();
 	document.getElementById("snapshot-options").showModal();
+	registerBackAction(() => {
+		document.getElementById("snapshot-options").close();
+		document.getElementById("pause").showModal();
+		setTimeout(() => {
+			registerBackAction(unpause);
+		})
+	})
 })
 document.getElementById("snapshot-save").addEventListener("click", () => {
 	let link = document.createElement("a");
@@ -1079,6 +1086,12 @@ document.getElementById("settings-button").addEventListener("click", () => {
 	document.querySelector("#settings-container").appendChild(getSettingsMenu());
 	document.getElementById("pause").close();
 	document.getElementById("settings-menu").showModal();
+	registerBackAction(() => {
+		document.getElementById("settings-menu").close();
+		setTimeout(() => {
+			registerBackAction(unpause);
+		})
+	});
 })
 document.getElementById("settings-menu").addEventListener("close", () => {
 	document.getElementById("pause").showModal();
@@ -1097,6 +1110,7 @@ function pause() {
 				`<p> Player Upgrades </p> <div> ${playerUpgrades.map(e => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`).join("")} </div>`,
 				...player.weapons.map(weapon => `<hr> <p> ${weapon.name} <span> lvl ${weapon.level} </span> </p> <div>  ${weapon.upgrades.filter(upgrade => upgrade.times > 0).map(upgrade => `<p> ${upgrade.name} <span> ${upgrade.times}/${upgrade.max} </span> </p>`).join("")} </div>`).join("")
 			].join("");
+			registerBackAction(unpause);
 		}, 100);
 	}
 }
@@ -1105,6 +1119,7 @@ function unpause() {
 		sketch.loop();
 		document.getElementById("pause").close();
 		paused = false;
+		deregisterBackAction();
 	}
 }
 function restart() {
@@ -1275,6 +1290,14 @@ function previousButton() {
 	btns[activeI].focus();
 }
 
+let backAction
+export function registerBackAction(callback) {
+	backAction = callback;
+}
+export function deregisterBackAction() {
+	backAction = null;
+}
+
 export function onGamepadButton(button, state) {
 	if (button == "rightPause" && state && started) {
 		if (paused && !document.querySelector("dialog[open]")) unpause();
@@ -1289,6 +1312,11 @@ export function onGamepadButton(button, state) {
 	}
 	if (button == "bottom" && state) {
 		document.activeElement.click();
+	}
+	if (button == "right" && state) {
+		if (backAction) {
+			backAction();
+		}
 	}
 
 	if (button == "rightBumper" && state) {

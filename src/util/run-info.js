@@ -1,4 +1,4 @@
-import { formatTime, getRarity, playerUpgrades } from "../main";
+import { formatTime, getRarity, playerUpgrades, registerBackAction } from "../main";
 import weapons from "../weapon-types";
 
 export function showRunInfo(score) {
@@ -84,5 +84,10 @@ export function showRunInfo(score) {
 				}
 			}
 		})
+	})
+
+	registerBackAction(() => {
+		document.getElementById("runData").close();
+		document.getElementById("gameOver").showModal();
 	})
 }
