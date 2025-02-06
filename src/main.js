@@ -1277,7 +1277,7 @@ function previousButton() {
 
 export function onGamepadButton(button, state) {
 	if (button == "rightPause" && state && started) {
-		if (paused) unpause();
+		if (paused && !document.querySelector("dialog[open]")) unpause();
 		else pause();
 	}
 
