@@ -305,13 +305,11 @@ const sketchFunc = (sk) => {
 
 				let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
 				joy["+="](gamepad.leftStick);
+				joy["+="](gamepad.dpadRight - gamepad.dpadLeft, gamepad.dpadDown - gamepad.dpadUp);
 				if (joy.mag > 1) joy.mag = 1;
 				joy["*="](player.speed * clampTime);
 				player.vel["+="](joy);
 				player.vel["*="](Math.pow(0.3, clampTime));
-				if (joy.mag > 0) {
-					// projectileTypes[particleEnums.dashEffect].create({ pos: player.pos.copy, type: 1 });
-				}
 
 				player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire
 
