@@ -52,6 +52,8 @@ export class Sound {
 		const source = context.createBufferSource();
 		source.buffer = this.buffer;
 
+		volume *= settingsStore.get("volume", 1)
+
 		// Keep track of all sources created, and stop tracking them once they finish playing:
 		const insertedAt = this.sources.push(source) - 1;
 		source.onended = () => {
@@ -107,9 +109,7 @@ for (let type in sounds) {
 	}
 }
 
-export function playSound(soundType, position, cancelable = false) {
-	if (settingsStore.get("isMuted")) return;
-	
+export function playSound(soundType, position, cancelable = false) {	
 	let distance
 	let volume = sounds[soundType].volume || 1
 	if (position) {

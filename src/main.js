@@ -38,6 +38,7 @@ export const settingsStore = new EasyStorage({
 		reticle: "0",
 		rumbleEnabled: true,
 		screenShakeIntensity: 0.8,
+		volume: 1
 	},
 	migration: {
 		enabled: true,
@@ -194,8 +195,8 @@ const sketchFunc = (sk) => {
 		{ name: "Submit Scores", var: "submitScores", type: "checkbox" },
 		{ name: "Send Feed Events", var: "sendFeedEvents", type: "checkbox" },
 		{ name: "Show Feed", var: "showFeed", type: "checkbox" },
-		{ name: "Mute", var: "isMuted", type: "checkbox" },
 		{ name: "Rumble", var: "rumbleEnabled", type: "checkbox" },
+		{ name: "Volume", var: "volume", type: "range", min: 0, max: 1, step: 0.05 },
 		{ name: "Screen Shake Intensity", var: "screenShakeIntensity", type: "range", min: 0, max: 1, step: 0.05 },
 		{ name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"], onChange: () => { pauseLogic = true; updateStars(); sketch.redraw(); pauseLogic = false } },
 		{ name: "Reticle", var: "reticle", type: "select", options: [0, 1, 2, 3], labels: ["Fancy", "Crosshair", "Static", "None"] }
