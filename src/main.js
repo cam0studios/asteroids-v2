@@ -6,7 +6,7 @@ import levels from "./levels";
 import projectileTypes, { projectileEnums } from "./projectile-types";
 import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
-import { audioContext, playSound } from "./sound";
+import { audioContext, playSound } from "./util/sound";
 import EasyStorage from "@pikapower9080/easy-storage";
 import particleTypes, { explode, particleEnums } from "./particle-types";
 import xssFilters from "xss-filters";

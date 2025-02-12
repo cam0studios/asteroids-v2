@@ -1,5 +1,5 @@
 import { addWeapon, closeWithAnimation, get, getRarity, player, playerUpgrades, set, sketch } from "../main";
-import { playSound } from "../sound";
+import { playSound } from "./sound";
 import weapons from "../weapon-types";
 
 export function levelUp() {

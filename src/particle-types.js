@@ -1,6 +1,6 @@
 import Vector from "@cam0studios/vector-library";
 import { particles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies, time } from "./main";
-import { playSound } from "./sound";
+import { playSound } from "./util/sound";
 
 export const particleEnums = {
 	explosion: 0,

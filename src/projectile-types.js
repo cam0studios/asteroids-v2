@@ -1,7 +1,7 @@
 import Vector from "@cam0studios/vector-library";
 import { lineCircleCollision, lineClosestPoint } from "@cam0studios/intersections";
 import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies, time } from "./main";
-import { playSound } from "./sound";
+import { playSound } from "./util/sound";
 import { explode } from "./particle-types";
 
 export const projectileEnums = {

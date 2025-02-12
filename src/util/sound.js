@@ -1,5 +1,5 @@
-import { player, settings, settingsStore } from "./main";
-import sounds from './data/sounds.json';
+import { player, settings, settingsStore } from "../main";
+import sounds from '../data/sounds.json';
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 export const audioContext = new AudioContext(); // Will be resumed when the start button is pressed

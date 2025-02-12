@@ -3,7 +3,7 @@ import { rumble } from "./gamepad";
 import { enemies, clampTime, applyBorder, projectiles, player, getOnScreen, sketch, get, set, settings, damagePlayer, currentLevel, getRandomBox, calcBorder } from "./main";
 import projectileTypes, { projectileEnums } from "./projectile-types";
 import particleTypes, { explode } from "./particle-types";
-import { playSound } from './sound';
+import { playSound } from './util/sound';
 
 /**
  * Represents an enemy type.
