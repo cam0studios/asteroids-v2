@@ -1313,10 +1313,22 @@ export function onGamepadButton(button, state) {
 	}
 	if (document.activeElement.tagName == "INPUT" && document.activeElement.type == "range") {
 		if (button == "dpadLeft" && state) {
-				document.activeElement.stepDown();
+			document.activeElement.stepDown();
+			document.activeElement.dispatchEvent(new Event("change"));
 		}
 		if (button == "dpadRight" && state) {
 			document.activeElement.stepUp();
+			document.activeElement.dispatchEvent(new Event("change"));
+		}
+	}
+	if (document.activeElement.tagName == "SELECT") {
+		if (button == "dpadLeft" && state) {
+			document.activeElement.selectedIndex = (document.activeElement.selectedIndex - 1 + document.activeElement.options.length) % document.activeElement.options.length
+			document.activeElement.dispatchEvent(new Event("change"));
+		}
+		if (button == "dpadRight" && state) {
+			document.activeElement.selectedIndex = (document.activeElement.selectedIndex + 1) % document.activeElement.options.length
+			document.activeElement.dispatchEvent(new Event("change"));
 		}
 	}
 

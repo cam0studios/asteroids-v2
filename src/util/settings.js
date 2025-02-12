@@ -19,6 +19,7 @@ export function getSettingsMenu() {
 					setting.onChange();
 				}
 			});
+			settingElem.dataset.settingId = setting.var;
 
 			let label = document.createElement("label");
 			label.appendChild(document.createTextNode(setting.name));
@@ -50,6 +51,7 @@ export function getSettingsMenu() {
 					setting.onChange();
 				}
 			});
+			select.dataset.settingId = setting.var;
 
 			container.appendChild(label);
 			container.appendChild(select);
@@ -71,6 +73,7 @@ export function getSettingsMenu() {
 					setting.onChange();
 				}
 			})
+			range.dataset.settingId = setting.var;
 
 			container.appendChild(label);
 			container.appendChild(range);
