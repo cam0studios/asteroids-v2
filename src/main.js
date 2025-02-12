@@ -1311,6 +1311,15 @@ export function onGamepadButton(button, state) {
 	if (button == "dpadDown" && state) {
 		nextButton();
 	}
+	if (document.activeElement.tagName == "INPUT" && document.activeElement.type == "range") {
+		if (button == "dpadLeft" && state) {
+				document.activeElement.stepDown();
+		}
+		if (button == "dpadRight" && state) {
+			document.activeElement.stepUp();
+		}
+	}
+
 	if (button == "bottom" && state) {
 		document.activeElement.click();
 	}
