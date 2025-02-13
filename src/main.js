@@ -153,6 +153,7 @@ const sketchFunc = (sk) => {
 		pos: Vector.zero,
 		vel: Vector.zero,
 		dir: 0,
+		size: 25,
 		weapons: [],
 		isFiring: false,
 		speed: 350,
@@ -362,6 +363,9 @@ const sketchFunc = (sk) => {
 
 				if (player.hp > player.maxHp) player.hp = player.maxHp;
 
+				// player size
+				player.size = 25 + (player.shield.value > 0 ? 10 : 0);
+
 				// weapons
 				player.weapons.forEach(weapon => {
 					weapon.tick(weapon);
@@ -538,7 +542,7 @@ const sketchFunc = (sk) => {
 					sketch.stroke(`rgba(50,120,200,${0.8 * shieldOpacity})`);
 					sketch.noFill();
 					sketch.strokeWeight(5);
-					sketch.circle(0, 0, 50);
+					sketch.circle(0, 0, 60);
 				}
 				sketch.stroke(255);
 				sketch.strokeWeight(5);

@@ -103,11 +103,11 @@ const enemyTypes = [
 				});
 
 				let dif = (enemy.pos)["-"](player.pos);
-				if (dif.mag < enemy.size + 25 && player.dodge.time <= 0 && !enemy.frozen) {
+				if (dif.mag < enemy.size + player.size && player.dodge.time <= 0 && !enemy.frozen) {
 					let hitStr = (player.vel)["-"](enemy.vel).mag;
 					enemy.hp--;
 					enemy.pos["-="](player.pos);
-					enemy.pos.mag = enemy.size + 30;
+					enemy.pos.mag = enemy.size + player.size + 3;
 					enemy.pos["+="](player.pos);
 					let hitVel = dif.copy;
 					hitVel.mag = hitStr;
@@ -246,11 +246,11 @@ const enemyTypes = [
 
 				let dif = (enemy.pos)["-"](player.pos);
 
-				if (dif.mag < enemy.size + 25 && player.dodge.time <= 0 && !enemy.frozen) {
+				if (dif.mag < enemy.size + player.size && player.dodge.time <= 0 && !enemy.frozen) {
 					let hitStr = (player.vel)["-"](enemy.vel).mag;
 					enemy.hp--;
 					enemy.pos["-="](player.pos);
-					enemy.pos.mag = enemy.size + 30;
+					enemy.pos.mag = enemy.size + player.size + 3;
 					enemy.pos["+="](player.pos);
 					let hitVel = dif.copy;
 					hitVel.mag = hitStr;
@@ -416,11 +416,11 @@ const enemyTypes = [
 						projectile.enemyTick(projectile, projectileI, enemy, i);
 					});
 					let dif = (enemy.pos)["-"](player.pos);
-					if (dif.mag < enemy.size + 25 && player.dodge.time <= 0) {
+					if (dif.mag < enemy.size + player.size && player.dodge.time <= 0) {
 						let hitStr = (player.vel)["-"](enemy.vel).mag;
 						enemy.hp--;
 						enemy.pos["-="](player.pos);
-						enemy.pos.mag = enemy.size + 30;
+						enemy.pos.mag = enemy.size + player.size + 3;
 						enemy.pos["+="](player.pos);
 						let hitVel = dif.copy;
 						hitVel.mag = hitStr;
