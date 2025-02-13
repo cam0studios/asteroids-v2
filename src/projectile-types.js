@@ -232,7 +232,8 @@ const projectileTypes = [
 			dir: 0,
 			time: 0,
 			children: [],
-			rad: 0
+			rad: 0,
+			fade: 0
 		},
 		tick: (projectile, i) => {
 			if (projectile.time == 0) {
@@ -243,17 +244,19 @@ const projectileTypes = [
 			projectile.dir += projectile.speed * clampTime;
 			projectile.time += clampTime;
 			projectile.duration -= clampTime;
+			projectile.fade = 1;
+			if (projectile.time < 1.5) projectile.fade *= projectile.time / 1.5;
+			if (projectile.duration < 1.5) projectile.fade *= projectile.duration / 1.5;
+			projectile.fade = Math.pow(projectile.fade, 0.4);
 
 			for (let rot = 0; rot < projectile.amount; rot++) {
 				let child = projectile.children[rot];
-				child.pos = new Vector(projectile.dist, 0).rotate(projectile.dir + rot * Math.PI * 2 / projectile.amount);
+				child.pos = new Vector(projectile.dist * projectile.fade, 0).rotate(projectile.dir + rot * Math.PI * 2 / projectile.amount);
 				child.pos["+="](player.pos);
-				child.vel = new Vector(0, projectile.speed * projectile.dist * 2 * Math.PI * clampTime).rotate(projectile.dir + rot * Math.PI * 2 / projectile.amount);
+				child.vel = new Vector(0, projectile.speed * projectile.dist * projectile.fade * 2 * Math.PI * clampTime).rotate(projectile.dir + rot * Math.PI * 2 / projectile.amount);
 			}
 
-			projectile.rad = projectile.size;
-			if (projectile.time < 1) projectile.rad *= projectile.time;
-			if (projectile.duration < 1) projectile.rad *= projectile.duration;
+			projectile.rad = projectile.size * projectile.fade;
 
 			if (projectile.duration <= 0) {
 				projectiles.splice(i, 1);
@@ -266,13 +269,13 @@ const projectileTypes = [
 			for (let rot = 0; rot < projectile.amount; rot++) {
 				sketch.push();
 				sketch.rotate(rot * Math.PI * 2 / projectile.amount);
-				sketch.translate(projectile.dist, 0);
+				sketch.translate(projectile.dist * projectile.fade, 0);
 				sketch.rotate(-projectile.dir * 2);
 
 				sketch.noStroke();
 				sketch.fill(255);
 				let spikes = 3;
-				let spikeSize = new Vector(0.3, 0.45);
+				let spikeSize = new Vector(0.3, 0.45)["*"](projectile.fade * 0.5 + 0.5);
 				spikeSize["*="](projectile.rad);
 				for (let spike = 0; spike < spikes; spike++) {
 					sketch.push();
