@@ -552,7 +552,7 @@ const sketchFunc = (sk) => {
 					sketch.noStroke();
 					sketch.fill(`rgba(50,120,200,${0.2 * shieldOpacity})`);
 					sketch.strokeWeight(5);
-					sketch.circle(0, 0, 50);
+					sketch.circle(0, 0, 60);
 				}
 			}
 			sketch.pop();
