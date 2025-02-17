@@ -163,7 +163,7 @@ const enemyTypes = [
 	}),
 	new EnemyType({
 		name: "Turret",
-		props: ["mode", "pos", "vel", "spawn", "hp", "index", "max"],
+		props: ["mode", "pos", "vel", "spawn", "hp", "index", "max", "range"],
 		defaults: {
 			type: 1,
 			id: () => Math.floor(Math.random() * 1e6 + 1e6),
@@ -176,7 +176,7 @@ const enemyTypes = [
 			time: 0,
 			reloadTime: 5,
 			cooldown: 0,
-			cooldownTime: 1.3,
+			cooldownTime: 1.5,
 			reload: ({ index, max }, { reloadTime, cooldownTime }) => {
 				console.debug(index, max, reloadTime, cooldownTime);
 				return ((index + (Math.random() - 0.5) * 0.5) * 2 + 1) / (max * 2) * (reloadTime + cooldownTime)
@@ -187,6 +187,7 @@ const enemyTypes = [
 			effectTime: 0,
 			burning: false,
 			frozen: false,
+			range: 1000,
 			// reload: 0
 		},
 		tick: (enemy, i) => {
@@ -195,7 +196,7 @@ const enemyTypes = [
 			if (enemy.time > 1 || !enemy.spawn) {
 				if (enemy.cooldown > 0) {
 					enemy.cooldown -= clampTime;
-				} else if (enemy.pos["-"](player.pos).mag < 1000 && !enemy.frozen) {
+				} else if (enemy.pos["-"](player.pos).mag < enemy.range && !enemy.frozen) {
 					enemy.reload -= clampTime;
 					let aim = (player.pos)["-"](enemy.pos);
 					aim["+="]((player.vel)["*"](0.7));
@@ -208,7 +209,7 @@ const enemyTypes = [
 						enemy.reload = enemy.reloadTime;
 						enemy.cooldown = enemy.cooldownTime;
 						playSound("turretAim", enemy.pos);
-						projectileTypes[projectileEnums.enemyLaser].create({ pos: enemy.pos.copy, dir: enemy.dir, link: enemy.id });
+						projectileTypes[projectileEnums.enemyLaser].create({ pos: enemy.pos.copy, dir: enemy.dir, link: enemy.id, maxLen: enemy.range });
 					}
 				}
 
