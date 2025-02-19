@@ -26,9 +26,11 @@
 	left: 0;
 	top: 0;
 }
+
 .hidden {
 	opacity: 0;
 }
+
 .no-display {
 	display: none;
 }
@@ -37,15 +39,28 @@
 	font-family: "Space Mono", monospace;
 }
 
-h1, h2, h3, h4, h5, h6, img, button, .no-select {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+img,
+button,
+.no-select {
 	user-select: none;
 }
 
-dialog > h1, dialog > div > h1 {
+dialog>h1,
+dialog>div>h1 {
 	margin: @heading-margin 0;
 }
 
-h1 + h2, h2 + h3, h3 + h4, h4 + h5, h5 + h6 {
+h1+h2,
+h2+h3,
+h3+h4,
+h4+h5,
+h5+h6 {
 	margin-top: 0;
 }
 
@@ -71,17 +86,21 @@ h3 {
 .secondary {
 	color: @secondary;
 }
+
 .warning {
 	color: @warning;
+
 	&::before {
 		font-family: "Font Awesome 6 Pro";
 		content: "\f071";
 		margin-right: 5px;
 	}
 }
+
 .danger {
 	color: @danger;
 }
+
 .highlight {
 	color: @highlight;
 }
@@ -89,6 +108,7 @@ h3 {
 .epic:not(button) {
 	color: @epic-text;
 }
+
 .rare:not(button) {
 	color: @rare-text;
 }
@@ -111,11 +131,11 @@ dialog {
 		background-color: rgba(0, 0, 0, 0.7);
 	}
 
-	& > h1 {
+	&>h1 {
 		font-size: 30px;
 	}
 
-	& > h2 {
+	&>h2 {
 		font-size: 25px;
 	}
 }
@@ -137,19 +157,19 @@ dialog {
 #controls {
 	text-align: left;
 
-	& > span {
+	&>span {
 		vertical-align: middle;
 		display: flex;
 		justify-content: space-between;
 
-		& > span {
+		&>span {
 			display: flex;
 
 			&:last-child {
 				margin-left: 10px;
 			}
 		}
-	
+
 		& img {
 			height: 1.5em;
 			padding: 0;
@@ -166,7 +186,7 @@ dialog {
 	padding: 5px;
 	background-color: black;
 
-	& > p {
+	&>p {
 		margin: 7px;
 		font-weight: 600;
 		font-size: 20px;
@@ -175,24 +195,24 @@ dialog {
 		align-items: center;
 		margin-bottom: 0;
 
-		& > span {
+		&>span {
 			font-weight: 400;
 			font-size: 15px;
 		}
 	}
 
-	& > div {
+	&>div {
 		padding: 5px;
 		padding-left: 15px;
 		margin: 0;
 
-		& > p {
+		&>p {
 			padding: 0px;
 			margin: 0;
 			display: flex;
 			justify-content: space-between;
 
-			& > span {
+			&>span {
 				font-weight: 500;
 				margin-left: 10px;
 			}
@@ -210,10 +230,9 @@ a {
 
 .vignette-red {
 	.full();
-	background: radial-gradient(circle, rgba(23,23,23,0) 0%, rgba(23,23,23,0) 50%, rgba(194, 0, 0, 0.58) 150%);
+	background: radial-gradient(circle, rgba(23, 23, 23, 0) 0%, rgba(23, 23, 23, 0) 50%, rgba(194, 0, 0, 0.9) 150%);
 	z-index: 999;
 	pointer-events: none;
-	transition: opacity 0.5s;
 	opacity: 0;
 }
 
@@ -225,33 +244,37 @@ a {
 	width: 300px;
 	min-width: unset;
 	max-width: unset;
-	& > div > div {
-		& > div {
+
+	&>div>div {
+		&>div {
 			display: flex;
 			justify-content: space-between;
 			padding-bottom: 0;
 			margin-bottom: 0;
-	
-			& > strong {
+
+			&>strong {
 				order: 1;
 				margin-right: 20px;
 			}
-	
-			& > span {
+
+			&>span {
 				order: 2;
 			}
 		}
+
 		h3 {
 			margin-top: 10px;
 			text-align: left;
 			border-bottom: 1px solid @dim;
 			margin-bottom: 5px;
 		}
+
 		h3:first-child {
 			margin-top: 0;
 		}
 	}
 }
+
 #runDataClose {
 	margin-top: 20px;
 	margin-bottom: 0;

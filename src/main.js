@@ -38,7 +38,8 @@ export const settingsStore = new EasyStorage({
 		reticle: "0",
 		rumbleEnabled: true,
 		screenShakeIntensity: 0.8,
-		volume: 1
+		volume: 1,
+		vignetteMaxOpacity: 1
 	},
 	migration: {
 		enabled: true,
@@ -85,7 +86,8 @@ export var clampTime,
 	lastScore,
 	maxFps = 240,
 	isFirstLevelup = true,
-	pauseLogic = false;
+	pauseLogic = false,
+	vignetteOpacity = 0;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -94,8 +96,8 @@ window.ASTEROIDS_IS_DEVELOPMENT = devMode;
 document.getElementById("startScreen").showModal();
 started = false;
 document.getElementById("start").addEventListener("click", () => {
-	startGame(0);
 	document.getElementById("startScreen").close();
+	startGame(0);
 	audioContext.resume();
 });
 
@@ -199,6 +201,7 @@ const sketchFunc = (sk) => {
 		{ name: "Rumble", var: "rumbleEnabled", type: "checkbox" },
 		{ name: "Volume", var: "volume", type: "range", min: 0, max: 1, step: 0.05 },
 		{ name: "Screen Shake Intensity", var: "screenShakeIntensity", type: "range", min: 0, max: 1, step: 0.05 },
+		{ name: "Vignette Opacity", var: "vignetteMaxOpacity", type: "range", min: 0, max: 1, step: 0.05 },
 		{ name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"], onChange: () => { pauseLogic = true; updateStars(); sketch.redraw(); pauseLogic = false } },
 		{ name: "Reticle", var: "reticle", type: "select", options: [0, 1, 2, 3], labels: ["Fancy", "Crosshair", "Static", "None"] }
 	];
@@ -258,8 +261,10 @@ const sketchFunc = (sk) => {
 			screenshake *= Math.pow(5e-5, clampTime);
 
 			// blood overlay
-			document.querySelector(".vignette-red").style.opacity = 1 - Math.min((player.hp / player.maxHp) * 1.5, 1);
-
+			let maxOpacity = 1;
+			let targetOpacity = maxOpacity - Math.min((player.hp / player.maxHp) * 1.5, maxOpacity);
+			vignetteOpacity += (targetOpacity - vignetteOpacity) * (1 - Math.pow(0.2, clampTime));
+			document.querySelector(".vignette-red").style.opacity = Math.round(vignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
 		}
 
 		// fps
@@ -927,6 +932,7 @@ export function damagePlayer(amount, source) {
 	amount -= player.shield.value;
 	player.shield.value = 0;
 	amount *= player.damageFactor;
+	vignetteOpacity += Math.min(amount / 40, 1 - vignetteOpacity);
 	player.hp -= amount;
 	playSound(source == "border" ? "border" : "hurt")
 	if (player.hp > 0) {
@@ -1104,7 +1110,7 @@ document.getElementById("settings-button").addEventListener("click", () => {
 document.getElementById("settings-menu").addEventListener("close", () => {
 	document.getElementById("pause").showModal();
 })
-document.getElementById("settings-exit").addEventListener("click", () => {	
+document.getElementById("settings-exit").addEventListener("click", () => {
 	document.getElementById("settings-menu").close();
 })
 
