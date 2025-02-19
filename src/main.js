@@ -240,6 +240,9 @@ const sketchFunc = (sk) => {
 		clampTime = sketch.deltaTime;
 		if (clampTime > 100) clampTime = 100;
 		clampTime /= 1000;
+		// 1/60 default value, 0 would cause /0 errors
+		if (typeof deltaTime != "number" || isNaN(deltaTime) || !isFinite(deltaTime)) deltaTime = 1 / 60;
+		if (typeof clampTime != "number" || isNaN(clampTime) || !isFinite(clampTime)) clampTime = 1 / 60;
 
 		if (!pauseLogic) {
 			if (!player.died) time += clampTime;
@@ -277,7 +280,7 @@ const sketchFunc = (sk) => {
 			currentLevel.waves.forEach(wave => {
 				if (!("passed" in wave)) wave.passed = false;
 				if (!wave.passed) {
-					if (time > wave.time) {
+					if (time >= wave.time) {
 						wave.passed = true;
 						wave.enemies.forEach(enemy => {
 							for (let i = 0; i < enemy.count; i++) {
