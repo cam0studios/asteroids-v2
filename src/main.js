@@ -141,7 +141,7 @@ var stars = [];
 export var playerUpgrades = [
 	{ name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
 	{ name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
-	{ name: "Shield", desc: "Improve shield regeneration and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++ }, max: 5, weight: 0.8 },
+	{ name: "Shield", desc: "Improve shield regeneration and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++; player.shield.regenTimeLeft = player.shield.regenTime }, max: 5, weight: 0.8 },
 	{ name: "Resistance", desc: ["Take 10% less damage (-10% total)", "Take 10% less damage (-20% total)", "Take 10% less damage (-30% total)", "Take 10% less damage (-40% total)"], func: () => player.damageFactor -= 0.1, max: 4, weight: 0.8 },
 	{ name: "Recovery", desc: ["Recover 0.25 HP every second", "Recover 0.5 HP every second", "Recover 0.75 HP every second", "Recovery 1 HP every second"], func: () => { player.recovery += 0.25 }, max: 4, weight: 0.4 }
 	// { name: "", desc: [], func: () => {}, max: 0, weight: 1 }
