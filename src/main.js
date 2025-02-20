@@ -87,7 +87,8 @@ export var clampTime,
 	maxFps = 240,
 	isFirstLevelup = true,
 	pauseLogic = false,
-	vignetteOpacity = 0;
+	vignetteOpacity = 0,
+	shieldVignetteOpacity = 0;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -265,6 +266,9 @@ const sketchFunc = (sk) => {
 			let targetOpacity = maxOpacity - Math.min((player.hp / player.maxHp) * 1.5, maxOpacity);
 			vignetteOpacity += (targetOpacity - vignetteOpacity) * (1 - Math.pow(0.2, clampTime));
 			document.querySelector(".vignette-red").style.opacity = Math.round(vignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
+			shieldVignetteOpacity *= Math.pow(0.2, clampTime);
+			document.querySelector(".vignette-blue").style.opacity = Math.round(shieldVignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
+			// document.querySelector(".vignette-blue").style.opacity = 1;
 		}
 
 		// fps
@@ -924,15 +928,17 @@ export function damagePlayer(amount, source) {
 	if (amount <= 0) return;
 	player.shield.regenTimeLeft = 0;
 	if (player.shield.value > amount) {
+		shieldVignetteOpacity += Math.min(amount / 20, 1 - shieldVignetteOpacity);
 		rumble(0.15, 0.35);
 		player.shield.value -= amount;
 		playSound("shield")
 		return;
 	}
+	shieldVignetteOpacity += Math.min(amount / 20 * 0.5, 1 - shieldVignetteOpacity);
 	amount -= player.shield.value;
 	player.shield.value = 0;
 	amount *= player.damageFactor;
-	vignetteOpacity += Math.min(amount / 40, 1 - vignetteOpacity);
+	vignetteOpacity += Math.min(amount / 20, 1 - vignetteOpacity);
 	player.hp -= amount;
 	playSound(source == "border" ? "border" : "hurt")
 	if (player.hp > 0) {
