@@ -1,6 +1,7 @@
 import { addWeapon, closeWithAnimation, get, getRarity, player, playerUpgrades, set, sketch } from "../main";
 import { playSound } from "./sound";
 import weapons from "../weapon-types";
+import { unlocks } from "../pocketbase";
 
 export function levelUp() {
 	if (get("isFirstLevelup")) {
@@ -17,14 +18,17 @@ export function levelUp() {
 	
 	let content = "";
 	let choices = [];
-	playerUpgrades.filter(upgrade => upgrade.times < upgrade.max).forEach(upgrade => { for (let _ = 0; _ < upgrade.weight; _ += 0.05) choices.push({ type: 0, val: upgrade }) });
+	playerUpgrades.filter(upgrade => upgrade.times < upgrade.max &&
+		unlocks.playerUpgrades[upgrade.id])
+		.forEach(upgrade => { for (let _ = 0; _ < upgrade.weight; _ += 0.05) choices.push({ type: 0, val: upgrade }) });
 	player.weapons.forEach((weapon, weaponI) => {
 		weapon.upgrades
 			.filter(upgrade => {
 				return upgrade.times < upgrade.max &&
 					!weapon.upgrades
 						.filter(x => x.times > 0)
-						.some(x => x.incompatible?.includes(upgrade.name));
+						.some(x => x.incompatible?.includes(upgrade.id)) &&
+					unlocks.weapons[weapon.id].unlockedUpgrades[upgrade.id];
 			})
 			.forEach(upgrade => {
 				for (let _ = 0; _ < upgrade.weight; _ += 0.05) {
@@ -33,9 +37,10 @@ export function levelUp() {
 			});
 	});
 	weapons.forEach(weapon => {
-		if (player.weapons.find(e => e.id == weapon.id)) return;
+		if (player.weapons.find(e => e.id == weapon.id) || !unlocks.weapons[weapon.id].unlocked) return;
 		for (let _ = 0; _ < weapon.weight; _ += 0.05) choices.push({ type: 2, id: weapon.id, val: weapon });
 	});
+	console.log(choices);
 	
 	let chosen = [];
 	for (let _ = 0; _ < 3; _++) {

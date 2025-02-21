@@ -4,6 +4,7 @@ import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, setting
 const url = __POCKETBASE_URL__;
 export const pb = new PocketBase(url);
 import xssFilters from "xss-filters";
+import weapons from "./weapon-types";
 
 export var user, signedIn = false;
 
@@ -11,7 +12,7 @@ export var user, signedIn = false;
 
 if (pb.authStore.model) {
 	(async () => {
-		user = await pb.collection("users").getOne(pb.authStore.model.id);
+		user = await pb.collection("testUsers").getOne(pb.authStore.model.id);
 	})();
 	signedIn = true;
 }
@@ -34,17 +35,68 @@ export async function postScore(score, time, dev, version) {
 
 export async function updateStats({ score, level, kills, time }) {
 	try {
-		return user = await pb.collection("users").update(user.id, {
+		return user = await pb.collection("testUsers").update(user.id, {
 			"deaths+": 1,
 			"score+": score,
 			"levelups+": level,
 			"kills+": kills,
 			highscore: Math.max(user.highscore || 0, score),
-			highestTime: Math.max(user.highestTime || 0, time)
+			highestTime: Math.max(user.highestTime || 0, time),
+			// "unlocks": getUnlocks()
 		});
 	} catch (err) {
 		console.error(err);
 	}
+}
+
+// setTimeout(getUnlocks, 5000);
+
+export var unlocks = {};
+getUnlocks();
+
+export async function getUnlocks() {
+	let ret = user?.unlocks || {};
+	let def = {
+		weapons: weapons.reduce((total, weapon) => {
+			total[weapon.id] = {
+				unlocked: weapon.defaultUnlocked,
+				unlockedUpgrades: weapon.upgrades.reduce((totalUpgrades, upgrade) => {
+					totalUpgrades[upgrade.id] = upgrade.defaultUnlocked;
+					return totalUpgrades;
+				}, {})
+			};
+			return total;
+		}, {}),
+		playerUpgrades: {
+			health: true,
+			speed: true,
+			shield: false,
+			resistance: false,
+			recovery: false
+		},
+		other: {
+			shield: false
+		}
+	};
+	let fixProps = (obj, props) => {
+		for (let prop in props) {
+			if (typeof props[prop] == "object") {
+				if (!(prop in obj)) {
+					obj[prop] = {};
+				}
+				obj[prop] = fixProps(obj[prop], props[prop]);
+			} else {
+				if (!(prop in obj)) {
+					obj[prop] = props[prop];
+				}
+			}
+		}
+		return obj;
+	}
+	ret = fixProps(ret, def);
+	console.log(ret);
+	unlocks = ret;
+	return ret;
 }
 
 export async function postFeed(event) {
@@ -78,7 +130,7 @@ export async function subscribeToFeed() {
 }
 
 export async function getUsers() {
-	return await pb.collection("users").getFullList({});
+	return await pb.collection("testUsers").getFullList({});
 }
 
 export async function getScores(page = 1, sort = "-score") {
@@ -93,11 +145,12 @@ export async function signIn() {
 	let username = await getUsername("Enter a username");
 	if (!username) return;
 	let users = await getUsers();
+	console.log(users.map(otherUser => otherUser.username), username);
 	if (users.map(otherUser => otherUser.username).includes(username)) {
 		let password = await getPassword("Enter your password");
 		if (!password) return;
 		try {
-			let authData = await pb.collection('users').authWithPassword(username, password);
+			let authData = await pb.collection("testUsers").authWithPassword(username, password);
 			user = authData.record;
 			signedIn = true;
 			return authData;
@@ -108,9 +161,9 @@ export async function signIn() {
 	} else {
 		let password = await getPassword("Create a password");
 		if (!password) return;
-		user = await pb.collection('users').create({ username, password, name: username, passwordConfirm: password });
+		user = await pb.collection("testUsers").create({ username, password, name: username, passwordConfirm: password });
 		try {
-			let authData = await pb.collection('users').authWithPassword(username, password);
+			let authData = await pb.collection("testUsers").authWithPassword(username, password);
 			user = authData.record;
 			signedIn = true;
 			return authData;
@@ -122,13 +175,13 @@ export async function signIn() {
 }
 
 export async function signInWithGoogle() {
-	const authData = await pb.collection('users').authWithOAuth2({ provider: 'google' });
+	const authData = await pb.collection("testUsers").authWithOAuth2({ provider: 'google' });
 }
 
 export async function getUsername(prompt) {
 	let dialog = document.getElementById("username");
 	dialog.showModal();
-	dialog.querySelector(".prompt").innerText = prompt;
+	dialog.querySelector("h2").innerText = prompt;
 	return new Promise((res, rej) => {
 		dialog.querySelector(".prompt").addEventListener("keypress", (event) => {
 			if (event.key !== "Enter") return;
@@ -147,7 +200,7 @@ export async function getUsername(prompt) {
 export async function getPassword(prompt) {
 	let dialog = document.getElementById("password");
 	dialog.showModal();
-	dialog.querySelector(".prompt").innerText = prompt;
+	dialog.querySelector("h2").innerText = prompt;
 	return new Promise((res, rej) => {
 		dialog.querySelector(".prompt").addEventListener("keypress", (event) => {
 			if (event.key !== "Enter") return;
