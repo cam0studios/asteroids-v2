@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase";
 import Toastify from "toastify";
-import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore } from "./main";
+import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore, unlocksStore } from "./main";
 const url = __POCKETBASE_URL__;
 export const pb = new PocketBase(url);
 import xssFilters from "xss-filters";
@@ -16,6 +16,7 @@ if (pb.authStore.model) {
 	})();
 	signedIn = true;
 }
+
 
 export async function postScore(score, time, dev, version) {
 	if (cheated) return;
@@ -42,20 +43,18 @@ export async function updateStats({ score, level, kills, time }) {
 			"kills+": kills,
 			highscore: Math.max(user.highscore || 0, score),
 			highestTime: Math.max(user.highestTime || 0, time),
-			// "unlocks": getUnlocks()
+			"unlocks": getUnlocks()
 		});
 	} catch (err) {
 		console.error(err);
 	}
 }
 
-// setTimeout(getUnlocks, 5000);
-
 export var unlocks = {};
-getUnlocks();
 
 export async function getUnlocks() {
-	let ret = user?.unlocks || {};
+	let serverStore = user?.unlocks || {};
+	let localStore = unlocksStore.get("unlocks", {}) || {};
 	let def = {
 		weapons: weapons.reduce((total, weapon) => {
 			total[weapon.id] = {
@@ -63,7 +62,8 @@ export async function getUnlocks() {
 				unlockedUpgrades: weapon.upgrades.reduce((totalUpgrades, upgrade) => {
 					totalUpgrades[upgrade.id] = upgrade.defaultUnlocked;
 					return totalUpgrades;
-				}, {})
+				}, {}),
+				unlocks: weapon.defaultUnlocks
 			};
 			return total;
 		}, {}),
@@ -78,25 +78,46 @@ export async function getUnlocks() {
 			shield: false
 		}
 	};
-	let fixProps = (obj, props) => {
-		for (let prop in props) {
-			if (typeof props[prop] == "object") {
-				if (!(prop in obj)) {
-					obj[prop] = {};
-				}
-				obj[prop] = fixProps(obj[prop], props[prop]);
+
+	let mergeProps = (obj1, obj2, def) => {
+		let ret = { ...obj1 };
+		for (let prop in def) {
+			if (typeof def[prop] == "object") {
+				if (!(prop in ret)) ret[prop] = {};
+				ret[prop] = mergeProps(ret[prop], prop in obj2 ? obj2[prop] : {}, def[prop]);
 			} else {
-				if (!(prop in obj)) {
-					obj[prop] = props[prop];
+				if (prop in obj2 && (!(prop in ret) || obj2[prop] > ret[prop])) {
+					ret[prop] = obj2[prop];
+				}
+				if (!(prop in ret)) {
+					ret[prop] = def[prop];
 				}
 			}
 		}
-		return obj;
+		return ret;
 	}
-	ret = fixProps(ret, def);
-	console.log(ret);
+
+	let ret = mergeProps(serverStore, localStore, def);
 	unlocks = ret;
+	unlocksStore.set("unlocks", ret);
+	try {
+		await pb.collection("testUsers").update(user.id, { unlocks: ret });
+		user = await pb.collection("testUsers").getOne(user.id);
+	} catch (err) {
+		console.error("failed uploading unlocks: " + err);
+	}
+	console.log(ret);
 	return ret;
+}
+
+export function setUnlocks() {
+	unlocksStore.set("unlocks", unlocks);
+	try {
+		pb.collection("testUsers").update(user.id, { unlocks });
+		user = pb.collection("testUsers").getOne(user.id);
+	} catch (err) {
+		console.error("failed uploading unlocks: " + err);
+	}
 }
 
 export async function postFeed(event) {

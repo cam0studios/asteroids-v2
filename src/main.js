@@ -4,7 +4,7 @@ import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes, { projectileEnums } from "./projectile-types";
-import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed, unlocks } from "./pocketbase";
+import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed, unlocks, getUnlocks } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { audioContext, playSound } from "./util/sound";
 import EasyStorage from "@pikapower9080/easy-storage";
@@ -15,6 +15,7 @@ import './style/main.less';
 import { showRunInfo } from "./util/run-info";
 import { levelUp } from "./util/level-up";
 import { getSettingsMenu } from "./util/settings";
+import achievements from "./achievements";
 
 export const version = "v0.5.0";
 
@@ -45,6 +46,11 @@ export const settingsStore = new EasyStorage({
 		enabled: true,
 		old_key: "settings"
 	}
+})
+
+export const unlocksStore = new EasyStorage({
+	key: "asteroids-unlocks",
+	default: {}
 })
 
 // global vars
@@ -104,6 +110,7 @@ document.getElementById("start").addEventListener("click", () => {
 
 function startGame(level) {
 	currentLevel = levels[level];
+	getUnlocks();
 	let p5Inst = new p5(sketchFunc);
 	started = true;
 	subscribeToFeed();
@@ -706,7 +713,7 @@ const sketchFunc = (sk) => {
 		// update exposed values
 		if (!pauseLogic) {
 			if (devMode) {
-				window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo, levelUp, showRunInfo, pauseLogic };
+				window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo, levelUp, showRunInfo, pauseLogic, getUnlocks };
 			} else {
 				window.game = { size, fps, deltaTime, paused, version, getRunInfo }
 			}
@@ -787,11 +794,12 @@ async function die(silent) {
 				document.getElementById("score-not-submitted").innerText = "Score submission is disabled"
 			}
 
-			if (!devMode) promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) }));
+			/*if (!devMode)*/ promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) }));
 
 			const results = await Promise.all(promises);
 			if (results[1]) scoreRecordId = results[1].id;
 			posted = true;
+			achievements.forEach(achievement => achievement.check());
 		}
 
 		document.getElementById("stats").innerHTML = `

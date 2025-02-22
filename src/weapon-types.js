@@ -2,6 +2,7 @@ import Vector from "@cam0studios/vector-library";
 import { gamepad } from "./gamepad";
 import { player, mouseDown, settings, clampTime, get, set, size } from "./main";
 import projectileTypes, { projectileEnums } from "./projectile-types";
+import { unlocks } from "./pocketbase";
 
 /**
  * Represents a weapon.
@@ -18,6 +19,7 @@ class Weapon {
 	 * @param {Function} [data.upgrade] - The upgrade function for the weapon.
 	 * @param {string} [data.desc] - The description of the weapon.
 	 * @param {boolean} data.defaultUnlocked - If the weapon should be unlocked by default
+	 * @param {Object} [data.defaultUnlocks] - Other properties that can be unlocked/upgraded
 	 * 
 	 * @param {Object} data.props - The properties of the weapon.
 	 * @param {number} data.props.reload - The reload time of the weapon.
@@ -47,6 +49,7 @@ class Weapon {
 		this.upgrade = data.upgrade || (() => { });
 		this.desc = data.desc || "";
 		this.defaultUnlocked = data.defaultUnlocked;
+		this.defaultUnlocks = data.unlocks || {};
 	}
 
 	givePlayer() {
@@ -65,6 +68,7 @@ class Weapon {
 			weapon.level++;
 			oldUpgrade(weapon);
 		}
+		weapon.unlocks = unlocks.weapons[this.id].unlocks || {};
 		player.weapons.push(weapon);
 	}
 }
@@ -77,6 +81,9 @@ const weapons = [
 		id: "gun",
 		weight: 0,
 		defaultUnlocked: true,
+		unlocks: {
+			multishotEvery: 0
+		},
 		props: {
 			reload: 0,
 			fireRate: 5,
@@ -99,7 +106,7 @@ const weapons = [
 		],
 		upgrade: (weapon) => {
 			weapon.reload = 0;
-			if (weapon.level % 5 == 0 && weapon.amount < 5) {
+			if (weapon.unlocks.multishotEvery > 0 && weapon.level % weapon.unlocks.multishotEvery == 0 && weapon.amount < 5) {
 				weapon.amount++;
 			}
 		},

@@ -40,7 +40,7 @@ export function levelUp() {
 		if (player.weapons.find(e => e.id == weapon.id) || !unlocks.weapons[weapon.id].unlocked) return;
 		for (let _ = 0; _ < weapon.weight; _ += 0.05) choices.push({ type: 2, id: weapon.id, val: weapon });
 	});
-	console.log(choices);
+
 	
 	let chosen = [];
 	for (let _ = 0; _ < 3; _++) {
