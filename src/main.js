@@ -103,7 +103,7 @@ document.getElementById("start").addEventListener("click", () => {
 });
 
 function startGame(level) {
-	currentLevel = levels[level];
+	currentLevel = {...levels[level]};
 	let p5Inst = new p5(sketchFunc);
 	started = true;
 	subscribeToFeed();
