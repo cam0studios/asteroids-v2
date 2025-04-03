@@ -103,10 +103,23 @@ document.getElementById("start").addEventListener("click", () => {
 });
 
 function startGame(level) {
-	currentLevel = {...levels[level]};
+	currentLevel = copyObj(levels[level]);
 	let p5Inst = new p5(sketchFunc);
 	started = true;
 	subscribeToFeed();
+}
+function copyObj(obj) {
+	if (Array.isArray(obj)) {
+		return obj.map(item => copyObj(item));
+	}
+	if (typeof obj === "object" && obj !== null) {
+		let newObj = {};
+		for (let key in obj) {
+			newObj[key] = copyObj(obj[key]);
+		}
+		return newObj;
+	}
+	return obj;
 }
 function stopGame() {
 	sketch.noLoop();
@@ -1208,16 +1221,7 @@ function setKey(event, state) {
 					player.pos.y = mousePos.y
 					cheated = true
 					break;
-				case "P":
-					if (paused) unpause();
-					if (document.head.querySelector("script[src='https://cdn.jsdelivr.net/npm/eruda']")) break;
 
-					const erudaScript = document.createElement("script");
-					erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
-					document.head.appendChild(erudaScript);
-					erudaScript.onload = () => eruda.init();
-
-					break;
 				case "b":
 					settings.emojiMovie = !settings.emojiMovie;
 					break;
@@ -1265,6 +1269,16 @@ function setKey(event, state) {
 					}
 					break;
 			}
+		}
+	}
+	if (state && devMode && event.key === "P") {
+		if (paused) unpause();
+		if (!document.head.querySelector("script[src='https://cdn.jsdelivr.net/npm/eruda']")) {
+			const erudaScript = document.createElement("script");
+			erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
+			document.head.appendChild(erudaScript);
+			erudaScript.onload = () => eruda.init();
+			cheated = true;
 		}
 	}
 }
