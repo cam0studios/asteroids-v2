@@ -1,10 +1,11 @@
 import PocketBase from "pocketbase";
 import Toastify from "toastify";
-import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore, unlocksStore } from "./main";
+import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore, unlocksStore as achievementsStore } from "./main";
 const url = __POCKETBASE_URL__;
 export const pb = new PocketBase(url);
 import xssFilters from "xss-filters";
 import weapons from "./weapon-types";
+import achievements from "./achievements";
 
 export var user, signedIn = false;
 
@@ -42,8 +43,7 @@ export async function updateStats({ score, level, kills, time }) {
 			"levelups+": level,
 			"kills+": kills,
 			highscore: Math.max(user.highscore || 0, score),
-			highestTime: Math.max(user.highestTime || 0, time),
-			"unlocks": getUnlocks()
+			highestTime: Math.max(user.highestTime || 0, time)
 		});
 	} catch (err) {
 		console.error(err);
@@ -53,8 +53,6 @@ export async function updateStats({ score, level, kills, time }) {
 export var unlocks = {};
 
 export async function getUnlocks() {
-	let serverStore = user?.unlocks || {};
-	let localStore = unlocksStore.get("unlocks", {}) || {};
 	let def = {
 		weapons: weapons.reduce((total, weapon) => {
 			total[weapon.id] = {
@@ -78,43 +76,23 @@ export async function getUnlocks() {
 			shield: false
 		}
 	};
-
-	let mergeProps = (obj1, obj2, def) => {
-		let ret = { ...obj1 };
-		for (let prop in def) {
-			if (typeof def[prop] == "object") {
-				if (!(prop in ret)) ret[prop] = {};
-				ret[prop] = mergeProps(ret[prop], prop in obj2 ? obj2[prop] : {}, def[prop]);
-			} else {
-				if (prop in obj2 && (!(prop in ret) || obj2[prop] > ret[prop])) {
-					ret[prop] = obj2[prop];
-				}
-				if (!(prop in ret)) {
-					ret[prop] = def[prop];
-				}
-			}
-		}
-		return ret;
-	}
-
-	let ret = mergeProps(serverStore, localStore, def);
-	unlocks = ret;
-	unlocksStore.set("unlocks", ret);
-	try {
-		await pb.collection("testUsers").update(user.id, { unlocks: ret });
-		user = await pb.collection("testUsers").getOne(user.id);
-	} catch (err) {
-		console.error("failed uploading unlocks: " + err);
-	}
-	console.log(ret);
-	return ret;
+	achievements.forEach(achievement => {
+		def = achievement.get(def);
+	});
+	console.log(def);
+	unlocks = def;
+	return def;
 }
 
-export function setUnlocks() {
-	unlocksStore.set("unlocks", unlocks);
+export async function saveAchievements() {
+	let achieved = {};
+	achievements.forEach(achievement => {
+		achieved[achievement.id] = achievement.check();
+	});
+	achievementsStore.set("achievements", achieved);
 	try {
-		pb.collection("testUsers").update(user.id, { unlocks });
-		user = pb.collection("testUsers").getOne(user.id);
+		pb.collection("testUsers").update(user.id, { achievements: achieved });
+		user = await pb.collection("testUsers").getOne(user.id);
 	} catch (err) {
 		console.error("failed uploading unlocks: " + err);
 	}

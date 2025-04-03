@@ -4,7 +4,7 @@ import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes, { projectileEnums } from "./projectile-types";
-import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed, unlocks, getUnlocks } from "./pocketbase";
+import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed, unlocks, getUnlocks, saveAchievements } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { audioContext, playSound } from "./util/sound";
 import EasyStorage from "@pikapower9080/easy-storage";
@@ -797,9 +797,9 @@ async function die(silent) {
 			/*if (!devMode)*/ promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) }));
 
 			const results = await Promise.all(promises);
+			await saveAchievements();
 			if (results[1]) scoreRecordId = results[1].id;
 			posted = true;
-			achievements.forEach(achievement => achievement.check());
 		}
 
 		document.getElementById("stats").innerHTML = `
