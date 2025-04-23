@@ -5,3 +5,6 @@
 <p align="center">
 	<a href="https://asteroids.us.to">Play Online</a> | <a href="https://vikunja.pikarocks.dev/share/XlEKkmJsuHV8VLHRjRiwvs8iw5GprygEboORof4W/auth?view=32">Roadmap</a> | <a href="https://github.com/cam0studios/asteroids-v2/blob/master/docs/UPDATES.md">Updates</a>
 </p>
+
+<h3 align="center">Single-File Build</h3>
+<p align="center">If both the <a href="https://asteroids.us.to">us.to</a> and <a href="https://cam0studios.github.io/asteroids-v2">github</a> links are blocked, ctrl+s <a href="https://raw.githubusercontent.com/cam0studios/asteroids-v2/refs/heads/gh-pages/singlefile.html">this file</a> and open it.</p>
