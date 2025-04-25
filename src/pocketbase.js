@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase";
 import Toastify from "toastify";
-import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore, unlocksStore as achievementsStore } from "./main";
+import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore } from "./main";
 const url = __POCKETBASE_URL__;
 export const pb = new PocketBase(url);
 import xssFilters from "xss-filters";
@@ -11,9 +11,14 @@ export var user, signedIn = false;
 
 // pb.authStore.clear();
 
+user = {
+	stats: {}
+};
+
 if (pb.authStore.model) {
 	(async () => {
 		user = await pb.collection("testUsers").getOne(pb.authStore.model.id);
+		userUpdated();
 	})();
 	signedIn = true;
 }
@@ -35,16 +40,27 @@ export async function postScore(score, time, dev, version) {
 	}
 }
 
-export async function updateStats({ score, level, kills, time }) {
+export async function updateStats({ score, level, kills, time, enemyKills }) {
 	try {
-		return user = await pb.collection("testUsers").update(user.id, {
-			"deaths+": 1,
-			"score+": score,
-			"levelups+": level,
-			"kills+": kills,
-			highscore: Math.max(user.highscore || 0, score),
-			highestTime: Math.max(user.highestTime || 0, time)
+		let newEnemyKills = user.stats?.enemyKills || {};
+		for (let enemy in enemyKills) {
+			if (!(enemy in newEnemyKills)) newEnemyKills[enemy] = 0;
+			newEnemyKills[enemy] += enemyKills[enemy];
+		}
+		await pb.collection("testUsers").update(user.id, {
+			stats: {
+				deaths: (user.stats?.deaths || 0) + 1,
+				score: (user.stats?.score || 0) + score,
+				levelups: (user.stats?.levelups || 0) + level,
+				kills: (user.stats?.kills || 0) + kills,
+				highscore: Math.max(user.stats?.highscore || 0, score),
+				highestTime: Math.max(user.stats?.highestTime || 0, time),
+				enemyKills: newEnemyKills,
+			}
 		});
+		user = await pb.collection("testUsers").getOne(pb.authStore.model.id);
+		userUpdated();
+		return user;
 	} catch (err) {
 		console.error(err);
 	}
@@ -77,26 +93,26 @@ export async function getUnlocks() {
 		}
 	};
 	achievements.forEach(achievement => {
-		def = achievement.get(def);
+		def = achievement.getCheck(def);
 	});
 	console.log(def);
 	unlocks = def;
 	return def;
 }
 
-export async function saveAchievements() {
-	let achieved = {};
-	achievements.forEach(achievement => {
-		achieved[achievement.id] = achievement.check();
-	});
-	achievementsStore.set("achievements", achieved);
-	try {
-		pb.collection("testUsers").update(user.id, { achievements: achieved });
-		user = await pb.collection("testUsers").getOne(user.id);
-	} catch (err) {
-		console.error("failed uploading unlocks: " + err);
-	}
-}
+// export async function saveAchievements() {
+// 	let achieved = {};
+// 	achievements.forEach(achievement => {
+// 		achieved[achievement.id] = achievement.check();
+// 	});
+// 	achievementsStore.set("achievements", achieved);
+// 	try {
+// 		pb.collection("testUsers").update(user.id, { achievements: achieved });
+// 		user = await pb.collection("testUsers").getOne(user.id);
+// 	} catch (err) {
+// 		console.error("failed uploading unlocks: " + err);
+// 	}
+// }
 
 export async function postFeed(event) {
 	if (!settings.sendFeedEvents) return;
@@ -144,13 +160,14 @@ export async function signIn() {
 	let username = await getUsername("Enter a username");
 	if (!username) return;
 	let users = await getUsers();
-	console.log(users.map(otherUser => otherUser.username), username);
+	// console.log(users.map(otherUser => otherUser.username), username);
 	if (users.map(otherUser => otherUser.username).includes(username)) {
 		let password = await getPassword("Enter your password");
 		if (!password) return;
 		try {
 			let authData = await pb.collection("testUsers").authWithPassword(username, password);
 			user = authData.record;
+			userUpdated();
 			signedIn = true;
 			return authData;
 		} catch (err) {
@@ -164,6 +181,7 @@ export async function signIn() {
 		try {
 			let authData = await pb.collection("testUsers").authWithPassword(username, password);
 			user = authData.record;
+			userUpdated();
 			signedIn = true;
 			return authData;
 		} catch (err) {
@@ -219,4 +237,10 @@ export function signOut() {
 	pb.authStore.clear();
 	signedIn = false;
 	user = null;
+	userUpdated();
+}
+
+function userUpdated() {
+	const event = new CustomEvent("userupdate", { detail: { user } });
+	window.dispatchEvent(event);
 }

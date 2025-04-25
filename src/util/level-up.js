@@ -71,7 +71,7 @@ export function levelUp() {
 	
 	chosen.forEach((option, optionI) => {
 		document.getElementById(`option${optionI}`).addEventListener("click", () => {
-			player.hp += 15;
+			player.hp += 10;
 			switch (option.type) {
 				case 0:
 					option.val.times++;

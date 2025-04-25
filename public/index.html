@@ -25,6 +25,7 @@
 	<link rel="stylesheet" href="assets/fonts/space-mono.css" x-mime-type="text/css">
 	<script src="main.js" defer></script>
 	<link rel="manifest" href="site.webmanifest" x-mime-type="application/json">
+	<script src="https://cdn.jsdelivr.net/npm/eruda" onload="eruda.init()"></script>
 </head>
 
 <body>
@@ -33,6 +34,9 @@
 			<h1>Asteroids</h1>
 			<button id="start">
 				<h2><i class="fa-regular fa-play"></i> Start</h2>
+			</button>
+			<button id="openUnlocks">
+				<h2><i class="fa-regular fa-unlock-keyhole"></i> Unlocks</h2>
 			</button>
 			<span id="controls">
 				<h3>Controls</h3>
@@ -89,12 +93,23 @@
 		</div>
 	</dialog>
 
+	<dialog id="unlocksScreen" class="noClose noPause menu grow-in-vertical">
+		<h1>Unlocks</h1>
+		<div id="unlocks"></div>
+		<button class="exit">
+			<h2><i class="fa-regular fa-sign-in fa-flip-horizontal"></i> Exit</h2>
+		</button>
+	</dialog>
+
 	<dialog id="gameOver" class="noClose noPause menu grow-in-vertical">
 		<div class="centered">
 			<h1>Game Over</h1>
 			<h2>Score: <span id="score">0</span></h2>
 			<button id="restart">
 				<h2><i class="fa-regular fa-repeat"></i> Restart</h2>
+			</button>
+			<button id="exit">
+				<h2><i class="fa-regular fa-sign-in fa-flip-horizontal"></i> Back to Menu</h2>
 			</button>
 			<button id="viewRunInfo">
 				<h2><i class="fa-regular fa-chart-simple"></i> Run Info</h2>
