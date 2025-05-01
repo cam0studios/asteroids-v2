@@ -127,7 +127,6 @@ let updateUnlocksScreen = () => {
 				document.createElement("p"),
 				document.createElement("p"),
 			];
-			console.log(achievement.getProp("getString").toString());
 			text = [
 				(achievement.name || "Unnamed") + (("levels" in achievement) ? ` (lvl ${achievement.level()} / ${achievement.levels.length})` : ""),
 				`${achievement.desc} (${achievement.getString(achievement.progress())} / ${achievement.getString(achievement.max)})`,
@@ -864,7 +863,6 @@ async function die(silent) {
 			posted = true;
 		}
 
-		console.log("main", user);
 		document.getElementById("stats").innerHTML = `
 			<p> <strong> <!--<i class="fa-regular fa-burst fa-fw"></i>--> Total Deaths: </strong> ${user.stats?.deaths?.toLocaleString()} </p>
 			<p> <strong> <!--<i class="fa-regular fa-star fa-fw"></i>--> Total score: </strong> ${user.stats?.score?.toLocaleString()} </p>

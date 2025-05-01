@@ -49,12 +49,12 @@ export async function updateStats({ score, level, kills, time, enemyKills }) {
 		}
 		await pb.collection("testUsers").update(user.id, {
 			stats: {
-				deaths: (user.stats?.deaths || 0) + 1,
-				score: (user.stats?.score || 0) + score,
-				levelups: (user.stats?.levelups || 0) + level,
-				kills: (user.stats?.kills || 0) + kills,
-				highscore: Math.max(user.stats?.highscore || 0, score),
-				highestTime: Math.max(user.stats?.highestTime || 0, time),
+				deaths: (user.stats?.deaths || user.deaths || 0) + 1,
+				score: (user.stats?.score || user.score || 0) + score,
+				levelups: (user.stats?.levelups || user.levelups || 0) + level,
+				kills: (user.stats?.kills || user.kills || 0) + kills,
+				highscore: Math.max(user.stats?.highscore || user.highscore || 0, score),
+				highestTime: Math.max(user.stats?.highestTime || user.highestTime || 0, time),
 				enemyKills: newEnemyKills,
 			}
 		});
@@ -95,24 +95,9 @@ export async function getUnlocks() {
 	achievements.forEach(achievement => {
 		def = achievement.getCheck(def);
 	});
-	console.log(def);
 	unlocks = def;
 	return def;
 }
-
-// export async function saveAchievements() {
-// 	let achieved = {};
-// 	achievements.forEach(achievement => {
-// 		achieved[achievement.id] = achievement.check();
-// 	});
-// 	achievementsStore.set("achievements", achieved);
-// 	try {
-// 		pb.collection("testUsers").update(user.id, { achievements: achieved });
-// 		user = await pb.collection("testUsers").getOne(user.id);
-// 	} catch (err) {
-// 		console.error("failed uploading unlocks: " + err);
-// 	}
-// }
 
 export async function postFeed(event) {
 	if (!settings.sendFeedEvents) return;
@@ -160,7 +145,6 @@ export async function signIn() {
 	let username = await getUsername("Enter a username");
 	if (!username) return;
 	let users = await getUsers();
-	// console.log(users.map(otherUser => otherUser.username), username);
 	if (users.map(otherUser => otherUser.username).includes(username)) {
 		let password = await getPassword("Enter your password");
 		if (!password) return;
