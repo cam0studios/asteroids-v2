@@ -95,7 +95,8 @@ export var clampTime,
 	pauseLogic = false,
 	vignetteOpacity = 0,
 	shieldVignetteOpacity = 0,
-	enemyKills;
+	enemyKills,
+	currentUnlocks;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -253,6 +254,16 @@ const sketchFunc = (sk) => {
 	paused = false;
 	score = 0;
 	playerUpgrades.forEach(upgrade => upgrade.times = 0);
+	currentUnlocks = achievements.map(achievement => {
+		let ret = {
+			achievement,
+			got: achievement.check()
+		}
+		if ("level" in achievement) {
+			ret.level = achievement.level();
+		}
+		return ret;
+	});
 
 	if (devMode) {
 		window.playerLink = player;
@@ -833,7 +844,8 @@ async function die(silent) {
 		}, 100);
 		if (!posted) {
 			let promises = [];
-			document.getElementById("score-not-submitted").classList.toggle("no-display", true)
+			document.getElementById("score-not-submitted").classList.toggle("no-display", true);
+			document.getElementById("newAchievements").classList.add("no-display");
 
 			promises.push(postFeed({
 				type: "death",
@@ -871,6 +883,17 @@ async function die(silent) {
 			<p> <strong> <!--<i class="fa-regular fa-ranking-star fa-fw"></i>--> Highest score: </strong> ${user.stats?.highscore?.toLocaleString()} </p>
 			<p> <strong> <!--<i class="fa-regular fa-clock-rotate-left fa-fw"></i>--> Longest run: </strong> ${formatTime(user.stats?.highestTime)} </p>
 		`;
+		console.log(user.stats);
+		console.log(achievements.map((e, i) => ({ name: e.name, check: e.check(), got: currentUnlocks[i].got })));
+		let newAchievements = achievements.filter((achievement, i) => (achievement.check() && !currentUnlocks[i].got) || ("level" in achievement && achievement.level() != currentUnlocks[i].level));
+		console.log(newAchievements);
+		if (newAchievements.length > 0) {
+			document.getElementById("newAchievements").classList.remove("no-display");
+			document.querySelector("#newAchievements>div").innerHTML = "";
+			newAchievements.forEach(achievement => {
+				document.querySelector("#newAchievements>div").innerHTML += `<p> <strong> ${achievement.name} </strong> - ${achievement.levels[achievement.level() - 1].desc} </p>`;
+			});
+		}
 	} else {
 		document.getElementById("signInDiv").innerHTML = `<p><b>Sign in to submit your score to the leaderboard</b></p><button id="signInBtn">Sign in</button><!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
 		document.getElementById("stats").innerHTML = "<p><b>Sign in to see your stats</b></p>";
@@ -1337,6 +1360,10 @@ function setKey(event, state) {
 				case "i":
 					player.xp = player.levelUp;
 					cheated = true
+					break;
+				case "`":
+					player.kills = 500;
+					cheated = true;
 					break;
 				default:
 					if ("1234567890".split("").includes(event.key)) {

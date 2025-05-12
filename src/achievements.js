@@ -271,10 +271,4 @@ const achievements = [
 	}),
 ];
 
-/* TODO
-player
-  resistance
-  recovery
-*/
-
 export default achievements;
