@@ -104,13 +104,13 @@ document.getElementById("start").addEventListener("click", () => {
 	startGame(0);
 	audioContext.resume();
 });
-document.getElementById("openUnlocks").addEventListener("click", () => {
+document.getElementById("openAchievements").addEventListener("click", () => {
 	document.getElementById("startScreen").close();
-	document.getElementById("unlocksScreen").showModal();
-	updateUnlocksScreen();
+	document.getElementById("achievementsScreen").showModal();
+	updateAchievementsScreen();
 });
-let updateUnlocksScreen = () => {
-	document.getElementById("unlocks").innerHTML = "";
+let updateAchievementsScreen = () => {
+	document.getElementById("achievements").innerHTML = "";
 	achievements
 	.toSorted((a, b) => a.check() ? 1 : b.check() ? -1 : ((b.progress() / b.max) - (a.progress() / a.max)))
 	.forEach(achievement => {
@@ -145,16 +145,16 @@ let updateUnlocksScreen = () => {
 			elems[i].append(document.createTextNode(text[i] || ""));
 		}
 		elem.append(...elems);
-		document.getElementById("unlocks").append(elem);
+		document.getElementById("achievements").append(elem);
 	});
 };
 addEventListener("userupdate", () => {
-	if (document.getElementById("unlocksScreen").open) {
-		updateUnlocksScreen();
+	if (document.getElementById("achievementsScreen").open) {
+		updateAchievementsScreen();
 	}
 });
-document.querySelector("#unlocksScreen>.exit")?.addEventListener("click", () => {
-	document.getElementById("unlocksScreen").close();
+document.querySelector("#achievementsScreen>.exit")?.addEventListener("click", () => {
+	document.getElementById("achievementsScreen").close();
 	document.getElementById("startScreen").showModal();
 });
 document.getElementById("exit").addEventListener("click", () => {
