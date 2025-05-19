@@ -2,6 +2,9 @@ import { formatTime, playerUpgrades } from "./main";
 import { getUnlocks, user } from "./pocketbase";
 import weapons from "./weapon-types";
 
+// achievements: what the player achieves, based on stats
+// unlocks: what weapons and upgrades the player has, based on achievements
+
 class Achievement {
 	/**
 	 *
@@ -9,7 +12,7 @@ class Achievement {
 	 * @param {string} desc - The description of the unlock.
 	 * @param {string} reward - The reward for unlocking.
 	 * @param {string} id - The id of the unlock.
-	 * @param {Function} progress - The function to get progress of the unlocks.
+	 * @param {Function} progress - The function to get progress of the achievement.
 	 * @param {number} max - The required progress of the unlock.
 	 * @param {Function} get - The function to call once unlocked.
 	 * @param {Function} getString - The formatter function for progress and max

@@ -48,11 +48,6 @@ export const settingsStore = new EasyStorage({
 	}
 })
 
-// export const unlocksStore = new EasyStorage({
-// 	key: "asteroids-unlocks",
-// 	default: {}
-// })
-
 // global vars
 /**
  * @type {p5}

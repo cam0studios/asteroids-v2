@@ -5,8 +5,7 @@
 ## v0.5
 
 ### 0.5.0
-- Add weapon unlocks/achievements to get upgrades
-- Add hit vignette
+- Add achievements (requirements to unlock weapons and upgrades)
 
 ## v0.4
 
@@ -32,6 +31,7 @@
 
 ### 0.4.11
 - Buffed resistance to 10% per upgrade
+- Add hit vignette
 
 ### 0.4.10
 - Added resistance upgrade
