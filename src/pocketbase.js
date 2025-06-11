@@ -17,7 +17,7 @@ user = {
 
 if (pb.authStore.model) {
 	(async () => {
-		user = await pb.collection("testUsers").getOne(pb.authStore.model.id);
+		user = await pb.collection("users").getOne(pb.authStore.model.id);
 		userUpdated();
 	})();
 	signedIn = true;
@@ -47,7 +47,7 @@ export async function updateStats({ score, level, kills, time, enemyKills }) {
 			if (!(enemy in newEnemyKills)) newEnemyKills[enemy] = 0;
 			newEnemyKills[enemy] += enemyKills[enemy];
 		}
-		await pb.collection("testUsers").update(user.id, {
+		await pb.collection("users").update(user.id, {
 			stats: {
 				deaths: (user.stats?.deaths || user.deaths || 0) + 1,
 				score: (user.stats?.score || user.score || 0) + score,
@@ -58,7 +58,7 @@ export async function updateStats({ score, level, kills, time, enemyKills }) {
 				enemyKills: newEnemyKills,
 			}
 		});
-		user = await pb.collection("testUsers").getOne(pb.authStore.model.id);
+		user = await pb.collection("users").getOne(pb.authStore.model.id);
 		userUpdated();
 		return user;
 	} catch (err) {
@@ -130,7 +130,7 @@ export async function subscribeToFeed() {
 }
 
 export async function getUsers() {
-	return await pb.collection("testUsers").getFullList({});
+	return await pb.collection("users").getFullList({});
 }
 
 export async function getScores(page = 1, sort = "-score") {
@@ -149,7 +149,7 @@ export async function signIn() {
 		let password = await getPassword("Enter your password");
 		if (!password) return;
 		try {
-			let authData = await pb.collection("testUsers").authWithPassword(username, password);
+			let authData = await pb.collection("users").authWithPassword(username, password);
 			user = authData.record;
 			userUpdated();
 			signedIn = true;
@@ -161,9 +161,9 @@ export async function signIn() {
 	} else {
 		let password = await getPassword("Create a password");
 		if (!password) return;
-		user = await pb.collection("testUsers").create({ username, password, name: username, passwordConfirm: password });
+		user = await pb.collection("users").create({ username, password, name: username, passwordConfirm: password });
 		try {
-			let authData = await pb.collection("testUsers").authWithPassword(username, password);
+			let authData = await pb.collection("users").authWithPassword(username, password);
 			user = authData.record;
 			userUpdated();
 			signedIn = true;
@@ -176,7 +176,7 @@ export async function signIn() {
 }
 
 export async function signInWithGoogle() {
-	const authData = await pb.collection("testUsers").authWithOAuth2({ provider: 'google' });
+	const authData = await pb.collection("users").authWithOAuth2({ provider: 'google' });
 }
 
 export async function getUsername(prompt) {
