@@ -2,6 +2,7 @@ import Vector from "@cam0studios/vector-library";
 import { gamepad } from "./gamepad";
 import { player, mouseDown, settings, clampTime, get, set, size } from "./main";
 import projectileTypes, { projectileEnums } from "./projectile-types";
+import { unlocks } from "./pocketbase";
 
 /**
  * Represents a weapon.
@@ -17,6 +18,8 @@ class Weapon {
 	 * @param {number} data.weight - The relative weight of the weapon when leveling up.
 	 * @param {Function} [data.upgrade] - The upgrade function for the weapon.
 	 * @param {string} [data.desc] - The description of the weapon.
+	 * @param {boolean} data.defaultUnlocked - If the weapon should be unlocked by default
+	 * @param {Object} [data.defaultUnlocks] - Other properties that can be unlocked/upgraded
 	 * 
 	 * @param {Object} data.props - The properties of the weapon.
 	 * @param {number} data.props.reload - The reload time of the weapon.
@@ -32,6 +35,9 @@ class Weapon {
 	 * @param {Function} data.upgrades[].func - Function to run on getting upgrade.
 	 * @param {number} data.upgrades[].max - The maximum level of the upgrade.
 	 * @param {number} data.upgrades[].weight [reload] - The weight of the upgrade.
+	 * @param {boolean} data.upgrades[].defaultUnlocked - If the upgrade should be unlocked by default
+	 * @param {string[]} data.upgrades[].incompatible - The upgrades that are incompatible with this upgrade.
+	 * @param {string} data.upgrades[].id - The id of the upgrade.
 	 */
 	constructor(data) {
 		this.name = data.name;
@@ -42,6 +48,8 @@ class Weapon {
 		this.weight = data.weight;
 		this.upgrade = data.upgrade || (() => { });
 		this.desc = data.desc || "";
+		this.defaultUnlocked = data.defaultUnlocked;
+		this.defaultUnlocks = data.unlocks || {};
 	}
 
 	givePlayer() {
@@ -60,6 +68,7 @@ class Weapon {
 			weapon.level++;
 			oldUpgrade(weapon);
 		}
+		weapon.unlocks = unlocks.weapons[this.id].unlocks || {};
 		player.weapons.push(weapon);
 	}
 }
@@ -70,7 +79,11 @@ const weapons = [
 	new Weapon({
 		name: "Gun",
 		id: "gun",
-		weight: 0.1,
+		weight: 0,
+		defaultUnlocked: true,
+		unlocks: {
+			multishotEvery: 0
+		},
 		props: {
 			reload: 0,
 			fireRate: 5,
@@ -83,18 +96,17 @@ const weapons = [
 			fire: 10
 		},
 		upgrades: [
-			{ name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.5 }, max: 4, weight: 1 },
-			{ name: "Fire Rate", desc: ["Fire more frequently", "Fire even more frequently"], func: (w) => { w.fireRate *= 1.35 }, max: 4, weight: 1 },
-			{ name: "Projectile Speed", desc: ["Bullets travel faster", "Bullets travel even faster"], func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
-			// { name: "Multi-shot", desc: "+1 bullet in volley", func: (w) => { w.amount++ }, max: 5, weight: 0.2 },
-			{ name: "Piercing", desc: ["50% chance for bullets to pierce enemies", "100% chance for bullets to pierce enemies", "50% chance for bullets to pierce two enemies", "100% chance for bullets to pierce two enemies"], func: (w) => { w.piercing += 0.5 }, max: 4, weight: 0.4 },
-			{ name: "Ice Shot", desc: ["Every 9th bullet freezes enemies", "Every 8th bullet freezes enemies", "Every 7th Bullet freezes enemies"], incompatible: ["Fire Shot"], func: (w) => w.ice--, weight: 0.6, max: 3 },
-			{ name: "Fire Shot", desc: ["Every 9th bullet burns enemies", "Every 8th bullet burns enemies", "Every 7th Bullet burns enemies"], incompatible: ["Ice Shot"], func: (w) => w.fire--, weight: 0.6, max: 3 },
+			{ id: "damage", name: "Damage", desc: "Increase damage dealt by bullets", func: (w) => { w.damage *= 1.5 }, max: 4, weight: 1, defaultUnlocked: true },
+			{ id: "fireRate", name: "Fire Rate", desc: ["Fire more frequently", "Fire even more frequently"], func: (w) => { w.fireRate *= 1.35 }, max: 4, weight: 1, defaultUnlocked: true },
+			{ id: "projectileSpeed", name: "Projectile Speed", desc: ["Bullets travel faster", "Bullets travel even faster"], func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1, defaultUnlocked: true },
+			{ id: "piercing", name: "Piercing", desc: ["50% chance for bullets to pierce enemies", "100% chance for bullets to pierce enemies", "50% chance for bullets to pierce two enemies", "100% chance for bullets to pierce two enemies"], func: (w) => { w.piercing += 0.5 }, max: 4, weight: 0.4, defaultUnlocked: false },
+			{ id: "ice", name: "Ice Shot", desc: ["Every 9th bullet freezes enemies", "Every 8th bullet freezes enemies", "Every 7th Bullet freezes enemies"], incompatible: ["fire"], func: (w) => w.ice--, weight: 0.6, max: 3, defaultUnlocked: false },
+			{ id: "fire", name: "Fire Shot", desc: ["Every 9th bullet burns enemies", "Every 8th bullet burns enemies", "Every 7th Bullet burns enemies"], incompatible: ["ice"], func: (w) => w.fire--, weight: 0.6, max: 3, defaultUnlocked: false },
 			// { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
 		],
 		upgrade: (weapon) => {
 			weapon.reload = 0;
-			if (weapon.level % 5 == 0 && weapon.amount < 5) {
+			if (weapon.unlocks.multishotEvery > 0 && weapon.level % weapon.unlocks.multishotEvery == 0 && weapon.amount < 5) {
 				weapon.amount++;
 			}
 		},
@@ -134,6 +146,7 @@ const weapons = [
 		id: "guardian",
 		desc: "Spawns spinning blades that orbit you",
 		weight: 0.3,
+		defaultUnlocked: false,
 		props: {
 			reload: 0,
 			reloadTime: 15,
@@ -145,12 +158,12 @@ const weapons = [
 			size: 20
 		},
 		upgrades: [
-			{ name: "Damage", desc: "Increase damage dealt by guardians", func: (w) => { w.damage *= 1.45 }, max: 3, weight: 1 },
-			{ name: "Reload", desc: "Decrease time between guardian spawns", func: (w) => { w.reloadTime -= 1 }, max: 3, weight: 1 },
-			{ name: "Speed", desc: "Increase guardian speed", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1 },
-			{ name: "Amount", desc: "Spawn more guardians", func: (w) => { w.amount++; w.dist *= 1.2 }, max: 3, weight: 0.4 },
-			{ name: "Duration", desc: "Increase duration guardians stay", func: (w) => { w.duration += 1 }, max: 3, weight: 0.6 },
-			{ name: "Size", desc: "Increase guardian size", func: (w) => { w.size *= 1.5 }, max: 3, weight: 0.4 },
+			{ id: "damage", name: "Damage", desc: "Increase damage dealt by guardians", func: (w) => { w.damage *= 1.45 }, max: 3, weight: 1, defaultUnlocked: true },
+			{ id: "reload", name: "Reload", desc: "Decrease time between guardian spawns", func: (w) => { w.reloadTime -= 1 }, max: 3, weight: 1, defaultUnlocked: false },
+			{ id: "speed", name: "Speed", desc: "Increase guardian speed", func: (w) => { w.speed *= 1.3 }, max: 3, weight: 1, defaultUnlocked: false },
+			{ id: "amount", name: "Amount", desc: "Spawn more guardians", func: (w) => { w.amount++; w.dist *= 1.2 }, max: 3, weight: 0.4, defaultUnlocked: true },
+			{ id: "duration", name: "Duration", desc: "Increase duration guardians stay", func: (w) => { w.duration += 1 }, max: 3, weight: 0.6, defaultUnlocked: false },
+			{ id: "size", name: "Size", desc: "Increase guardian size", func: (w) => { w.size *= 1.5 }, max: 3, weight: 0.4, defaultUnlocked: true },
 			// { name: "", desc: "", func: (w) => { }, max: 0, weight: 0 }
 		],
 		upgrade: (weapon) => {

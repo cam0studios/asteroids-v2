@@ -85,6 +85,8 @@ const enemyTypes = [
 					enemies.splice(i, 1);
 					i--;
 					player.kills++;
+					if (!("asteroid" in player.enemyKills)) player.enemyKills.asteroid = 0;
+					player.enemyKills.asteroid++;
 					playSound("kill", enemy.pos);
 					if (enemy.size > 10) {
 						for (let rot = -1; rot <= 1; rot += 1) {
@@ -218,6 +220,8 @@ const enemyTypes = [
 					playSound("turretDeath", enemy.pos);
 					i--;
 					player.kills++;
+					if (!("turret" in player.enemyKills)) player.enemyKills.turret = 0;
+					player.enemyKills.turret++;
 					let newScreenshake = 50 / ((enemy.pos)["-"](player.pos).mag / 500 + 1);
 					if (get("screenshake") < newScreenshake) {
 						set("screenshake", newScreenshake);
@@ -338,6 +342,8 @@ const enemyTypes = [
 						enemies.splice(i, 1);
 						i--;
 						player.kills++;
+						if (!("boss" in player.enemyKills)) player.enemyKills.boss = 0;
+						player.enemyKills.boss++;
 						playSound("kill", enemy.pos);
 						if (enemy.size > 10) {
 							for (let rot = -1; rot <= 1; rot += 1) {

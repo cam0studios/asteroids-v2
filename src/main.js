@@ -4,7 +4,7 @@ import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
 import projectileTypes, { projectileEnums } from "./projectile-types";
-import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed } from "./pocketbase";
+import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed, unlocks, getUnlocks } from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { audioContext, playSound } from "./util/sound";
 import EasyStorage from "@pikapower9080/easy-storage";
@@ -15,8 +15,9 @@ import './style/main.less';
 import { showRunInfo } from "./util/run-info";
 import { levelUp } from "./util/level-up";
 import { getSettingsMenu } from "./util/settings";
+import achievements from "./achievements";
 
-export const version = "v0.4.15";
+export const version = "v0.5.0";
 
 export var keys = {};
 "qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {
@@ -89,7 +90,9 @@ export var clampTime,
 	isFirstLevelup = true,
 	pauseLogic = false,
 	vignetteOpacity = 0,
-	shieldVignetteOpacity = 0;
+	shieldVignetteOpacity = 0,
+	enemyKills,
+	currentUnlocks;
 
 export const devMode = __IS_DEVELOPMENT__; // This will be replaced by esbuild accordingly
 window.ASTEROIDS_IS_DEVELOPMENT = devMode;
@@ -102,9 +105,68 @@ document.getElementById("start").addEventListener("click", () => {
 	startGame(0);
 	audioContext.resume();
 });
+document.getElementById("openAchievements").addEventListener("click", () => {
+	document.getElementById("startScreen").close();
+	document.getElementById("achievementsScreen").showModal();
+	updateAchievementsScreen();
+});
+let updateAchievementsScreen = () => {
+	document.getElementById("achievements").innerHTML = "";
+	achievements
+	.toSorted((a, b) => a.check() ? 1 : b.check() ? -1 : ((b.progress() / b.max) - (a.progress() / a.max)))
+	.forEach(achievement => {
+		let elem = document.createElement("div");
+		let elems = [];
+		let text = [];
+		if (achievement.progress() < achievement.max) {
+			elems = [
+				document.createElement("h3"),
+				document.createElement("p"),
+				document.createElement("p"),
+			];
+			text = [
+				(achievement.name || "Unnamed") + (("levels" in achievement) ? ` (lvl ${achievement.level()} / ${achievement.levels.length})` : ""),
+				`${achievement.desc} (${achievement.getString(achievement.progress())} / ${achievement.getString(achievement.max)})`,
+				`Reward: ${achievement.reward || "None"}`,
+			];
+		} else {
+			elems = [
+				document.createElement("h3"),
+				document.createElement("p"),
+				document.createElement("p"),
+			];
+			text = [
+				(achievement.name || "Unnamed") + (("levels" in achievement) ? ` (lvl ${achievement.level()} / ${achievement.levels.length})` : ""),
+				achievement.desc,
+				"Completed",
+			];
+			elem.classList.add("completed");
+		}
+		for (let i in elems) {
+			elems[i].append(document.createTextNode(text[i] || ""));
+		}
+		elem.append(...elems);
+		document.getElementById("achievements").append(elem);
+	});
+};
+addEventListener("userupdate", () => {
+	if (document.getElementById("achievementsScreen").open) {
+		updateAchievementsScreen();
+	}
+});
+document.querySelector("#achievementsScreen>.exit")?.addEventListener("click", () => {
+	document.getElementById("achievementsScreen").close();
+	document.getElementById("startScreen").showModal();
+});
+document.getElementById("exit").addEventListener("click", () => {
+	document.getElementById("startScreen").showModal();
+	document.getElementById("gameOver").close();
+	stopGame();
+});
 
 function startGame(level) {
 	currentLevel = copyObj(levels[level]);
+	getUnlocks();
 	let p5Inst = new p5(sketchFunc);
 	started = true;
 	subscribeToFeed();
@@ -153,11 +215,11 @@ export function closeWithAnimation(dialog, animation, duration) {
 var stars = [];
 
 export var playerUpgrades = [
-	{ name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
-	{ name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
-	{ name: "Shield", desc: "Improve shield regeneration and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++; player.shield.regenTimeLeft = player.shield.regenTime }, max: 5, weight: 0.8 },
-	{ name: "Resistance", desc: ["Take 10% less damage (-10% total)", "Take 10% less damage (-20% total)", "Take 10% less damage (-30% total)", "Take 10% less damage (-40% total)"], func: () => player.damageFactor -= 0.1, max: 4, weight: 0.8 },
-	{ name: "Recovery", desc: ["Recover 0.25 HP every second", "Recover 0.5 HP every second", "Recover 0.75 HP every second", "Recovery 1 HP every second"], func: () => { player.recovery += 0.25 }, max: 4, weight: 0.4 }
+	{ id: "speed", name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
+	{ id: "health", name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
+	{ id: "shield", name: "Shield", desc: "Improve shield regeneration and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++; player.shield.regenTimeLeft = player.shield.regenTime }, max: 5, weight: 0.8 },
+	{ id: "resistance", name: "Resistance", desc: ["Take 10% less damage (-10% total)", "Take 10% less damage (-20% total)", "Take 10% less damage (-30% total)", "Take 10% less damage (-40% total)"], func: () => player.damageFactor -= 0.1, max: 4, weight: 0.8 },
+	{ id: "recovery", name: "Recovery", desc: ["Recover 0.5 HP every second", "Recover 1 HP every second", "Recover 1.5 HP every second", "Recovery 2 HP every second"], func: () => { player.recovery += 0.5 }, max: 4, weight: 10.4 }
 	// { name: "", desc: [], func: () => {}, max: 0, weight: 1 }
 ];
 
@@ -180,6 +242,7 @@ const sketchFunc = (sk) => {
 		maxHp: 100,
 		level: -1,
 		kills: 0,
+		enemyKills: {},
 		score: 0,
 		died: false,
 		shield: {
@@ -200,6 +263,16 @@ const sketchFunc = (sk) => {
 	paused = false;
 	score = 0;
 	playerUpgrades.forEach(upgrade => upgrade.times = 0);
+	currentUnlocks = achievements.map(achievement => {
+		let ret = {
+			achievement,
+			got: achievement.check()
+		}
+		if ("level" in achievement) {
+			ret.level = achievement.level();
+		}
+		return ret;
+	});
 
 	if (devMode) {
 		window.playerLink = player;
@@ -280,8 +353,12 @@ const sketchFunc = (sk) => {
 			let targetOpacity = maxOpacity - Math.min((player.hp / player.maxHp) * 1.5, maxOpacity);
 			vignetteOpacity += (targetOpacity - vignetteOpacity) * (1 - Math.pow(0.2, clampTime));
 			document.querySelector(".vignette-red").style.opacity = Math.round(vignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
-			shieldVignetteOpacity *= Math.pow(0.2, clampTime);
-			document.querySelector(".vignette-blue").style.opacity = Math.round(shieldVignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
+			if (unlocks.other.shield) {
+				shieldVignetteOpacity *= Math.pow(0.2, clampTime);
+				document.querySelector(".vignette-blue").style.opacity = Math.round(shieldVignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
+			} else {
+				document.querySelector(".vignette-blue").style.opacity = 0;
+			}
 			// document.querySelector(".vignette-blue").style.opacity = 1;
 		}
 
@@ -377,14 +454,16 @@ const sketchFunc = (sk) => {
 				}
 
 				// player shield
-				if (player.shield.value < player.shield.maxValue) {
-					if (player.shield.regenTimeLeft < player.shield.regenTime) {
-						player.shield.regenTimeLeft += clampTime;
-					} else {
-						player.shield.value += player.shield.regenSpeed * clampTime;
+				if (unlocks.other.shield) {
+					if (player.shield.value < player.shield.maxValue) {
+						if (player.shield.regenTimeLeft < player.shield.regenTime) {
+							player.shield.regenTimeLeft += clampTime;
+						} else {
+							player.shield.value += player.shield.regenSpeed * clampTime;
+						}
+					} else if (player.shield.value > player.shield.maxValue) {
+						player.shield.value = player.shield.maxValue;
 					}
-				} else if (player.shield.value > player.shield.maxValue) {
-					player.shield.value = player.shield.maxValue;
 				}
 
 				if (player.hp > player.maxHp) player.hp = player.maxHp;
@@ -561,24 +640,29 @@ const sketchFunc = (sk) => {
 				sketch.textSize(50);
 				sketch.text("🚀", 0, 0);
 			} else {
-				let shieldOpacity = (player.shield.value / 10) * 0.6 + 0.4;
-				if (shieldOpacity > 1) shieldOpacity = 1;
-				if (shieldOpacity < 0) shieldOpacity = 0;
-				if (player.shield.value > 0) {
-					sketch.stroke(`rgba(50,120,200,${0.8 * shieldOpacity})`);
-					sketch.noFill();
-					sketch.strokeWeight(5);
-					sketch.circle(0, 0, 60);
+				let shieldOpacity = 0;
+				if (unlocks.other.shield) {
+					shieldOpacity = (player.shield.value / 10) * 0.6 + 0.4;
+					if (shieldOpacity > 1) shieldOpacity = 1;
+					if (shieldOpacity < 0) shieldOpacity = 0;
+					if (player.shield.value > 0) {
+						sketch.stroke(`rgba(50,120,200,${0.8 * shieldOpacity})`);
+						sketch.noFill();
+						sketch.strokeWeight(5);
+						sketch.circle(0, 0, 60);
+					}
 				}
 				sketch.stroke(255);
 				sketch.strokeWeight(5);
 				sketch.fill(0);
 				sketch.triangle(-15, -15, 20, 0, -15, 15);
-				if (player.shield.value > 0) {
-					sketch.noStroke();
-					sketch.fill(`rgba(50,120,200,${0.2 * shieldOpacity})`);
-					sketch.strokeWeight(5);
-					sketch.circle(0, 0, 60);
+				if (unlocks.other.shield) {
+					if (player.shield.value > 0) {
+						sketch.noStroke();
+						sketch.fill(`rgba(50,120,200,${0.2 * shieldOpacity})`);
+						sketch.strokeWeight(5);
+						sketch.circle(0, 0, 60);
+					}
 				}
 			}
 			sketch.pop();
@@ -691,7 +775,9 @@ const sketchFunc = (sk) => {
 			// health, xp, shield
 			bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
 			bar(new Vector(25, 55), 100, player.xp / player.levelUp, "rgb(40,30,0)", "rgb(220,200,0)", 15);
-			bar(new Vector(25, 25), 100, player.shield.value / player.shield.maxValue, "rgb(0,40,60)", "rgb(0,150,250)", 5);
+			if (unlocks.other.shield) {
+				bar(new Vector(25, 25), 100, player.shield.value / player.shield.maxValue, "rgb(0,40,60)", "rgb(0,150,250)", 5);
+			}
 		}
 
 		if (cheated) {
@@ -710,7 +796,7 @@ const sketchFunc = (sk) => {
 		// update exposed values
 		if (!pauseLogic) {
 			if (devMode) {
-				window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo, levelUp, showRunInfo, pauseLogic };
+				window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo, levelUp, showRunInfo, pauseLogic, getUnlocks };
 			} else {
 				window.game = { size, fps, deltaTime, paused, version, getRunInfo }
 			}
@@ -769,7 +855,8 @@ async function die(silent) {
 		}, 100);
 		if (!posted) {
 			let promises = [];
-			document.getElementById("score-not-submitted").classList.toggle("no-display", true)
+			document.getElementById("score-not-submitted").classList.toggle("no-display", true);
+			document.getElementById("newAchievements").classList.add("no-display");
 
 			promises.push(postFeed({
 				type: "death",
@@ -791,21 +878,33 @@ async function die(silent) {
 				document.getElementById("score-not-submitted").innerText = "Score submission is disabled"
 			}
 
-			if (!devMode) promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time) }));
+			/*if (!devMode)*/ promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time), enemyKills: player.enemyKills, deaths: 1, levelups: player.levelUpCount, highscore: player.highscore, highestTime: player.highestTime }, user.id));
 
 			const results = await Promise.all(promises);
+			// await saveAchievements();
 			if (results[1]) scoreRecordId = results[1].id;
 			posted = true;
 		}
 
 		document.getElementById("stats").innerHTML = `
-			<p> <strong> <!--<i class="fa-regular fa-burst fa-fw"></i>--> Total Deaths: </strong> ${user.deaths.toLocaleString()} </p>
-			<p> <strong> <!--<i class="fa-regular fa-star fa-fw"></i>--> Total score: </strong> ${user.score.toLocaleString()} </p>
-			<p> <strong> <!--<i class="fa-regular fa-up" fa-fw></i>--> Total levelups: </strong> ${user.levelups.toLocaleString()} </p>
-			<p> <strong> <!--<i class="fa-regular fa-skull fa-fw"></i>--> Total kills: </strong> ${user.kills.toLocaleString()} </p>
-			<p> <strong> <!--<i class="fa-regular fa-ranking-star fa-fw"></i>--> Highest score: </strong> ${user.highscore.toLocaleString()} </p>
-			<p> <strong> <!--<i class="fa-regular fa-clock-rotate-left fa-fw"></i>--> Longest run: </strong> ${formatTime(user.highestTime)} </p>
+			<p> <strong> <!--<i class="fa-regular fa-burst fa-fw"></i>--> Total Deaths: </strong> ${user.stats?.deaths?.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-star fa-fw"></i>--> Total score: </strong> ${user.stats?.score?.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-up" fa-fw></i>--> Total levelups: </strong> ${user.stats?.levelups?.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-skull fa-fw"></i>--> Total kills: </strong> ${user.stats?.kills?.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-ranking-star fa-fw"></i>--> Highest score: </strong> ${user.stats?.highscore?.toLocaleString()} </p>
+			<p> <strong> <!--<i class="fa-regular fa-clock-rotate-left fa-fw"></i>--> Longest run: </strong> ${formatTime(user.stats?.highestTime)} </p>
 		`;
+		console.log(user.stats);
+		console.log(achievements.map((e, i) => ({ name: e.name, check: e.check(), got: currentUnlocks[i].got })));
+		let newAchievements = achievements.filter((achievement, i) => (achievement.check() && !currentUnlocks[i].got) || ("level" in achievement && achievement.level() != currentUnlocks[i].level));
+		console.log(newAchievements);
+		if (newAchievements.length > 0) {
+			document.getElementById("newAchievements").classList.remove("no-display");
+			document.querySelector("#newAchievements>div").innerHTML = "";
+			newAchievements.forEach(achievement => {
+				document.querySelector("#newAchievements>div").innerHTML += `<p> <strong> ${achievement.name} </strong> - ${achievement.levels[achievement.level() - 1].desc} </p>`;
+			});
+		}
 	} else {
 		document.getElementById("signInDiv").innerHTML = `<p><b>Sign in to submit your score to the leaderboard</b></p><button id="signInBtn">Sign in</button><!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
 		document.getElementById("stats").innerHTML = "<p><b>Sign in to see your stats</b></p>";
@@ -942,17 +1041,19 @@ export function get(prop) {
 }
 export function damagePlayer(amount, source) {
 	if (amount <= 0) return;
-	player.shield.regenTimeLeft = 0;
-	if (player.shield.value > amount) {
-		shieldVignetteOpacity += Math.min(amount / 20, 1 - shieldVignetteOpacity);
-		rumble(0.15, 0.35);
-		player.shield.value -= amount;
-		playSound("shield")
-		return;
+	if (unlocks.other.shield) {
+		player.shield.regenTimeLeft = 0;
+		if (player.shield.value > amount) {
+			shieldVignetteOpacity += Math.min(amount / 20, 1 - shieldVignetteOpacity);
+			rumble(0.15, 0.35);
+			player.shield.value -= amount;
+			playSound("shield")
+			return;
+		}
+		shieldVignetteOpacity += Math.min(amount / 20 * 0.5, 1 - shieldVignetteOpacity);
+		amount -= player.shield.value;
+		player.shield.value = 0;
 	}
-	shieldVignetteOpacity += Math.min(amount / 20 * 0.5, 1 - shieldVignetteOpacity);
-	amount -= player.shield.value;
-	player.shield.value = 0;
 	amount *= player.damageFactor;
 	vignetteOpacity += Math.min(amount / 20, 1 - vignetteOpacity);
 	player.hp -= amount;
@@ -1184,6 +1285,12 @@ function setKey(event, state) {
 	keys[event.key] = state;
 
 	//extra keybinds
+	if ((event.key == "ArrowUp" || event.key == "w" || event.key == "a") && document.querySelector("dialog[open]") && state) {
+		previousButton();
+	}
+	if ((event.key == "ArrowDown" || event.key == "s" || event.key == "d") && document.querySelector("dialog[open]") && state) {
+		nextButton();
+	}
 	if (started) {
 		if (document.querySelector("input[type='text']:focus")) return;
 
@@ -1194,13 +1301,6 @@ function setKey(event, state) {
 
 		if (event.key == "Escape" && state && !paused) {
 			pause();
-		}
-
-		if ((event.key == "ArrowUp" || event.key == "w" || event.key == "a") && document.querySelector("dialog[open]") && state) {
-			previousButton();
-		}
-		if ((event.key == "ArrowDown" || event.key == "s" || event.key == "d") && document.querySelector("dialog[open]") && state) {
-			nextButton();
 		}
 
 		if (state && devMode) {
@@ -1262,6 +1362,10 @@ function setKey(event, state) {
 				case "i":
 					player.xp = player.levelUp;
 					cheated = true
+					break;
+				case "`":
+					player.kills = 500;
+					cheated = true;
 					break;
 				default:
 					if ("1234567890".split("").includes(event.key)) {

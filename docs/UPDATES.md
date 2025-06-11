@@ -2,14 +2,19 @@
 
 # Update Logs
 
+## v0.5
+
+### 0.5.0
+- Add achievements (requirements to unlock weapons and upgrades)
+
 ## v0.4
 
-# 0.4.15
+### 0.4.15
 - Add recovery upgrade
 - Turrets now have their own death sound
 - Add button to view stats for your latest run
 
-## 0.4.14
+### 0.4.14
 - Add weapon levels
 - Remove multishot upgrade
 - Give gun multishot every 5 levels
@@ -17,7 +22,7 @@
 - Add weapon name to upgrade
 - Add shield effect
 
-## 0.4.13
+### 0.4.13
 - Add guardian weapon
 
 ### 0.4.12
@@ -26,6 +31,7 @@
 
 ### 0.4.11
 - Buffed resistance to 10% per upgrade
+- Add hit vignette
 
 ### 0.4.10
 - Added resistance upgrade
