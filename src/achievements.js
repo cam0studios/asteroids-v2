@@ -228,7 +228,7 @@ const achievements = [
 				desc: "Score 30,000 in one run",
 				reward: "Unlocks guardian",
 				id: "highscore-3",
-				max: 340000,
+				max: 30000,
 				get: (unlocks) => {
 					unlocks.weapons.guardian.unlock = true;
 					return unlocks;

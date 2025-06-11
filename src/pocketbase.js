@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase";
 import Toastify from "toastify";
-import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore } from "./main";
+import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore, shieldVignetteOpacity } from "./main";
 const url = __POCKETBASE_URL__;
 export const pb = new PocketBase(url);
 import xssFilters from "xss-filters";
@@ -16,11 +16,16 @@ user = {
 };
 
 if (pb.authStore.model) {
-	(async () => {
-		user = await pb.collection("users").getOne(pb.authStore.model.id);
-		userUpdated();
-	})();
-	signedIn = true;
+	try {
+		(async () => {
+			user = await pb.collection("users").getOne(pb.authStore.model.id);
+			userUpdated();
+		})();
+		signedIn = true;
+	} catch (err) {
+		console.error(err);
+		signOut();
+	}
 }
 
 
