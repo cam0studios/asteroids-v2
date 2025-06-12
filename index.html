@@ -1,217 +1,284 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Asteroids</title>
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Asteroids</title>
-	
-	<meta name="og:title" content="Asteroids">
-	<meta name="description" content="A modern space shooter based on the classic arcade game Asteroids.">
-	<meta name="og:description"
-		content="A modern space shooter based on the classic arcade game Asteroids.">
-	<meta name="og:locale" content="en_US">
-	<meta name="og:site_name" content="cam0studios">
-	<meta name="og:image" content="icons/screenshot.png">
-	<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" x-mime-type="image/png">
-	<link rel="icon" href="icons/favicon-32x32.png" type="image/png" sizes="32x32" x-mime-type="image/png">
-	<link rel="icon" href="icons/favicon-16x16.png" type="image/png" sizes="16x16" x-mime-type="image/png">
-	<link rel="manifest" href="site.webmanifest" x-mime-type="application/json">
-	<meta name="theme-color" content="#000000">
+		<meta name="og:title" content="Asteroids" />
+		<meta name="description" content="A modern space shooter based on the classic arcade game Asteroids." />
+		<meta name="og:description" content="A modern space shooter based on the classic arcade game Asteroids." />
+		<meta name="og:locale" content="en_US" />
+		<meta name="og:site_name" content="cam0studios" />
+		<meta name="og:image" content="icons/screenshot.png" />
+		<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" x-mime-type="image/png" />
+		<link rel="icon" href="icons/favicon-32x32.png" type="image/png" sizes="32x32" x-mime-type="image/png" />
+		<link rel="icon" href="icons/favicon-16x16.png" type="image/png" sizes="16x16" x-mime-type="image/png" />
+		<link rel="manifest" href="site.webmanifest" x-mime-type="application/json" />
+		<meta name="theme-color" content="#000000" />
 
-	<link rel="stylesheet" href="main.css">
-	<link rel="stylesheet" href="assets/fonts/regular.css" x-mime-type="text/css">
-	<link rel="stylesheet" href="assets/fonts/fontawesome.min.css" x-mime-type="text/css">
-	<link rel="stylesheet" href="assets/fonts/space-mono.css" x-mime-type="text/css">
-	<script src="main.js" defer></script>
-	<link rel="manifest" href="site.webmanifest" x-mime-type="application/json">
-	<script src="https://cdn.jsdelivr.net/npm/eruda" onload="eruda.init()"></script>
-</head>
+		<link rel="stylesheet" href="main.css" />
+		<link rel="stylesheet" href="assets/fonts/regular.css" x-mime-type="text/css" />
+		<link rel="stylesheet" href="assets/fonts/fontawesome.min.css" x-mime-type="text/css" />
+		<link rel="stylesheet" href="assets/fonts/space-mono.css" x-mime-type="text/css" />
+		<script src="main.js" defer></script>
+		<link rel="manifest" href="site.webmanifest" x-mime-type="application/json" />
+		<script src="https://cdn.jsdelivr.net/npm/eruda" onload="eruda.init()"></script>
+	</head>
 
-<body>
-	<dialog id="startScreen" class="noClose noPause menu grow-in-vertical">
-		<div class="centered">
-			<h1>Asteroids</h1>
-			<button id="start">
-				<h2><i class="fa-regular fa-play"></i> Start</h2>
-			</button>
-			<button id="openAchievements">
-				<h2><i class="fa-regular fa-unlock-keyhole"></i> Achievements</h2>
-			</button>
-			<span id="controls">
-				<h3>Controls</h3>
-				<span>
-					<img src="icons/input/Keyboard & Mouse/keyboard_w.svg" alt="W key" x-mime-type="image/svg+xml">
-					<img src="icons/input/Keyboard & Mouse/keyboard_a.svg" alt="A key" x-mime-type="image/svg+xml">
-					<img src="icons/input/Keyboard & Mouse/keyboard_s.svg" alt="S key" x-mime-type="image/svg+xml">
-					<img src="icons/input/Keyboard & Mouse/keyboard_d.svg" alt="D key" x-mime-type="image/svg+xml">
-					 <span class="no-select"> | </span>
-					<img src="icons/input/Xbox Series/xbox_stick_l.svg" alt="Left stick" title="Left stick (controller)" x-mime-type="image/svg+xml">
-					<span>Movement</span>
-				</span>
-				<span>
-					<span>
-						<img src="icons/input/Keyboard & Mouse/mouse.svg" alt="Mouse" title="Mouse movement" x-mime-type="image/svg+xml">
-						 <span class="no-select"> | </span>
-						<img src="icons/input/Xbox Series/xbox_stick_r.svg" alt="Right stick" title="Right stick (controller)" x-mime-type="image/svg+xml">
-					</span>
-					<span>Aim</span>
-				</span>
-				<span>
-					<span>
-						<img src="icons/input/Keyboard & Mouse/mouse_left.svg" alt="Left mouse button" title="Left click" x-mime-type="image/svg+xml">
-						 <span class="no-select"> | </span>
-						<img src="icons/input/Xbox Series/xbox_rt.svg" alt="Right trigger" title="Right trigger (controller)" x-mime-type="image/svg+xml">
-					</span>
-					<span>Shoot</span>
-				</span>
-				<span>
-					<span>
-						<img src="icons/input/Keyboard & Mouse/keyboard_z.svg" alt="Z key" x-mime-type="image/svg+xml">
-						 <span class="no-select"> | </span>
-						<img src="icons/input/Xbox Series/xbox_rb.svg" alt="Left Bumper" title="Right bumper (controller)" x-mime-type="image/svg+xml">
-					</span>
-					<span>Constant Fire</span>
-				</span>
-				<span>
-					<span>
-						<img src="icons/input/Keyboard & Mouse/keyboard_space_icon.svg" alt="Space key" title="Space key" x-mime-type="image/svg+xml">
-						 <span class="no-select"> | </span>
-						<img src="icons/input/Xbox Series/xbox_lt.svg" alt="Left trigger" title="Left trigger (controller)" x-mime-type="image/svg+xml">
-					</span>
-					<span>Dash / Dodge</span>
-				</span>
-			</span>
-			<span><a href="https://github.com/cam0studios/asteroids-v2#readme" target="_blank">GitHub</a>|<a href="https://github.com/cam0studios/asteroids-v2/blob/master/docs/UPDATES.md" target="_blank" rel="noopener noreferrer">Updates</a></span>
-			<div id="startLeaderboard"></div>
-		</div>
-	</dialog>
-	<dialog id="upgradeMenu" class="noClose noPause menu grow-in-vertical">
-		<h1>Level up!</h1>
-		<div id="options" class="centered">
-
-		</div>
-	</dialog>
-
-	<dialog id="achievementsScreen" class="noClose noPause menu grow-in-vertical">
-		<h1>Achievements</h1>
-		<div id="achievements"></div>
-		<button class="exit">
-			<h2><i class="fa-regular fa-sign-in fa-flip-horizontal"></i> Exit</h2>
-		</button>
-	</dialog>
-
-	<dialog id="gameOver" class="noClose noPause menu grow-in-vertical">
-		<div class="centered">
-			<h1>Game Over</h1>
-			<h2>Score: <span id="score">0</span></h2>
-			<div id="newAchievements">
-				<h2>New Achievements!</h2>
-				<div></div>
-			</div>
-			<button id="restart">
-				<h2><i class="fa-regular fa-repeat"></i> Restart</h2>
-			</button>
-			<button id="exit">
-				<h2><i class="fa-regular fa-sign-in fa-flip-horizontal"></i> Back to Menu</h2>
-			</button>
-			<button id="viewRunInfo">
-				<h2><i class="fa-regular fa-chart-simple"></i> Run Info</h2>
-			</button>
-			<div id="signInDiv"></div>
-			<p class="warning no-display" id="score-not-submitted"></p>
-			<h2><i class="fa-regular fa-chart-simple"></i> Stats:</h2>
-			<div id="stats"></div>
-			<h2><i class="fa-regular fa-ranking-star"></i> Leaderboard:</h2>
-			<div id="scores"></div>
-		</div>
-	</dialog>
-
-	<dialog id="runData" class="noPause menu grow-in-vertical">
-		<div class="centered">
-			<h2>Run Info</h2>
-			<div id="runDataContent"></div>
-			<h2>Upgrades</h2>
-			<div id="runDataUpgrades"></div>
-			<h2>Weapons</h2>
-			<div id="runDataWeapons"></div>
-			<button id="runDataClose"><h2><i class="fa-regular fa-xmark"></i> Close</h2></button>
-		</div>
-	</dialog>
-
-	<dialog id="pause" class="menu">
-		<div class="centered">
-			<h1>Paused</h1>
-			<button id="resume">
-				<h2><i class="fa-regular fa-play"></i> Resume</h2>
-			</button>
-			<button id="settings-button">
-				<h2><i class="fa-regular fa-gear"></i> Settings</h2>
-			</button>
-			<button id="snapshot">
-				<h2><i class="fa-regular fa-camera"></i> Snapshot</h2>
-			</button>
-			<button id="quit" class="danger">
-				<h2><i class="fa-regular fa-power-off"></i> Quit</h2>
-			</button>
-		</div>
-		<div id="currentUpgrades"></div>
-	</dialog>
-
-	<dialog id="settings-menu" class="menu noPause">
-		<div class="centered">
-			<h1>Settings</h1>
-			<div id="settings-container"></div>
-			<button id="settings-exit">
-				<h2><i class="fa-regular fa-xmark"></i> Close</h2>
-			</button>
-		</div>
-	</dialog>
-
-	<dialog id="snapshot-options" class="menu noClose noPause">
-		<div>
-			<h1>Snapshot</h1>
-			<input type="checkbox" id="snapshot-show-hud" checked>
-			<label for="snapshot-show-hud">Show HUD</label><br><br>
-			<button id="snapshot-save">
-				<h2><i class="fa-regular fa-file-arrow-down"></i> Download</h2>
-			</button>
-			<button id="snapshot-copy">
-				<h2><i class="fa-regular fa-copy"></i> Copy</h2>
-			</button>
-			<button id="snapshot-cancel">
-				<h2><i class="fa-solid fa-xmark"></i> Cancel</h2>
-			</button>
-		</div>
-	</dialog>
-
-	<dialog id="username" class="noPause">
-		<h2>Enter your username:</h2>
-		<input type="text" id="usernameIn" class="prompt">
-		<button>Continue</button>
-	</dialog>
-
-	<dialog id="password" class="noPause">
-		<h2>Enter your password:</h2>
-		<input type="password" id="passwordIn" class="prompt">
-		<button>Continue</button>
-	</dialog>
-
-	<dialog id="update" class="menu noClose">
-		<div class="centered">
-			<h1>Update Available</h1>
-			<p>A new update is available for asteroids, please download it as soon as possible as it may include important fixes.</p>
-			<p id="updateAge">You are <strong>1</strong> <span>versions</span> behind.</p>
-			<a>
-				<button id="updateDownload">
-					<h2><i class="fa-regular fa-cloud-arrow-down"></i> Download</h2>
+	<body>
+		<dialog id="startScreen" class="noClose noPause menu grow-in-vertical">
+			<div class="centered">
+				<h1>Asteroids</h1>
+				<button id="start">
+					<h2><i class="fa-regular fa-play"></i> Start</h2>
 				</button>
-			</a>
-		</div>
-	</dialog>
+				<button id="openAchievements">
+					<h2><i class="fa-regular fa-unlock-keyhole"></i> Achievements</h2>
+				</button>
+				<span id="controls">
+					<h3>Controls</h3>
+					<span>
+						<img
+							src="icons/input/Keyboard & Mouse/keyboard_w.svg"
+							alt="W key"
+							x-mime-type="image/svg+xml"
+						/>
+						<img
+							src="icons/input/Keyboard & Mouse/keyboard_a.svg"
+							alt="A key"
+							x-mime-type="image/svg+xml"
+						/>
+						<img
+							src="icons/input/Keyboard & Mouse/keyboard_s.svg"
+							alt="S key"
+							x-mime-type="image/svg+xml"
+						/>
+						<img
+							src="icons/input/Keyboard & Mouse/keyboard_d.svg"
+							alt="D key"
+							x-mime-type="image/svg+xml"
+						/>
+						<span class="no-select"> | </span>
+						<img
+							src="icons/input/Xbox Series/xbox_stick_l.svg"
+							alt="Left stick"
+							title="Left stick (controller)"
+							x-mime-type="image/svg+xml"
+						/>
+						<span>Movement</span>
+					</span>
+					<span>
+						<span>
+							<img
+								src="icons/input/Keyboard & Mouse/mouse.svg"
+								alt="Mouse"
+								title="Mouse movement"
+								x-mime-type="image/svg+xml"
+							/>
+							<span class="no-select"> | </span>
+							<img
+								src="icons/input/Xbox Series/xbox_stick_r.svg"
+								alt="Right stick"
+								title="Right stick (controller)"
+								x-mime-type="image/svg+xml"
+							/>
+						</span>
+						<span>Aim</span>
+					</span>
+					<span>
+						<span>
+							<img
+								src="icons/input/Keyboard & Mouse/mouse_left.svg"
+								alt="Left mouse button"
+								title="Left click"
+								x-mime-type="image/svg+xml"
+							/>
+							<span class="no-select"> | </span>
+							<img
+								src="icons/input/Xbox Series/xbox_rt.svg"
+								alt="Right trigger"
+								title="Right trigger (controller)"
+								x-mime-type="image/svg+xml"
+							/>
+						</span>
+						<span>Shoot</span>
+					</span>
+					<span>
+						<span>
+							<img
+								src="icons/input/Keyboard & Mouse/keyboard_z.svg"
+								alt="Z key"
+								x-mime-type="image/svg+xml"
+							/>
+							<span class="no-select"> | </span>
+							<img
+								src="icons/input/Xbox Series/xbox_rb.svg"
+								alt="Left Bumper"
+								title="Right bumper (controller)"
+								x-mime-type="image/svg+xml"
+							/>
+						</span>
+						<span>Constant Fire</span>
+					</span>
+					<span>
+						<span>
+							<img
+								src="icons/input/Keyboard & Mouse/keyboard_space_icon.svg"
+								alt="Space key"
+								title="Space key"
+								x-mime-type="image/svg+xml"
+							/>
+							<span class="no-select"> | </span>
+							<img
+								src="icons/input/Xbox Series/xbox_lt.svg"
+								alt="Left trigger"
+								title="Left trigger (controller)"
+								x-mime-type="image/svg+xml"
+							/>
+						</span>
+						<span>Dash / Dodge</span>
+					</span>
+				</span>
+				<span
+					><a href="https://github.com/cam0studios/asteroids-v2#readme" target="_blank">GitHub</a>|<a
+						href="https://github.com/cam0studios/asteroids-v2/blob/master/docs/UPDATES.md"
+						target="_blank"
+						rel="noopener noreferrer"
+						>Updates</a
+					></span
+				>
+				<div id="startLeaderboard"></div>
+			</div>
+		</dialog>
+		<dialog id="upgradeMenu" class="noClose noPause menu grow-in-vertical">
+			<h1>Level up!</h1>
+			<div id="options" class="centered"></div>
+		</dialog>
 
-	<div class="vignette-blue hidden"></div>
-	<div class="vignette-red hidden"></div>
-</body>
+		<dialog id="achievementsScreen" class="noClose noPause menu grow-in-vertical">
+			<h1>Achievements</h1>
+			<div id="achievements"></div>
+			<button class="exit">
+				<h2><i class="fa-regular fa-sign-in fa-flip-horizontal"></i> Exit</h2>
+			</button>
+		</dialog>
 
+		<dialog id="gameOver" class="noClose noPause menu grow-in-vertical">
+			<div class="centered">
+				<h1>Game Over</h1>
+				<h2>Score: <span id="score">0</span></h2>
+				<div id="newAchievements">
+					<h2>New Achievements!</h2>
+					<div></div>
+				</div>
+				<button id="restart">
+					<h2><i class="fa-regular fa-repeat"></i> Restart</h2>
+				</button>
+				<button id="exit">
+					<h2><i class="fa-regular fa-sign-in fa-flip-horizontal"></i> Back to Menu</h2>
+				</button>
+				<button id="viewRunInfo">
+					<h2><i class="fa-regular fa-chart-simple"></i> Run Info</h2>
+				</button>
+				<div id="signInDiv"></div>
+				<p class="warning no-display" id="score-not-submitted"></p>
+				<h2><i class="fa-regular fa-chart-simple"></i> Stats:</h2>
+				<div id="stats"></div>
+				<h2><i class="fa-regular fa-ranking-star"></i> Leaderboard:</h2>
+				<div id="scores"></div>
+			</div>
+		</dialog>
+
+		<dialog id="runData" class="noPause menu grow-in-vertical">
+			<div class="centered">
+				<h2>Run Info</h2>
+				<div id="runDataContent"></div>
+				<h2>Upgrades</h2>
+				<div id="runDataUpgrades"></div>
+				<h2>Weapons</h2>
+				<div id="runDataWeapons"></div>
+				<button id="runDataClose">
+					<h2><i class="fa-regular fa-xmark"></i> Close</h2>
+				</button>
+			</div>
+		</dialog>
+
+		<dialog id="pause" class="menu">
+			<div class="centered">
+				<h1>Paused</h1>
+				<button id="resume">
+					<h2><i class="fa-regular fa-play"></i> Resume</h2>
+				</button>
+				<button id="settings-button">
+					<h2><i class="fa-regular fa-gear"></i> Settings</h2>
+				</button>
+				<button id="snapshot">
+					<h2><i class="fa-regular fa-camera"></i> Snapshot</h2>
+				</button>
+				<button id="quit" class="danger">
+					<h2><i class="fa-regular fa-power-off"></i> Quit</h2>
+				</button>
+			</div>
+			<div id="currentUpgrades"></div>
+		</dialog>
+
+		<dialog id="settings-menu" class="menu noPause">
+			<div class="centered">
+				<h1>Settings</h1>
+				<div id="settings-container"></div>
+				<button id="settings-exit">
+					<h2><i class="fa-regular fa-xmark"></i> Close</h2>
+				</button>
+			</div>
+		</dialog>
+
+		<dialog id="snapshot-options" class="menu noClose noPause">
+			<div>
+				<h1>Snapshot</h1>
+				<input type="checkbox" id="snapshot-show-hud" checked />
+				<label for="snapshot-show-hud">Show HUD</label><br /><br />
+				<button id="snapshot-save">
+					<h2><i class="fa-regular fa-file-arrow-down"></i> Download</h2>
+				</button>
+				<button id="snapshot-copy">
+					<h2><i class="fa-regular fa-copy"></i> Copy</h2>
+				</button>
+				<button id="snapshot-cancel">
+					<h2><i class="fa-solid fa-xmark"></i> Cancel</h2>
+				</button>
+			</div>
+		</dialog>
+
+		<dialog id="username" class="noPause">
+			<h2>Enter your username:</h2>
+			<input type="text" id="usernameIn" class="prompt" />
+			<button>Continue</button>
+		</dialog>
+
+		<dialog id="password" class="noPause">
+			<h2>Enter your password:</h2>
+			<input type="password" id="passwordIn" class="prompt" />
+			<button>Continue</button>
+		</dialog>
+
+		<dialog id="update" class="menu noClose">
+			<div class="centered">
+				<h1>Update Available</h1>
+				<p>
+					A new update is available for asteroids, please download it as soon as possible as it may include
+					important fixes.
+				</p>
+				<p id="updateAge">You are <strong>1</strong> <span>versions</span> behind.</p>
+				<a>
+					<button id="updateDownload">
+						<h2><i class="fa-regular fa-cloud-arrow-down"></i> Download</h2>
+					</button>
+				</a>
+			</div>
+		</dialog>
+
+		<div class="vignette-blue hidden"></div>
+		<div class="vignette-red hidden"></div>
+	</body>
 </html>
