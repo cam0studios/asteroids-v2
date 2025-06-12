@@ -25,6 +25,7 @@ if (pb.authStore.model) {
 		signedIn = true;
 	} catch (err) {
 		console.error(err);
+		reportError(err);
 		signOut();
 	}
 }
@@ -42,6 +43,7 @@ export async function postScore(score, time, dev, version) {
 		});
 	} catch (err) {
 		console.error(err);
+		reportError(err);
 	}
 }
 
@@ -68,6 +70,7 @@ export async function updateStats({ score, level, kills, time, enemyKills }) {
 		return user;
 	} catch (err) {
 		console.error(err);
+		reportError(err);
 	}
 }
 
@@ -116,6 +119,7 @@ export async function postFeed(event) {
 		});
 	} catch (err) {
 		console.error(err);
+		reportError(err);
 	}
 }
 
@@ -148,17 +152,27 @@ export async function subscribeToFeed() {
 }
 
 export async function getUsers() {
-	return await pb.collection("users").getFullList({});
+	try {
+		return await pb.collection("users").getFullList({});
+	} catch (err) {
+		console.error(err);
+		reportError(err);
+		return [];
+	}
 }
 
 export async function getScores(page = 1, sort = "-score") {
 	const scoresPerPage = 10;
-
-	const scores = await pb
-		.collection("scores")
-		.getList(page, scoresPerPage, { expand: "user", sort, filter: `dev=${devMode}` });
-
-	return scores.items; //.filter(e => getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
+	try {
+		const scores = await pb
+			.collection("scores")
+			.getList(page, scoresPerPage, { expand: "user", sort, filter: `dev=${devMode}` });
+		return scores.items; //.filter(e => getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
+	} catch (err) {
+		console.error(err);
+		reportError(err);
+		return [];
+	}
 }
 
 export async function signIn() {
@@ -176,6 +190,7 @@ export async function signIn() {
 			return authData;
 		} catch (err) {
 			console.error(err);
+			reportError(err);
 			return;
 		}
 	} else {
@@ -190,6 +205,7 @@ export async function signIn() {
 			return authData;
 		} catch (err) {
 			console.error(err);
+			reportError(err);
 			return;
 		}
 	}
@@ -248,3 +264,22 @@ function userUpdated() {
 	const event = new CustomEvent("userupdate", { detail: { user } });
 	window.dispatchEvent(event);
 }
+
+addEventListener("error", (event) => {
+	console.error("Reporting error:", event);
+	try {
+		pb.collection("errors").create({
+			error: {
+				message: event.message,
+				file: event.filename,
+				line: event.lineno,
+				column: event.colno,
+				error: event.error.toString(),
+			},
+			dev: devMode,
+			user: signedIn ? user.id : null,
+		});
+	} catch (err) {
+		console.error("Failed to report error:", err);
+	}
+});

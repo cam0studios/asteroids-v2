@@ -149,7 +149,7 @@ let updateAchievementsScreen = () => {
 				];
 				elem.classList.add("completed");
 			}
-				for (let i in elems) {
+			for (let i in elems) {
 				elems[i].append(document.createTextNode(text[i] || ""));
 			}
 			elem.append(...elems);
