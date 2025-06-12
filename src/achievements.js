@@ -191,20 +191,20 @@ const achievements = [
 		},
 		levels: [
 			new Achievement({
-				desc: "Score 7,000 in one run",
+				desc: "Score 5,000 in one run",
 				reward: "Unlocks piercing upgrade",
 				id: "highscore-1",
-				max: 7000,
+				max: 5000,
 				get: (unlocks) => {
 					unlocks.weapons.gun.unlockedUpgrades.piercing = true;
 					return unlocks;
 				},
 			}),
 			new Achievement({
-				desc: "Score 15,000 in one run",
+				desc: "Score 10,000 in one run",
 				reward: "Unlocks fire and ice upgrades",
 				id: "highscore-2",
-				max: 15000,
+				max: 10000,
 				get: (unlocks) => {
 					unlocks.weapons.gun.unlockedUpgrades.fire = true;
 					unlocks.weapons.gun.unlockedUpgrades.ice = true;
@@ -212,10 +212,10 @@ const achievements = [
 				},
 			}),
 			new Achievement({
-				desc: "Score 30,000 in one run",
+				desc: "Score 15,000 in one run",
 				reward: "Unlocks guardian",
 				id: "highscore-3",
-				max: 30000,
+				max: 15000,
 				get: (unlocks) => {
 					unlocks.weapons.guardian.unlock = true;
 					return unlocks;
