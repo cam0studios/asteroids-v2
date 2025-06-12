@@ -1,18 +1,19 @@
 import PocketBase from "pocketbase";
 import Toastify from "toastify";
-import { cheated, devMode, formatTime, getRunInfo, getVersion, settings, settingsStore, shieldVignetteOpacity } from "./main";
+import { cheated, devMode, formatTime, getRunInfo, settings } from "./main";
 const url = __POCKETBASE_URL__;
 export const pb = new PocketBase(url);
 import xssFilters from "xss-filters";
 import weapons from "./weapon-types";
 import achievements from "./achievements";
 
-export var user, signedIn = false;
+export var user,
+	signedIn = false;
 
 // pb.authStore.clear();
 
 user = {
-	stats: {}
+	stats: {},
 };
 
 if (pb.authStore.model) {
@@ -28,18 +29,17 @@ if (pb.authStore.model) {
 	}
 }
 
-
 export async function postScore(score, time, dev, version) {
 	if (cheated) return;
 	try {
-		return (await pb.collection("scores").create({
+		return await pb.collection("scores").create({
 			user: user.id,
 			score,
 			time,
 			dev,
 			version,
-			runData: getRunInfo()
-		}));
+			runData: getRunInfo(),
+		});
 	} catch (err) {
 		console.error(err);
 	}
@@ -61,7 +61,7 @@ export async function updateStats({ score, level, kills, time, enemyKills }) {
 				highscore: Math.max(user.stats?.highscore || user.highscore || 0, score),
 				highestTime: Math.max(user.stats?.highestTime || user.highestTime || 0, time),
 				enemyKills: newEnemyKills,
-			}
+			},
 		});
 		user = await pb.collection("users").getOne(pb.authStore.model.id);
 		userUpdated();
@@ -82,7 +82,7 @@ export async function getUnlocks() {
 					totalUpgrades[upgrade.id] = upgrade.defaultUnlocked;
 					return totalUpgrades;
 				}, {}),
-				unlocks: weapon.defaultUnlocks
+				unlocks: weapon.defaultUnlocks,
 			};
 			return total;
 		}, {}),
@@ -91,13 +91,13 @@ export async function getUnlocks() {
 			speed: true,
 			shield: false,
 			resistance: false,
-			recovery: false
+			recovery: false,
 		},
 		other: {
-			shield: false
-		}
+			shield: false,
+		},
 	};
-	achievements.forEach(achievement => {
+	achievements.forEach((achievement) => {
 		def = achievement.getCheck(def);
 	});
 	unlocks = def;
@@ -112,26 +112,39 @@ export async function postFeed(event) {
 			user: user.id,
 			data: event.data,
 			type: event.type,
-			dev: event.dev
+			dev: event.dev,
 		});
 	} catch (err) {
 		console.error(err);
 	}
 }
 
-let feedConnected = false
-Toastify.setOption("position", "bottom-left")
+let feedConnected = false;
+Toastify.setOption("position", "bottom-left");
 export async function subscribeToFeed() {
 	if (feedConnected) return;
-	pb.collection('feed').subscribe('*', function (e) {
-		if (e.action == "create" && e.record.type == "death" && settings.showFeed) {
-			Toastify.info(xssFilters.inHTMLData(e.record.expand.user.name) + " died", "<i class=\"fa-regular fa-clock\"></i> " + formatTime(e.record.data.time) + " / <i class=\"fa-regular fa-star\"></i> " + xssFilters.inHTMLData(e.record.data.score), 5000);
-		}
-	}, { expand: "user" }).then(function () {
-		console.debug("Connected to live feed successfully")
-		feedConnected = true
-		window.ASTEROIDS_FEED_CONNECTED = true
-	});
+	pb.collection("feed")
+		.subscribe(
+			"*",
+			function (e) {
+				if (e.action == "create" && e.record.type == "death" && settings.showFeed) {
+					Toastify.info(
+						xssFilters.inHTMLData(e.record.expand.user.name) + " died",
+						'<i class="fa-regular fa-clock"></i> ' +
+							formatTime(e.record.data.time) +
+							' / <i class="fa-regular fa-star"></i> ' +
+							xssFilters.inHTMLData(e.record.data.score),
+						5000
+					);
+				}
+			},
+			{ expand: "user" }
+		)
+		.then(function () {
+			console.debug("Connected to live feed successfully");
+			feedConnected = true;
+			window.ASTEROIDS_FEED_CONNECTED = true;
+		});
 }
 
 export async function getUsers() {
@@ -141,16 +154,18 @@ export async function getUsers() {
 export async function getScores(page = 1, sort = "-score") {
 	const scoresPerPage = 10;
 
-	const scores = await pb.collection("scores").getList(page, scoresPerPage, { expand: "user", sort, filter: `dev=${devMode}` });
+	const scores = await pb
+		.collection("scores")
+		.getList(page, scoresPerPage, { expand: "user", sort, filter: `dev=${devMode}` });
 
-	return scores.items//.filter(e => getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
+	return scores.items; //.filter(e => getVersion(e.version)[1] >= 4 && getVersion(e.version)[2] >= 0);
 }
 
 export async function signIn() {
 	let username = await getUsername("Enter a username");
 	if (!username) return;
 	let users = await getUsers();
-	if (users.map(otherUser => otherUser.username).includes(username)) {
+	if (users.map((otherUser) => otherUser.username).includes(username)) {
 		let password = await getPassword("Enter your password");
 		if (!password) return;
 		try {
@@ -181,7 +196,7 @@ export async function signIn() {
 }
 
 export async function signInWithGoogle() {
-	const authData = await pb.collection("users").authWithOAuth2({ provider: 'google' });
+	const authData = await pb.collection("users").authWithOAuth2({ provider: "google" });
 }
 
 export async function getUsername(prompt) {

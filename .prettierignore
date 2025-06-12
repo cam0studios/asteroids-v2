@@ -1,0 +1,8 @@
+.gitignore
+.prettierrc
+bun.lock
+.env
+.env.example
+docs/*
+public/assets/*
+.github/*

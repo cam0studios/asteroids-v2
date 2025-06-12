@@ -1,7 +1,7 @@
-@import 'animations.less';
-@import 'buttons.less';
-@import 'toasts.less';
-@import 'settings.less';
+@import "animations.less";
+@import "buttons.less";
+@import "toasts.less";
+@import "settings.less";
 
 // Colors
 @secondary: rgb(200, 200, 200);
@@ -51,16 +51,16 @@ button,
 	user-select: none;
 }
 
-dialog>h1,
-dialog>div>h1 {
+dialog > h1,
+dialog > div > h1 {
 	margin: @heading-margin 0;
 }
 
-h1+h2,
-h2+h3,
-h3+h4,
-h4+h5,
-h5+h6 {
+h1 + h2,
+h2 + h3,
+h3 + h4,
+h4 + h5,
+h5 + h6 {
 	margin-top: 0;
 }
 
@@ -131,11 +131,11 @@ dialog {
 		background-color: rgba(0, 0, 0, 0.7);
 	}
 
-	&>h1 {
+	& > h1 {
 		font-size: 30px;
 	}
 
-	&>h2 {
+	& > h2 {
 		font-size: 25px;
 	}
 }
@@ -157,12 +157,12 @@ dialog {
 #controls {
 	text-align: left;
 
-	&>span {
+	& > span {
 		vertical-align: middle;
 		display: flex;
 		justify-content: space-between;
 
-		&>span {
+		& > span {
 			display: flex;
 
 			&:last-child {
@@ -186,7 +186,7 @@ dialog {
 	padding: 5px;
 	background-color: black;
 
-	&>p {
+	& > p {
 		margin: 7px;
 		font-weight: 600;
 		font-size: 20px;
@@ -195,24 +195,24 @@ dialog {
 		align-items: center;
 		margin-bottom: 0;
 
-		&>span {
+		& > span {
 			font-weight: 400;
 			font-size: 15px;
 		}
 	}
 
-	&>div {
+	& > div {
 		padding: 5px;
 		padding-left: 15px;
 		margin: 0;
 
-		&>p {
+		& > p {
 			padding: 0px;
 			margin: 0;
 			display: flex;
 			justify-content: space-between;
 
-			&>span {
+			& > span {
 				font-weight: 500;
 				margin-left: 10px;
 			}
@@ -252,19 +252,19 @@ a {
 	min-width: unset;
 	max-width: unset;
 
-	&>div>div {
-		&>div {
+	& > div > div {
+		& > div {
 			display: flex;
 			justify-content: space-between;
 			padding-bottom: 0;
 			margin-bottom: 0;
 
-			&>strong {
+			& > strong {
 				order: 1;
 				margin-right: 20px;
 			}
 
-			&>span {
+			& > span {
 				order: 2;
 			}
 		}

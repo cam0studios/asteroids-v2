@@ -21,7 +21,7 @@ export var gamepad = {
 	dpadUp: false,
 	dpadDown: false,
 	dppadLeft: false,
-	dpadRight: false
+	dpadRight: false,
 };
 var lastGamepad = { ...gamepad };
 export const gamepadControls = {
@@ -41,11 +41,11 @@ export const gamepadControls = {
 	dpadDown: 13,
 	dpadLeft: 14,
 	dpadRight: 15,
-}
+};
 export const gamepadSticks = {
 	left: (gamepad) => new Vector(gamepad.axes[0], gamepad.axes[1]),
-	right: (gamepad) => new Vector(gamepad.axes[2], gamepad.axes[3])
-}
+	right: (gamepad) => new Vector(gamepad.axes[2], gamepad.axes[3]),
+};
 
 export function updateGamepad() {
 	try {
@@ -100,7 +100,6 @@ addEventListener("gamepaddisconnected", () => {
 	gamepadConnected = false;
 });
 
-
 export function getControl(control) {
 	if (!gamepadConnected) return;
 	return gamepads[0].buttons[gamepadControls[control]].pressed;
@@ -116,7 +115,7 @@ export function getStick(stick) {
 export function rumble(duration, strength) {
 	if (!settingsStore.get("rumbleEnabled", true)) return;
 	if (!gamepadConnected) return;
-	if (!gamepads[0].vibrationActuator) return
+	if (!gamepads[0].vibrationActuator) return;
 	if ("hapticActuators" in gamepads[0] && gamepads[0].hapticActuators.length > 0) {
 		gamepads[0].hapticActuators[0].pulse(strength, duration * 1000);
 	} else if ("vibrationActuator" in gamepads[0]) {
@@ -124,7 +123,7 @@ export function rumble(duration, strength) {
 			startDelay: 0,
 			duration: duration * 1000,
 			weakMagnitude: strength,
-			strongMagnitude: strength
+			strongMagnitude: strength,
 		});
 	}
 }

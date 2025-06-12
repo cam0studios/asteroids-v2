@@ -1,3 +1,3 @@
-import fs from 'fs'
+import fs from "fs";
 
-fs.rmdirSync("dist", { recursive: true, force: true })
+fs.rmdirSync("dist", { recursive: true, force: true });

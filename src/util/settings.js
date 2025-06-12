@@ -3,7 +3,7 @@ import { editableSettings, settings, settingsStore } from "../main";
 export function getSettingsMenu() {
 	let elem = document.createElement("div");
 	elem.id = "settings";
-	editableSettings.forEach(setting => {
+	editableSettings.forEach((setting) => {
 		const container = document.createElement("div");
 		container.classList.add("setting-container");
 		elem.appendChild(container);
@@ -28,7 +28,6 @@ export function getSettingsMenu() {
 
 			container.appendChild(label);
 			container.appendChild(settingElem);
-
 		} else if (setting.type == "select") {
 			let label = document.createElement("label");
 			label.appendChild(document.createTextNode(setting.name));
@@ -56,9 +55,9 @@ export function getSettingsMenu() {
 			container.appendChild(label);
 			container.appendChild(select);
 		} else if (setting.type == "range") {
-			let label = document.createElement("label")
+			let label = document.createElement("label");
 			label.appendChild(document.createTextNode(setting.name));
-			
+
 			let range = document.createElement("input");
 			range.type = "range";
 			range.min = setting.min;
@@ -72,7 +71,7 @@ export function getSettingsMenu() {
 				if (setting.onChange) {
 					setting.onChange();
 				}
-			})
+			});
 			range.dataset.settingId = setting.var;
 
 			container.appendChild(label);

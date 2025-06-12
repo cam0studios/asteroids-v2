@@ -1,14 +1,14 @@
 import Vector from "@cam0studios/vector-library";
-import { lineCircleCollision, lineClosestPoint, raycast } from "@cam0studios/intersections";
-import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies, time } from "./main";
+import { raycast } from "@cam0studios/intersections";
+import { projectiles, clampTime, calcBorder, sketch, settings, damagePlayer, player, enemies } from "./main";
 import { playSound } from "./util/sound";
 import { explode } from "./particle-types";
 
 export const projectileEnums = {
 	playerBullet: 0,
 	enemyLaser: 1,
-	guardian: 2
-}
+	guardian: 2,
+};
 
 /**
  * Represents a type of projectile.
@@ -67,8 +67,8 @@ const projectileTypes = [
 		name: "Player Bullet",
 		props: ["pos", "dir", "speed", "damage", "fire", "ice", "piercing", "ignore"],
 		defaults: {
-			dir: ({ vel }) => vel ? vel.heading : 0,
-			speed: ({ vel }) => vel ? vel.mag : 0
+			dir: ({ vel }) => (vel ? vel.heading : 0),
+			speed: ({ vel }) => (vel ? vel.mag : 0),
 		},
 		tick: (projectile, i) => {
 			projectile.pos["+="](new Vector(projectile.speed * clampTime, 0).rotate(projectile.dir));
@@ -92,16 +92,16 @@ const projectileTypes = [
 			if (settings.emojiMovie) {
 				sketch.textAlign("center", "center");
 				sketch.textSize(10);
-				sketch.text("⚪", projectile.pos.x, projectile.pos.y)
+				sketch.text("⚪", projectile.pos.x, projectile.pos.y);
 			} else {
 				sketch.line(projectile.pos.x, projectile.pos.y, lastPos.x, lastPos.y);
 			}
 		},
 		enemyTick(projectile, projectileI, enemy, enemyI) {
-			if ((projectile.pos)["-"](enemy.pos).mag < enemy.size + 10) {
+			if (projectile.pos["-"](enemy.pos).mag < enemy.size + 10) {
 				if (projectile.ignore && projectile.ignore.includes(enemy.id)) return; // Don't hit the same enemy twice with piercing
 				if (enemy.hp - projectile.damage > 0) {
-					playSound("hit", enemy.pos)
+					playSound("hit", enemy.pos);
 				}
 
 				enemy.hp -= projectile.damage;
@@ -120,7 +120,7 @@ const projectileTypes = [
 				}
 				function pierce() {
 					if (!projectile.ignore) {
-						projectile.ignore = [enemy.id]
+						projectile.ignore = [enemy.id];
 					} else {
 						projectile.ignore.push(enemy.id);
 					}
@@ -141,7 +141,7 @@ const projectileTypes = [
 					remove();
 				}
 			}
-		}
+		},
 	}),
 	new ProjectileType({
 		name: "Enemy Laser",
@@ -156,10 +156,10 @@ const projectileTypes = [
 			size: 0,
 			damage: 40,
 			tractor: 1000,
-			push: 1500
+			push: 1500,
 		},
 		tick: (projectile, i) => {
-			let linked = enemies.find(enemy => enemy.id === projectile.link);
+			let linked = enemies.find((enemy) => enemy.id === projectile.link);
 			if (linked) {
 				projectile.pos = linked.pos.copy;
 				projectile.dir = linked.dir;
@@ -193,13 +193,20 @@ const projectileTypes = [
 					let d2 = dist[1] - projectile.size;
 					if (d1 < projectile.len) {
 						if (d2 > projectile.len) d2 = projectile.len;
-						let pos = (projectile.pos)["+"]((projectile.dirV)["*"](d1));
-						player.vel["+="]((projectile.dirV)["*"](clampTime * (projectile.tractor + projectile.push)));
-						player.vel["+="]((pos)["-"](player.pos).normalize()["*"](clampTime * projectile.tractor));
+						let pos = projectile.pos["+"](projectile.dirV["*"](d1));
+						player.vel["+="](projectile.dirV["*"](clampTime * (projectile.tractor + projectile.push)));
+						player.vel["+="](
+							pos["-"](player.pos)
+								.normalize()
+								["*"](clampTime * projectile.tractor)
+						);
 						damagePlayer(projectile.damage * clampTime, pos);
 
-						explode((pos)["+"](new Vector(Math.random() * 20 - 10, Math.random() * 20 - 10)), Math.random() * 10 + 5);
-						let randPos = (projectile.pos)["+"]((projectile.dirV)["*"](d1 + Math.random() * (d2 - d1)));
+						explode(
+							pos["+"](new Vector(Math.random() * 20 - 10, Math.random() * 20 - 10)),
+							Math.random() * 10 + 5
+						);
+						let randPos = projectile.pos["+"](projectile.dirV["*"](d1 + Math.random() * (d2 - d1)));
 						explode(randPos, Math.random() * 5 + 5);
 					}
 				}
@@ -233,9 +240,7 @@ const projectileTypes = [
 				}
 			}
 		},
-		enemyTick: (projectile, i, enemy, enemyI) => {
-
-		}
+		enemyTick: (projectile, i, enemy, enemyI) => {},
 	}),
 	new ProjectileType({
 		name: "Guardian",
@@ -245,7 +250,7 @@ const projectileTypes = [
 			time: 0,
 			children: [],
 			rad: 0,
-			fade: 0
+			fade: 0,
 		},
 		tick: (projectile, i) => {
 			if (projectile.time == 0) {
@@ -263,9 +268,14 @@ const projectileTypes = [
 
 			for (let rot = 0; rot < projectile.amount; rot++) {
 				let child = projectile.children[rot];
-				child.pos = new Vector(projectile.dist * projectile.fade, 0).rotate(projectile.dir + rot * Math.PI * 2 / projectile.amount);
+				child.pos = new Vector(projectile.dist * projectile.fade, 0).rotate(
+					projectile.dir + (rot * Math.PI * 2) / projectile.amount
+				);
 				child.pos["+="](player.pos);
-				child.vel = new Vector(0, projectile.speed * projectile.dist * projectile.fade * 2 * Math.PI * clampTime).rotate(projectile.dir + rot * Math.PI * 2 / projectile.amount);
+				child.vel = new Vector(
+					0,
+					projectile.speed * projectile.dist * projectile.fade * 2 * Math.PI * clampTime
+				).rotate(projectile.dir + (rot * Math.PI * 2) / projectile.amount);
 			}
 
 			projectile.rad = projectile.size * projectile.fade;
@@ -280,7 +290,7 @@ const projectileTypes = [
 			sketch.rotate(projectile.dir);
 			for (let rot = 0; rot < projectile.amount; rot++) {
 				sketch.push();
-				sketch.rotate(rot * Math.PI * 2 / projectile.amount);
+				sketch.rotate((rot * Math.PI * 2) / projectile.amount);
 				sketch.translate(projectile.dist * projectile.fade, 0);
 				sketch.rotate(-projectile.dir * 2);
 
@@ -292,7 +302,7 @@ const projectileTypes = [
 				for (let spike = 0; spike < spikes; spike++) {
 					sketch.push();
 					sketch.strokeJoin("miter");
-					sketch.rotate(spike * Math.PI * 2 / spikes);
+					sketch.rotate((spike * Math.PI * 2) / spikes);
 					sketch.beginShape();
 					sketch.vertex(projectile.rad, spikeSize.x);
 					sketch.vertex(projectile.rad + spikeSize.y, 0);
@@ -314,10 +324,10 @@ const projectileTypes = [
 			}
 		},
 		enemyTick: (projectile, i, enemy, enemyI) => {
-			projectile.children.forEach(child => {
-				let dif = (enemy.pos)["-"](child.pos);
+			projectile.children.forEach((child) => {
+				let dif = enemy.pos["-"](child.pos);
 				if (dif.mag < enemy.size + projectile.rad && !enemy.frozen) {
-					let hitStr = (child.vel)["-"](enemy.vel).mag;
+					let hitStr = child.vel["-"](enemy.vel).mag;
 					enemy.hp--;
 					enemy.pos["-="](child.pos);
 					enemy.pos.mag = enemy.size + projectile.rad;
@@ -328,8 +338,8 @@ const projectileTypes = [
 					enemy.hitDir = dif.heading;
 				}
 			});
-		}
-	})
+		},
+	}),
 ];
 
 export default projectileTypes;

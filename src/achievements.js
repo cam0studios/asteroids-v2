@@ -17,16 +17,7 @@ class Achievement {
 	 * @param {Function} get - The function to call once unlocked.
 	 * @param {Function} getString - The formatter function for progress and max
 	 */
-	constructor({
-		name,
-		desc,
-		reward,
-		id,
-		progress,
-		max,
-		get,
-		getString = (prop) => prop,
-	}) {
+	constructor({ name, desc, reward, id, progress, max, get, getString = (prop) => prop }) {
 		this.name = name;
 		this.desc = desc;
 		this.reward = reward;
@@ -61,11 +52,7 @@ class AchievementSet {
 		this.#props = props;
 		for (let level of levels) {
 			for (let prop in props) {
-				if (
-					!(prop in level) ||
-					level[prop] === undefined ||
-					level[prop].toString() == "(prop) => prop"
-				) {
+				if (!(prop in level) || level[prop] === undefined || level[prop].toString() == "(prop) => prop") {
 					level[prop] = props[prop];
 				}
 			}

@@ -1,9 +1,24 @@
 import Vector from "@cam0studios/vector-library";
 import { rumble } from "./gamepad";
-import { enemies, clampTime, applyBorder, projectiles, player, getOnScreen, sketch, get, set, settings, damagePlayer, currentLevel, getRandomBox, calcBorder } from "./main";
+import {
+	enemies,
+	clampTime,
+	applyBorder,
+	projectiles,
+	player,
+	getOnScreen,
+	sketch,
+	get,
+	set,
+	settings,
+	damagePlayer,
+	currentLevel,
+	getRandomBox,
+	calcBorder,
+} from "./main";
 import projectileTypes, { projectileEnums } from "./projectile-types";
-import particleTypes, { explode } from "./particle-types";
-import { playSound } from './util/sound';
+import { explode } from "./particle-types";
+import { playSound } from "./util/sound";
 
 /**
  * Represents an enemy type.
@@ -65,17 +80,18 @@ const enemyTypes = [
 		defaults: {
 			type: 0,
 			id: () => Math.floor(Math.random() * 1e6),
-			pos: ({ mode }) => mode == 0 ? getPosAroundPlayer() : mode == 1 ? getRandomBox(currentLevel.size) : Vector.zero,
+			pos: ({ mode }) =>
+				mode == 0 ? getPosAroundPlayer() : mode == 1 ? getRandomBox(currentLevel.size) : Vector.zero,
 			vel: () => new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI),
-			hp: ({ size }) => size > 30 ? 5 : size > 15 ? 3 : size > 10 ? 2 : 1,
+			hp: ({ size }) => (size > 30 ? 5 : size > 15 ? 3 : size > 10 ? 2 : 1),
 			speed: () => 10 + Math.random() * 30,
-			spawn: ({ mode }) => mode == 0 ? false : mode == 1 ? true : false,
+			spawn: ({ mode }) => (mode == 0 ? false : mode == 1 ? true : false),
 			hitDir: () => Math.random() * 2 * Math.PI,
 			time: 0,
 			effectTime: 0,
 			burning: false,
 			frozen: false,
-			maxHp: ({ }, { hp }) => hp
+			maxHp: ({}, { hp }) => hp,
 		},
 		tick: (enemy, i) => {
 			defaultTick(enemy, i, { burnTime: 15, burnOffset: 0.5 });
@@ -92,9 +108,9 @@ const enemyTypes = [
 						for (let rot = -1; rot <= 1; rot += 1) {
 							let newEnemy = {
 								pos: enemy.pos.copy,
-								vel: (enemy.vel)["+"](new Vector(50, 0).rotate(enemy.hitDir + rot)),
-								size: enemy.size * 2 / 3,
-								mode: 0
+								vel: enemy.vel["+"](new Vector(50, 0).rotate(enemy.hitDir + rot)),
+								size: (enemy.size * 2) / 3,
+								mode: 0,
 							};
 							if (enemy.burning) {
 								newEnemy.burning = true;
@@ -107,7 +123,7 @@ const enemyTypes = [
 							enemyTypes[0].create(newEnemy);
 						}
 					}
-					let newScreenshake = (enemy.size > 20 ? 12 : 7) / ((enemy.pos)["-"](player.pos).mag / 500 + 1);
+					let newScreenshake = (enemy.size > 20 ? 12 : 7) / (enemy.pos["-"](player.pos).mag / 500 + 1);
 					if (get("screenshake") < newScreenshake) {
 						set("screenshake", newScreenshake);
 					} else {
@@ -115,7 +131,10 @@ const enemyTypes = [
 					}
 					player.xp += enemy.size > 15 ? 5 : 3;
 					player.score += enemy.size > 15 ? 5 : enemy.size > 10 ? 3 : 1;
-					rumble(enemy.size > 15 ? 0.15 : enemy.size > 10 ? 0.1 : 0.05, enemy.size > 15 ? 0.5 : enemy.size > 10 ? 0.4 : 0.3);
+					rumble(
+						enemy.size > 15 ? 0.15 : enemy.size > 10 ? 0.1 : 0.05,
+						enemy.size > 15 ? 0.5 : enemy.size > 10 ? 0.4 : 0.3
+					);
 					explode(enemy.pos, enemy.size > 15 ? 30 : enemy.size > 10 ? 20 : 10);
 				}
 			}
@@ -124,9 +143,7 @@ const enemyTypes = [
 			if (getOnScreen(enemy.pos, enemy.size)) {
 				if (enemy.time > 1 || !enemy.spawn) {
 					if (settings.emojiMovie) {
-
 					} else {
-
 					}
 				} else {
 					sketch.fill(`rgba(150,50,0,${enemy.time * 0.5})`);
@@ -151,17 +168,16 @@ const enemyTypes = [
 						sketch.fill(0);
 						sketch.stroke(255);
 
-						if (enemy.frozen) sketch.stroke(35, 178, 246)
-						if (enemy.burning) sketch.stroke(230, 102, 72)
+						if (enemy.frozen) sketch.stroke(35, 178, 246);
+						if (enemy.burning) sketch.stroke(230, 102, 72);
 
 						sketch.strokeWeight(5);
 						sketch.ellipse(enemy.pos.x, enemy.pos.y, enemy.size * 2, enemy.size * 2);
 					}
 				} else {
-
 				}
 			}
-		}
+		},
 	}),
 	new EnemyType({
 		name: "Turret",
@@ -169,10 +185,11 @@ const enemyTypes = [
 		defaults: {
 			type: 1,
 			id: () => Math.floor(Math.random() * 1e6 + 1e6),
-			pos: ({ mode }) => mode == 0 ? getPosAroundPlayer() : mode == 1 ? getRandomBox(currentLevel.size) : Vector.zero,
+			pos: ({ mode }) =>
+				mode == 0 ? getPosAroundPlayer() : mode == 1 ? getRandomBox(currentLevel.size) : Vector.zero,
 			vel: () => new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI),
 			hp: 15,
-			maxHp: ({ }, { hp }) => hp,
+			maxHp: ({}, { hp }) => hp,
 			size: 20,
 			hitDir: () => Math.random() * 2 * Math.PI,
 			time: 0,
@@ -181,7 +198,7 @@ const enemyTypes = [
 			cooldownTime: 1.5,
 			reload: ({ index, max }, { reloadTime, cooldownTime }) => {
 				console.debug(index, max, reloadTime, cooldownTime);
-				return ((index + (Math.random() - 0.5) * 0.5) * 2 + 1) / (max * 2) * (reloadTime + cooldownTime)
+				return (((index + (Math.random() - 0.5) * 0.5) * 2 + 1) / (max * 2)) * (reloadTime + cooldownTime);
 			},
 			spawn: false,
 			dir: 0,
@@ -200,8 +217,8 @@ const enemyTypes = [
 					enemy.cooldown -= clampTime;
 				} else if (enemy.pos["-"](player.pos).mag < enemy.range && !enemy.frozen) {
 					enemy.reload -= clampTime;
-					let aim = (player.pos)["-"](enemy.pos);
-					aim["+="]((player.vel)["*"](0.7));
+					let aim = player.pos["-"](enemy.pos);
+					aim["+="](player.vel["*"](0.7));
 					aim.mag = 1;
 					enemy.aiming["*="](Math.pow(1e-3, clampTime));
 					enemy.aiming["+="](aim);
@@ -211,7 +228,12 @@ const enemyTypes = [
 						enemy.reload = enemy.reloadTime;
 						enemy.cooldown = enemy.cooldownTime;
 						playSound("turretAim", enemy.pos);
-						projectileTypes[projectileEnums.enemyLaser].create({ pos: enemy.pos.copy, dir: enemy.dir, link: enemy.id, maxLen: enemy.range });
+						projectileTypes[projectileEnums.enemyLaser].create({
+							pos: enemy.pos.copy,
+							dir: enemy.dir,
+							link: enemy.id,
+							maxLen: enemy.range,
+						});
 					}
 				}
 
@@ -222,7 +244,7 @@ const enemyTypes = [
 					player.kills++;
 					if (!("turret" in player.enemyKills)) player.enemyKills.turret = 0;
 					player.enemyKills.turret++;
-					let newScreenshake = 50 / ((enemy.pos)["-"](player.pos).mag / 500 + 1);
+					let newScreenshake = 50 / (enemy.pos["-"](player.pos).mag / 500 + 1);
 					if (get("screenshake") < newScreenshake) {
 						set("screenshake", newScreenshake);
 					} else {
@@ -239,7 +261,6 @@ const enemyTypes = [
 			if (getOnScreen(enemy.pos, enemy.size)) {
 				if (enemy.time > 1 || !enemy.spawn) {
 					if (settings.emojiMovie) {
-
 					} else {
 						sketch.translate(enemy.pos.x, enemy.pos.y);
 						sketch.rectMode("center");
@@ -247,8 +268,8 @@ const enemyTypes = [
 						sketch.stroke(255);
 						sketch.strokeWeight(5);
 
-						if (enemy.frozen) sketch.stroke(35, 178, 246)
-						if (enemy.burning) sketch.stroke(230, 102, 72)
+						if (enemy.frozen) sketch.stroke(35, 178, 246);
+						if (enemy.burning) sketch.stroke(230, 102, 72);
 
 						sketch.line(-enemy.size, -enemy.size, enemy.size, enemy.size);
 						sketch.line(-enemy.size, enemy.size, enemy.size, -enemy.size);
@@ -289,7 +310,7 @@ const enemyTypes = [
 							if (enemy.reloadTime - enemy.reload > time) {
 								dist = 0.2 + (prog / (1 - time) - time) * 0.15;
 							} else {
-								dist = 0.35 - (enemy.reloadTime - enemy.reload) / time * 0.15;
+								dist = 0.35 - ((enemy.reloadTime - enemy.reload) / time) * 0.15;
 							}
 						}
 						sketch.line(0, -enemy.size * dist, enemy.size * 1, -enemy.size * dist);
@@ -297,10 +318,9 @@ const enemyTypes = [
 						sketch.rect(-enemy.size * 0.3, 0, enemy.size * 0.8, enemy.size * 1.2);
 					}
 				} else {
-
 				}
 			}
-		}
+		},
 	}),
 	new EnemyType({
 		name: "Boss",
@@ -308,21 +328,31 @@ const enemyTypes = [
 		defaults: {
 			type: 2,
 			id: () => Math.floor(Math.random() * 1e6 + 2e6),
-			pos: ({ mode }) => mode == 0 ? getPosAroundPlayer() : mode == 1 ? getRandomBox(currentLevel.size) : Vector.zero,
+			pos: ({ mode }) =>
+				mode == 0 ? getPosAroundPlayer() : mode == 1 ? getRandomBox(currentLevel.size) : Vector.zero,
 			vel: () => new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI),
 			hp: 30,
-			maxHp: ({ }, { hp }) => hp,
+			maxHp: ({}, { hp }) => hp,
 			hitDir: () => Math.random() * 2 * Math.PI,
 			time: 0,
 			children: [],
 			effectTime: 0,
 			burning: false,
 			frozen: false,
-			size: 50
+			size: 50,
 		},
 		spawn: (enemy) => {
 			for (let i = 0; i < Math.round(enemy.hp / 10); i++) {
-				enemy.children.push(enemyTypes[1].create({ mode: enemy.mode, pos: enemy.pos.copy, vel: new Vector(0, 0), hp: 15, index: i, max: Math.round(enemy.hp / 10) }));
+				enemy.children.push(
+					enemyTypes[1].create({
+						mode: enemy.mode,
+						pos: enemy.pos.copy,
+						vel: new Vector(0, 0),
+						hp: 15,
+						index: i,
+						max: Math.round(enemy.hp / 10),
+					})
+				);
 			}
 		},
 		tick: (enemy, i) => {
@@ -332,10 +362,12 @@ const enemyTypes = [
 				enemy.children.forEach((child, childIndex) => {
 					child.pos = enemy.pos.copy;
 
-					let multiplicationVector = new Vector(2, 0).rotate(((2 * Math.PI) / enemy.children.length) * childIndex + new Date().getTime() / 1000);
+					let multiplicationVector = new Vector(2, 0).rotate(
+						((2 * Math.PI) / enemy.children.length) * childIndex + new Date().getTime() / 1000
+					);
 					multiplicationVector.mag = 100;
 					child.pos = child.pos["+="](multiplicationVector);
-				})
+				});
 
 				if (enemy.time > 1 || !enemy.spawn) {
 					if (enemy.hp <= 0) {
@@ -347,10 +379,15 @@ const enemyTypes = [
 						playSound("kill", enemy.pos);
 						if (enemy.size > 10) {
 							for (let rot = -1; rot <= 1; rot += 1) {
-								enemyTypes[0].create({ pos: enemy.pos, vel: (enemy.vel)["+"](new Vector(50, 0).rotate(enemy.hitDir + rot)), size: enemy.size * 2 / 3, mode: 0 });
+								enemyTypes[0].create({
+									pos: enemy.pos,
+									vel: enemy.vel["+"](new Vector(50, 0).rotate(enemy.hitDir + rot)),
+									size: (enemy.size * 2) / 3,
+									mode: 0,
+								});
 							}
 						}
-						let newScreenshake = (enemy.size > 20 ? 12 : 7) / ((enemy.pos)["-"](player.pos).mag / 500 + 1);
+						let newScreenshake = (enemy.size > 20 ? 12 : 7) / (enemy.pos["-"](player.pos).mag / 500 + 1);
 						if (get("screenshake") < newScreenshake) {
 							set("screenshake", newScreenshake);
 						} else {
@@ -359,8 +396,11 @@ const enemyTypes = [
 						player.xp += enemy.size > 15 ? 5 : 3;
 						player.score += enemy.size > 15 ? 5 : enemy.size > 10 ? 50 : 30;
 
-						enemy.children.map(child => child.hp = 0)
-						rumble(enemy.size > 15 ? 0.15 : enemy.size > 10 ? 0.1 : 0.05, enemy.size > 15 ? 0.5 : enemy.size > 10 ? 0.4 : 0.3);
+						enemy.children.map((child) => (child.hp = 0));
+						rumble(
+							enemy.size > 15 ? 0.15 : enemy.size > 10 ? 0.1 : 0.05,
+							enemy.size > 15 ? 0.5 : enemy.size > 10 ? 0.4 : 0.3
+						);
 						explode(enemy.pos, enemy.size > 15 ? 30 : enemy.size > 10 ? 20 : 10);
 					}
 				}
@@ -370,9 +410,7 @@ const enemyTypes = [
 			if (getOnScreen(enemy.pos, enemy.size)) {
 				if (enemy.time > 1 || !enemy.spawn) {
 					if (settings.emojiMovie) {
-
 					} else {
-
 					}
 				} else {
 					sketch.fill(`rgba(150,50,0,${enemy.time * 0.5})`);
@@ -383,7 +421,6 @@ const enemyTypes = [
 			}
 		},
 		afterDraw: (enemy) => {
-
 			if (getOnScreen(enemy.pos, enemy.size)) {
 				if (enemy.time > 1 || !enemy.spawn) {
 					if (settings.emojiMovie) {
@@ -400,29 +437,30 @@ const enemyTypes = [
 						sketch.strokeWeight(5);
 
 						if (enemy.frozen) {
-							sketch.stroke(35, 178, 246)
-							sketch.fill(15, 118, 186)
+							sketch.stroke(35, 178, 246);
+							sketch.fill(15, 118, 186);
 						}
 
 						if (enemy.burning) {
-							sketch.stroke(230, 102, 72)
-							sketch.fill(200, 72, 32)
+							sketch.stroke(230, 102, 72);
+							sketch.fill(200, 72, 32);
 						}
 
 						sketch.ellipse(enemy.pos.x, enemy.pos.y, enemy.size * 2, enemy.size * 2);
 					}
 				} else {
-
 				}
 			}
-		}
-	})
+		},
+	}),
 ];
 
 export default enemyTypes;
 
 function getPosAroundPlayer() {
-	let pos = (player.pos)["+"](new Vector(300 + currentLevel.size * 1.41 * Math.random() ** 0.7, 0).rotate(Math.random() * 2 * Math.PI));
+	let pos = player.pos["+"](
+		new Vector(300 + currentLevel.size * 1.41 * Math.random() ** 0.7, 0).rotate(Math.random() * 2 * Math.PI)
+	);
 	if (calcBorder({ pos }).mag > 0) {
 		return getPosAroundPlayer();
 	}
@@ -430,9 +468,9 @@ function getPosAroundPlayer() {
 }
 
 function defaultCollide(enemy) {
-	let dif = (enemy.pos)["-"](player.pos);
+	let dif = enemy.pos["-"](player.pos);
 	if (dif.mag < enemy.size + player.size && player.dodge.time <= 0 && !enemy.frozen) {
-		let hitStr = (player.vel)["-"](enemy.vel).mag;
+		let hitStr = player.vel["-"](enemy.vel).mag;
 		enemy.hp--;
 		enemy.pos["-="](player.pos);
 		enemy.pos.mag = enemy.size + player.size + 3;
@@ -463,7 +501,7 @@ function defaultTick(enemy, i, { burnTime = 15, burnOffset = 0.5, move = true })
 	if (enemy.time > 1 || !enemy.spawn) {
 		if (move) {
 			if (!enemy.frozen) {
-				enemy.pos["+="]((enemy.vel)["*"](clampTime));
+				enemy.pos["+="](enemy.vel["*"](clampTime));
 			}
 			applyBorder(enemy);
 		}

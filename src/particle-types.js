@@ -1,11 +1,10 @@
 import Vector from "@cam0studios/vector-library";
-import { particles, clampTime, calcBorder, sketch, settings, damagePlayer, currentLevel, player, enemies, time } from "./main";
-import { playSound } from "./util/sound";
+import { particles, clampTime, sketch, settings, player } from "./main";
 
 export const particleEnums = {
 	explosion: 0,
 	dashEffect: 1,
-}
+};
 
 /**
  * Represents a type of particle.
@@ -83,14 +82,14 @@ const particleTypes = [
 				sketch.strokeWeight(particle.maxSize * 0.5);
 				sketch.ellipse(particle.pos.x, particle.pos.y, particle.size * 2, particle.size * 2);
 			}
-		}
+		},
 	}),
 	new ParticleType({
 		name: "Dash Effect",
 		props: ["pos", "type"],
 		defaults: {
 			progress: 0,
-			type: 0
+			type: 0,
 		},
 		tick: (particle, i) => {
 			if (particle.type == 0) {
@@ -131,8 +130,8 @@ const particleTypes = [
 				sketch.noStroke();
 				sketch.circle(particle.pos.x, particle.pos.y, 30 + particle.progress * 40);
 			}
-		}
-	})
+		},
+	}),
 ];
 
 export default particleTypes;
@@ -141,6 +140,6 @@ export function explode(pos, size) {
 	particleTypes[particleEnums.explosion].create({
 		pos,
 		size: 0,
-		maxSize: size
+		maxSize: size,
 	});
 }

@@ -3,15 +3,26 @@ import Vector from "@cam0studios/vector-library";
 import weapons from "./weapon-types";
 import enemyTypes from "./enemy-types";
 import levels from "./levels";
-import projectileTypes, { projectileEnums } from "./projectile-types";
-import { signOut, pb, getScores, postScore, user, getUsers, postFeed, signedIn, signIn, signInWithGoogle, updateStats, subscribeToFeed, unlocks, getUnlocks } from "./pocketbase";
+import {
+	signOut,
+	getScores,
+	postScore,
+	user,
+	postFeed,
+	signedIn,
+	signIn,
+	updateStats,
+	subscribeToFeed,
+	unlocks,
+	getUnlocks,
+} from "./pocketbase";
 import { gamepad, gamepadConnected, rumble, updateGamepad } from "./gamepad";
 import { audioContext, playSound } from "./util/sound";
 import EasyStorage from "@pikapower9080/easy-storage";
 import particleTypes, { explode, particleEnums } from "./particle-types";
 import xssFilters from "xss-filters";
 
-import './style/main.less';
+import "./style/main.less";
 import { showRunInfo } from "./util/run-info";
 import { levelUp } from "./util/level-up";
 import { getSettingsMenu } from "./util/settings";
@@ -20,11 +31,11 @@ import achievements from "./achievements";
 export const version = "v0.5.0";
 
 export var keys = {};
-"qwertyuiopasdfghjklzxcvbnm ".split("").forEach(key => {
+"qwertyuiopasdfghjklzxcvbnm ".split("").forEach((key) => {
 	keys[key] = false;
 });
 // disable right click
-document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("contextmenu", (e) => e.preventDefault());
 
 export const settingsStore = new EasyStorage({
 	key: "asteroids-settings",
@@ -41,19 +52,19 @@ export const settingsStore = new EasyStorage({
 		screenShakeIntensity: 0.8,
 		volume: 1,
 		vignetteMaxOpacity: 1,
-		showMinimap: true
+		showMinimap: true,
 	},
 	migration: {
 		enabled: true,
-		old_key: "settings"
-	}
-})
+		old_key: "settings",
+	},
+});
 
 // global vars
 /**
  * @type {p5}
  */
-export var sketch
+export var sketch;
 
 export var clampTime,
 	enemies,
@@ -113,41 +124,37 @@ document.getElementById("openAchievements").addEventListener("click", () => {
 let updateAchievementsScreen = () => {
 	document.getElementById("achievements").innerHTML = "";
 	achievements
-	.toSorted((a, b) => a.check() ? 1 : b.check() ? -1 : ((b.progress() / b.max) - (a.progress() / a.max)))
-	.forEach(achievement => {
-		let elem = document.createElement("div");
-		let elems = [];
-		let text = [];
-		if (achievement.progress() < achievement.max) {
-			elems = [
-				document.createElement("h3"),
-				document.createElement("p"),
-				document.createElement("p"),
-			];
-			text = [
-				(achievement.name || "Unnamed") + (("levels" in achievement) ? ` (lvl ${achievement.level()} / ${achievement.levels.length})` : ""),
-				`${achievement.desc} (${achievement.getString(achievement.progress())} / ${achievement.getString(achievement.max)})`,
-				`Reward: ${achievement.reward || "None"}`,
-			];
-		} else {
-			elems = [
-				document.createElement("h3"),
-				document.createElement("p"),
-				document.createElement("p"),
-			];
-			text = [
-				(achievement.name || "Unnamed") + (("levels" in achievement) ? ` (lvl ${achievement.level()} / ${achievement.levels.length})` : ""),
-				achievement.desc,
-				"Completed",
-			];
-			elem.classList.add("completed");
-		}
-		for (let i in elems) {
-			elems[i].append(document.createTextNode(text[i] || ""));
-		}
-		elem.append(...elems);
-		document.getElementById("achievements").append(elem);
-	});
+		.toSorted((a, b) => (a.check() ? 1 : b.check() ? -1 : b.progress() / b.max - a.progress() / a.max))
+		.forEach((achievement) => {
+			let elem = document.createElement("div");
+			let elems = [];
+			let text = [];
+			if (achievement.progress() < achievement.max) {
+				elems = [document.createElement("h3"), document.createElement("p"), document.createElement("p")];
+				text = [
+					(achievement.name || "Unnamed") +
+						("levels" in achievement ? ` (lvl ${achievement.level()} / ${achievement.levels.length})` : ""),
+					`${achievement.desc} (${achievement.getString(achievement.progress())} / ${achievement.getString(
+						achievement.max
+					)})`,
+					`Reward: ${achievement.reward || "None"}`,
+				];
+			} else {
+				elems = [document.createElement("h3"), document.createElement("p"), document.createElement("p")];
+				text = [
+					(achievement.name || "Unnamed") +
+						("levels" in achievement ? ` (lvl ${achievement.level()} / ${achievement.levels.length})` : ""),
+					achievement.desc,
+					"Completed",
+				];
+				elem.classList.add("completed");
+			}
+				for (let i in elems) {
+				elems[i].append(document.createTextNode(text[i] || ""));
+			}
+			elem.append(...elems);
+			document.getElementById("achievements").append(elem);
+		});
 };
 addEventListener("userupdate", () => {
 	if (document.getElementById("achievementsScreen").open) {
@@ -173,7 +180,7 @@ function startGame(level) {
 }
 function copyObj(obj) {
 	if (Array.isArray(obj)) {
-		return obj.map(item => copyObj(item));
+		return obj.map((item) => copyObj(item));
 	}
 	if (typeof obj === "object" && obj !== null) {
 		let newObj = {};
@@ -192,34 +199,89 @@ function stopGame() {
 
 export function getRarity(weight) {
 	if (weight < 0.25) {
-		return "epic"
+		return "epic";
 	} else if (weight < 0.5) {
-		return "rare"
+		return "rare";
 	} else {
-		return "common"
+		return "common";
 	}
 }
 
 const closingDialogues = [];
 export function closeWithAnimation(dialog, animation, duration) {
 	if (closingDialogues.includes(dialog)) return;
-	dialog.classList.add(animation)
-	closingDialogues.push(dialog)
+	dialog.classList.add(animation);
+	closingDialogues.push(dialog);
 	setTimeout(() => {
-		dialog.close()
-		dialog.classList.remove(animation)
-		closingDialogues.splice(closingDialogues.indexOf(dialog), 1)
+		dialog.close();
+		dialog.classList.remove(animation);
+		closingDialogues.splice(closingDialogues.indexOf(dialog), 1);
 	}, duration);
 }
 
 var stars = [];
 
 export var playerUpgrades = [
-	{ id: "speed", name: "Speed", desc: "Increase movement speed", func: () => player.speed += 120, max: 3, weight: 1 },
-	{ id: "health", name: "Health", desc: "Increase max health", func: () => { player.maxHp *= 1.35; player.hp += 20 }, max: 3, weight: 1 },
-	{ id: "shield", name: "Shield", desc: "Improve shield regeneration and capacity", func: () => { player.shield.maxValue += 10; player.shield.regenTime--; player.shield.regenSpeed++; player.shield.regenTimeLeft = player.shield.regenTime }, max: 5, weight: 0.8 },
-	{ id: "resistance", name: "Resistance", desc: ["Take 10% less damage (-10% total)", "Take 10% less damage (-20% total)", "Take 10% less damage (-30% total)", "Take 10% less damage (-40% total)"], func: () => player.damageFactor -= 0.1, max: 4, weight: 0.8 },
-	{ id: "recovery", name: "Recovery", desc: ["Recover 0.5 HP every second", "Recover 1 HP every second", "Recover 1.5 HP every second", "Recovery 2 HP every second"], func: () => { player.recovery += 0.5 }, max: 4, weight: 10.4 }
+	{
+		id: "speed",
+		name: "Speed",
+		desc: "Increase movement speed",
+		func: () => (player.speed += 120),
+		max: 3,
+		weight: 1,
+	},
+	{
+		id: "health",
+		name: "Health",
+		desc: "Increase max health",
+		func: () => {
+			player.maxHp *= 1.35;
+			player.hp += 20;
+		},
+		max: 3,
+		weight: 1,
+	},
+	{
+		id: "shield",
+		name: "Shield",
+		desc: "Improve shield regeneration and capacity",
+		func: () => {
+			player.shield.maxValue += 10;
+			player.shield.regenTime--;
+			player.shield.regenSpeed++;
+			player.shield.regenTimeLeft = player.shield.regenTime;
+		},
+		max: 5,
+		weight: 0.8,
+	},
+	{
+		id: "resistance",
+		name: "Resistance",
+		desc: [
+			"Take 10% less damage (-10% total)",
+			"Take 10% less damage (-20% total)",
+			"Take 10% less damage (-30% total)",
+			"Take 10% less damage (-40% total)",
+		],
+		func: () => (player.damageFactor -= 0.1),
+		max: 4,
+		weight: 0.8,
+	},
+	{
+		id: "recovery",
+		name: "Recovery",
+		desc: [
+			"Recover 0.5 HP every second",
+			"Recover 1 HP every second",
+			"Recover 1.5 HP every second",
+			"Recovery 2 HP every second",
+		],
+		func: () => {
+			player.recovery += 0.5;
+		},
+		max: 4,
+		weight: 10.4,
+	},
 	// { name: "", desc: [], func: () => {}, max: 0, weight: 1 }
 ];
 
@@ -250,24 +312,24 @@ const sketchFunc = (sk) => {
 			maxValue: 30,
 			regenTime: 10,
 			regenSpeed: 5,
-			regenTimeLeft: 0
+			regenTimeLeft: 0,
 		},
 		dodge: {
 			cooldown: 0,
 			vel: Vector.zero,
-			time: 0
+			time: 0,
 		},
 		damageFactor: 1,
-		recovery: 0
+		recovery: 0,
 	};
 	paused = false;
 	score = 0;
-	playerUpgrades.forEach(upgrade => upgrade.times = 0);
-	currentUnlocks = achievements.map(achievement => {
+	playerUpgrades.forEach((upgrade) => (upgrade.times = 0));
+	currentUnlocks = achievements.map((achievement) => {
 		let ret = {
 			achievement,
-			got: achievement.check()
-		}
+			got: achievement.check(),
+		};
 		if ("level" in achievement) {
 			ret.level = achievement.level();
 		}
@@ -276,24 +338,60 @@ const sketchFunc = (sk) => {
 
 	if (devMode) {
 		window.playerLink = player;
-		window.setTime = (val) => time = val;
+		window.setTime = (val) => (time = val);
 	}
 
 	getSettings();
 	editableSettings = [
 		{ name: "Toggle Shoot", var: "toggleFire", type: "checkbox" },
-		{ name: "Dim Background", var: "dimBG", type: "checkbox", onChange: () => { pauseLogic = true; sketch.redraw(); pauseLogic = false } },
+		{
+			name: "Dim Background",
+			var: "dimBG",
+			type: "checkbox",
+			onChange: () => {
+				pauseLogic = true;
+				sketch.redraw();
+				pauseLogic = false;
+			},
+		},
 		{ name: "Submit Scores", var: "submitScores", type: "checkbox" },
 		{ name: "Send Feed Events", var: "sendFeedEvents", type: "checkbox" },
-		{ name: "Show Minimap", var: "showMinimap", type: "checkbox", onChange: () => { pauseLogic = true; sketch.redraw(); pauseLogic = false } },
+		{
+			name: "Show Minimap",
+			var: "showMinimap",
+			type: "checkbox",
+			onChange: () => {
+				pauseLogic = true;
+				sketch.redraw();
+				pauseLogic = false;
+			},
+		},
 		{ name: "Rumble", var: "rumbleEnabled", type: "checkbox" },
 		{ name: "Volume", var: "volume", type: "range", min: 0, max: 1, step: 0.05 },
 		{ name: "Screen Shake Intensity", var: "screenShakeIntensity", type: "range", min: 0, max: 1, step: 0.05 },
 		{ name: "Vignette Opacity", var: "vignetteMaxOpacity", type: "range", min: 0, max: 1, step: 0.05 },
-		{ name: "Star Detail", var: "starDetail", type: "select", options: [0, 1, 2, 3], labels: ["High", "Medium", "Low", "Grid"], onChange: () => { pauseLogic = true; updateStars(); sketch.redraw(); pauseLogic = false } },
-		{ name: "Reticle", var: "reticle", type: "select", options: [0, 1, 2, 3], labels: ["Fancy", "Crosshair", "Static", "None"] }
+		{
+			name: "Star Detail",
+			var: "starDetail",
+			type: "select",
+			options: [0, 1, 2, 3],
+			labels: ["High", "Medium", "Low", "Grid"],
+			onChange: () => {
+				pauseLogic = true;
+				updateStars();
+				sketch.redraw();
+				pauseLogic = false;
+			},
+		},
+		{
+			name: "Reticle",
+			var: "reticle",
+			type: "select",
+			options: [0, 1, 2, 3],
+			labels: ["Fancy", "Crosshair", "Static", "None"],
+		},
 	];
-	currentLevel.start.forEach(start => {
+	currentLevel.start.forEach((start) => {
 		for (let i = 0; i < start.count; i++) {
 			let props = { mode: 0, index: i, max: start.count };
 			for (let prop in start.props) {
@@ -317,13 +415,13 @@ const sketchFunc = (sk) => {
 	cursorContract = 0;
 	updateStars();
 	if (!devMode) {
-		sketch.disableFriendlyErrors = true
+		sketch.disableFriendlyErrors = true;
 	}
 	sketch.setup = () => {
 		sketch.createCanvas(size.x, size.y);
 		sketch.frameRate(maxFps);
 		document.getElementById("defaultCanvas0").focus();
-	}
+	};
 
 	sketch.draw = () => {
 		// ********************  vars  ******************** //
@@ -341,21 +439,27 @@ const sketchFunc = (sk) => {
 			// cam["="](player.pos);
 			let camMove = Math.pow(1e-3, clampTime);
 			cam["*="](camMove);
-			cam["+="]((player.pos)["*"](1 - camMove));
+			cam["+="](player.pos["*"](1 - camMove));
 
 			if (settings.mousePan) cam["+="](mouse["/"](100));
 
-			cam["+="](new Vector(screenshake * settingsStore.get("screenShakeIntensity", 0.8), 0).rotate(Math.random() * 2 * Math.PI));
+			cam["+="](
+				new Vector(screenshake * settingsStore.get("screenShakeIntensity", 0.8), 0).rotate(
+					Math.random() * 2 * Math.PI
+				)
+			);
 			screenshake *= Math.pow(5e-5, clampTime);
 
 			// blood overlay
 			let maxOpacity = 1;
 			let targetOpacity = maxOpacity - Math.min((player.hp / player.maxHp) * 1.5, maxOpacity);
 			vignetteOpacity += (targetOpacity - vignetteOpacity) * (1 - Math.pow(0.2, clampTime));
-			document.querySelector(".vignette-red").style.opacity = Math.round(vignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
+			document.querySelector(".vignette-red").style.opacity =
+				Math.round(vignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
 			if (unlocks.other.shield) {
 				shieldVignetteOpacity *= Math.pow(0.2, clampTime);
-				document.querySelector(".vignette-blue").style.opacity = Math.round(shieldVignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
+				document.querySelector(".vignette-blue").style.opacity =
+					Math.round(shieldVignetteOpacity * 100 * settingsStore.get("vignetteMaxOpacity", 1)) / 100;
 			} else {
 				document.querySelector(".vignette-blue").style.opacity = 0;
 			}
@@ -365,7 +469,7 @@ const sketchFunc = (sk) => {
 		// fps
 		if (fpsTime < 0) {
 			fps = 0;
-			nextFps.forEach(next => {
+			nextFps.forEach((next) => {
 				fps += next / nextFps.length;
 			});
 			nextFps = [];
@@ -377,12 +481,12 @@ const sketchFunc = (sk) => {
 
 		if (!pauseLogic) {
 			// waves
-			currentLevel.waves.forEach(wave => {
+			currentLevel.waves.forEach((wave) => {
 				if (!("passed" in wave)) wave.passed = false;
 				if (!wave.passed) {
 					if (time >= wave.time) {
 						wave.passed = true;
-						wave.enemies.forEach(enemy => {
+						wave.enemies.forEach((enemy) => {
 							for (let i = 0; i < enemy.count; i++) {
 								let props = { mode: 1, index: i, max: enemy.count };
 								for (let prop in enemy.props) {
@@ -406,17 +510,18 @@ const sketchFunc = (sk) => {
 			// ********************  physics  ******************** //
 			// player movement
 			if (player.hp > 0) {
-				player.pos["+="]((player.vel)["*"](clampTime));
+				player.pos["+="](player.vel["*"](clampTime));
 
 				let joy = new Vector(keys["d"] - keys["a"], keys["s"] - keys["w"]);
 				if (gamepadConnected && Object.hasOwn(gamepad, "leftStick")) joy["+="](gamepad.leftStick);
-				if (gamepadConnected && Object.hasOwn(gamepad, "dpadRight")) joy["+="](gamepad.dpadRight - gamepad.dpadLeft, gamepad.dpadDown - gamepad.dpadUp);
+				if (gamepadConnected && Object.hasOwn(gamepad, "dpadRight"))
+					joy["+="](gamepad.dpadRight - gamepad.dpadLeft, gamepad.dpadDown - gamepad.dpadUp);
 				if (joy.mag > 1) joy.mag = 1;
 				joy["*="](player.speed * clampTime);
 				player.vel["+="](joy);
 				player.vel["*="](Math.pow(0.3, clampTime));
 
-				player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire
+				player.isFiring = (mouseDown || gamepad.rightTrigger) != settings.toggleFire;
 
 				if (gamepadConnected) {
 					if (gamepad.rightStick.mag > 0.1) {
@@ -433,7 +538,7 @@ const sketchFunc = (sk) => {
 						player.dodge.cooldown = 0.2;
 						player.dodge.vel = joy.copy;
 						player.dodge.vel.mag = 1000;
-						player.dodge.time = .15;
+						player.dodge.time = 0.15;
 						playSound("dash");
 					}
 				} else {
@@ -472,7 +577,7 @@ const sketchFunc = (sk) => {
 				player.size = 25 + (player.shield.value > 0 ? 10 : 0);
 
 				// weapons
-				player.weapons.forEach(weapon => {
+				player.weapons.forEach((weapon) => {
 					weapon.tick(weapon);
 				});
 			} else {
@@ -500,10 +605,10 @@ const sketchFunc = (sk) => {
 			});
 		}
 
-
 		// ********************  drawing  ******************** //
 		// background
-		if (settings.noBG) sketch.background(`rgba(0,0,0,${Math.round((1 - Math.pow(0.03, clampTime)) * 10000) / 10000})`);
+		if (settings.noBG)
+			sketch.background(`rgba(0,0,0,${Math.round((1 - Math.pow(0.03, clampTime)) * 10000) / 10000})`);
 		else sketch.background("rgb(0,0,0)");
 
 		sketch.stroke("rgb(35,35,35)");
@@ -513,7 +618,7 @@ const sketchFunc = (sk) => {
 		// lines
 		if (settings.starDetail == 3) {
 			let lineSize = 70;
-			let off = ((cam)["*"](-1))["%"](lineSize);
+			let off = cam["*"](-1)["%"](lineSize);
 			for (let x = 0; x < size.x + lineSize; x += lineSize) {
 				let lineX = x + off.x;
 				sketch.line(lineX, 0, lineX, size.y);
@@ -534,10 +639,10 @@ const sketchFunc = (sk) => {
 		// if ("planets" in currentLevel) {
 		//   currentLevel.planets
 		// }
-		stars.forEach(star => {
+		stars.forEach((star) => {
 			if (!settings.noBG || star.size < 10) {
 				let pos = star.pos.copy;
-				pos["-="]((cam)["*"](-star.layer));
+				pos["-="](cam["*"](-star.layer));
 				if (getOnScreen(pos, star.size)) {
 					sketch.stroke(star.col);
 					sketch.strokeWeight(star.size);
@@ -600,28 +705,28 @@ const sketchFunc = (sk) => {
 		}
 
 		// enemies before draw
-		enemies.forEach(enemy => {
+		enemies.forEach((enemy) => {
 			sketch.push();
 			enemy.beforeDraw(enemy);
 			sketch.pop();
 		});
 
 		// particles
-		particles.forEach(particle => {
+		particles.forEach((particle) => {
 			sketch.push();
 			particle.draw(particle);
 			sketch.pop();
 		});
 
 		// projectiles
-		projectiles.forEach(projectile => {
+		projectiles.forEach((projectile) => {
 			sketch.push();
 			projectile.draw(projectile);
 			sketch.pop();
 		});
 
 		// enemies after draw
-		enemies.forEach(enemy => {
+		enemies.forEach((enemy) => {
 			sketch.push();
 			enemy.afterDraw(enemy);
 			sketch.pop();
@@ -683,17 +788,22 @@ const sketchFunc = (sk) => {
 			// minimap
 			if (settingsStore.get("showMinimap", true)) {
 				let minimapSize = 130;
-				let minimapBorder = 10
+				let minimapBorder = 10;
 				sketch.push();
 				sketch.fill(0);
 				sketch.stroke(255);
 				sketch.strokeWeight(5);
-				sketch.rect(size.x - minimapSize - 20 - minimapBorder / 2, size.y - minimapSize - 20 - minimapBorder / 2, minimapSize + minimapBorder, minimapSize + minimapBorder);
+				sketch.rect(
+					size.x - minimapSize - 20 - minimapBorder / 2,
+					size.y - minimapSize - 20 - minimapBorder / 2,
+					minimapSize + minimapBorder,
+					minimapSize + minimapBorder
+				);
 				sketch.translate(size.x - 20 - minimapSize / 2, size.y - 20 - minimapSize / 2);
 				sketch.scale(130 / 2, 130 / 2);
-	
+
 				// minimap content
-				enemies.forEach(enemy => {
+				enemies.forEach((enemy) => {
 					sketch.strokeWeight(0.002 * enemy.size * [1, 2.5, 2.5][enemy.type]);
 					sketch.stroke(["rgb(200,50,0)", "rgb(50,200,0)", "rgb(0,50,200)"][enemy.type]);
 					sketch.point(enemy.pos.x / currentLevel.size, enemy.pos.y / currentLevel.size);
@@ -717,7 +827,7 @@ const sketchFunc = (sk) => {
 			sketch.text(enemies.length, xPos, 100);
 			sketch.text(player.score, xPos, 130);
 			sketch.textAlign("left", "bottom");
-			sketch.textFont(iconFont)
+			sketch.textFont(iconFont);
 			sketch.text("\u{f54c}", xPos + 5, 70); // Skull icon
 			sketch.text("\u{f71d}", xPos + 5, 100); // Swords icon
 			sketch.text("\u{f005}", xPos + 5, 130); // Star icon
@@ -776,7 +886,14 @@ const sketchFunc = (sk) => {
 			bar(new Vector(25, 35), 100, player.hp / player.maxHp, "rgb(50,0,0)", "rgb(250,50,0)", 15);
 			bar(new Vector(25, 55), 100, player.xp / player.levelUp, "rgb(40,30,0)", "rgb(220,200,0)", 15);
 			if (unlocks.other.shield) {
-				bar(new Vector(25, 25), 100, player.shield.value / player.shield.maxValue, "rgb(0,40,60)", "rgb(0,150,250)", 5);
+				bar(
+					new Vector(25, 25),
+					100,
+					player.shield.value / player.shield.maxValue,
+					"rgb(0,40,60)",
+					"rgb(0,150,250)",
+					5
+				);
 			}
 		}
 
@@ -796,17 +913,54 @@ const sketchFunc = (sk) => {
 		// update exposed values
 		if (!pauseLogic) {
 			if (devMode) {
-				window.game = { clampTime, enemies, player, projectiles, particles, sketch, size, cam, currentLevel, settings, mouseDown, time, fpsTime, fps, nextFps, deltaTime, mouse, screenshake, cursorContract, devMode, paused, score, posted, started, starCol, editableSettings, isFirstLevelup, version, showHud, settingsStore, fpsHistory, getRunInfo, levelUp, showRunInfo, pauseLogic, getUnlocks };
+				window.game = {
+					clampTime,
+					enemies,
+					player,
+					projectiles,
+					particles,
+					sketch,
+					size,
+					cam,
+					currentLevel,
+					settings,
+					mouseDown,
+					time,
+					fpsTime,
+					fps,
+					nextFps,
+					deltaTime,
+					mouse,
+					screenshake,
+					cursorContract,
+					devMode,
+					paused,
+					score,
+					posted,
+					started,
+					starCol,
+					editableSettings,
+					isFirstLevelup,
+					version,
+					showHud,
+					settingsStore,
+					fpsHistory,
+					getRunInfo,
+					levelUp,
+					showRunInfo,
+					pauseLogic,
+					getUnlocks,
+				};
 			} else {
-				window.game = { size, fps, deltaTime, paused, version, getRunInfo }
+				window.game = { size, fps, deltaTime, paused, version, getRunInfo };
 			}
 		}
-	}
-}
+	};
+};
 
 // ********************  functions  ******************** //
 export function addWeapon(id) {
-	let weapon = weapons.find(weapon => weapon.id == id);
+	let weapon = weapons.find((weapon) => weapon.id == id);
 	weapon.givePlayer();
 }
 export function calcBorder(obj) {
@@ -827,25 +981,31 @@ export function calcBorder(obj) {
 		let dist = obj.pos.y + currentLevel.size;
 		vec["+="](0, dist);
 	}
-	return (vec)["*"](-1);
+	return vec["*"](-1);
 }
 
 async function die(silent) {
 	paused = true;
 	rumble(1, 1);
 	explode(player.pos, 100);
-	if (!silent) playSound("death")
+	if (!silent) playSound("death");
 	let scoreRecordId;
 
 	lastScore = {
-		score: player.score, time: Math.round(time), devMode, version, runData: getRunInfo()
-	}
+		score: player.score,
+		time: Math.round(time),
+		devMode,
+		version,
+		runData: getRunInfo(),
+	};
 
 	document.getElementById("score").innerText = player.score;
 	document.getElementById("scores").innerHTML = "<p> <b> Loading... </b> </p>";
 	document.getElementById("stats").innerHTML = "<p> <b> Loading... </b> </p>";
 	if (signedIn) {
-		document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${xssFilters.inHTMLData(user.name)} </b> </p> <button id="signOutBtn"> Sign out </button>`;
+		document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${xssFilters.inHTMLData(
+			user.name
+		)} </b> </p> <button id="signOutBtn"> Sign out </button>`;
 		document.getElementById("signOutBtn").addEventListener("mouseenter", () => playSound("hover"));
 		setTimeout(() => {
 			document.getElementById("signOutBtn").addEventListener("click", () => {
@@ -858,27 +1018,45 @@ async function die(silent) {
 			document.getElementById("score-not-submitted").classList.toggle("no-display", true);
 			document.getElementById("newAchievements").classList.add("no-display");
 
-			promises.push(postFeed({
-				type: "death",
-				data: {
-					score: player.score,
-					time: Math.round(time),
-					dev: devMode
-				},
-				user: user.id
-			}));
+			promises.push(
+				postFeed({
+					type: "death",
+					data: {
+						score: player.score,
+						time: Math.round(time),
+						dev: devMode,
+					},
+					user: user.id,
+				})
+			);
 
 			if (player.score > 150 && time > 10 && settingsStore.get("submitScores", true)) {
 				promises.push(postScore(player.score, Math.round(time), devMode, version));
 			} else if (player.score <= 150 || time <= 10) {
-				document.getElementById("score-not-submitted").classList.toggle("no-display", false)
-				document.getElementById("score-not-submitted").innerText = "Your score was not submitted because it was too low"
+				document.getElementById("score-not-submitted").classList.toggle("no-display", false);
+				document.getElementById("score-not-submitted").innerText =
+					"Your score was not submitted because it was too low";
 			} else {
-				document.getElementById("score-not-submitted").classList.toggle("no-display", false)
-				document.getElementById("score-not-submitted").innerText = "Score submission is disabled"
+				document.getElementById("score-not-submitted").classList.toggle("no-display", false);
+				document.getElementById("score-not-submitted").innerText = "Score submission is disabled";
 			}
 
-			/*if (!devMode)*/ promises.push(updateStats({ score: player.score, level: player.level, kills: player.kills, time: Math.floor(time), enemyKills: player.enemyKills, deaths: 1, levelups: player.levelUpCount, highscore: player.highscore, highestTime: player.highestTime }, user.id));
+			/*if (!devMode)*/ promises.push(
+				updateStats(
+					{
+						score: player.score,
+						level: player.level,
+						kills: player.kills,
+						time: Math.floor(time),
+						enemyKills: player.enemyKills,
+						deaths: 1,
+						levelups: player.levelUpCount,
+						highscore: player.highscore,
+						highestTime: player.highestTime,
+					},
+					user.id
+				)
+			);
 
 			const results = await Promise.all(promises);
 			// await saveAchievements();
@@ -892,21 +1070,30 @@ async function die(silent) {
 			<p> <strong> <!--<i class="fa-regular fa-up" fa-fw></i>--> Total levelups: </strong> ${user.stats?.levelups?.toLocaleString()} </p>
 			<p> <strong> <!--<i class="fa-regular fa-skull fa-fw"></i>--> Total kills: </strong> ${user.stats?.kills?.toLocaleString()} </p>
 			<p> <strong> <!--<i class="fa-regular fa-ranking-star fa-fw"></i>--> Highest score: </strong> ${user.stats?.highscore?.toLocaleString()} </p>
-			<p> <strong> <!--<i class="fa-regular fa-clock-rotate-left fa-fw"></i>--> Longest run: </strong> ${formatTime(user.stats?.highestTime)} </p>
+			<p> <strong> <!--<i class="fa-regular fa-clock-rotate-left fa-fw"></i>--> Longest run: </strong> ${formatTime(
+				user.stats?.highestTime
+			)} </p>
 		`;
 		console.log(user.stats);
 		console.log(achievements.map((e, i) => ({ name: e.name, check: e.check(), got: currentUnlocks[i].got })));
-		let newAchievements = achievements.filter((achievement, i) => (achievement.check() && !currentUnlocks[i].got) || ("level" in achievement && achievement.level() != currentUnlocks[i].level));
+		let newAchievements = achievements.filter(
+			(achievement, i) =>
+				(achievement.check() && !currentUnlocks[i].got) ||
+				("level" in achievement && achievement.level() != currentUnlocks[i].level)
+		);
 		console.log(newAchievements);
 		if (newAchievements.length > 0) {
 			document.getElementById("newAchievements").classList.remove("no-display");
 			document.querySelector("#newAchievements>div").innerHTML = "";
-			newAchievements.forEach(achievement => {
-				document.querySelector("#newAchievements>div").innerHTML += `<p> <strong> ${achievement.name} </strong> - ${achievement.levels[achievement.level() - 1].desc} </p>`;
+			newAchievements.forEach((achievement) => {
+				document.querySelector("#newAchievements>div").innerHTML += `<p> <strong> ${
+					achievement.name
+				} </strong> - ${achievement.levels[achievement.level() - 1].desc} </p>`;
 			});
 		}
 	} else {
-		document.getElementById("signInDiv").innerHTML = `<p><b>Sign in to submit your score to the leaderboard</b></p><button id="signInBtn">Sign in</button><!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
+		document.getElementById("signInDiv").innerHTML =
+			`<p><b>Sign in to submit your score to the leaderboard</b></p><button id="signInBtn">Sign in</button><!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
 		document.getElementById("stats").innerHTML = "<p><b>Sign in to see your stats</b></p>";
 		setTimeout(() => {
 			document.getElementById("signInBtn").addEventListener("click", async () => {
@@ -935,7 +1122,9 @@ async function die(silent) {
 
 		scoreAuthorName.textContent = xssFilters.inHTMLData(score.expand.user.name);
 
-		const scoreText = document.createTextNode(` - ${score.score} (${score.time > 0 ? formatTime(score.time) : "no time"})`);
+		const scoreText = document.createTextNode(
+			` - ${score.score} (${score.time > 0 ? formatTime(score.time) : "no time"})`
+		);
 
 		if (score.version) scoreContainer.setAttribute("title", `Version: ${score.version}`);
 		if (scoreRecordId == score.id) scoreContainer.classList.add("highlight");
@@ -944,12 +1133,12 @@ async function die(silent) {
 			scoreContainer.style.cursor = "pointer";
 			scoreContainer.addEventListener("click", () => {
 				showRunInfo(score);
-			})
+			});
 		}
 
 		scoreContainer.append(scoreIndex, scoreAuthorName, scoreText);
 		scoresContainer.appendChild(scoreContainer);
-	}
+	};
 
 	scores.forEach((score, index) => appendScore(score, index));
 
@@ -957,7 +1146,10 @@ async function die(silent) {
 	const gameOverElement = document.getElementById("gameOver");
 
 	const loadMoreScores = async () => {
-		if (!loadingScores && gameOverElement.scrollTop + gameOverElement.clientHeight >= gameOverElement.scrollHeight - 10) {
+		if (
+			!loadingScores &&
+			gameOverElement.scrollTop + gameOverElement.clientHeight >= gameOverElement.scrollHeight - 10
+		) {
 			loadingScores = true;
 			page++;
 
@@ -970,20 +1162,20 @@ async function die(silent) {
 
 			loadingScores = false;
 		}
-	}
+	};
 
 	gameOverElement.addEventListener("scroll", loadMoreScores);
 }
 
 document.getElementById("viewRunInfo").addEventListener("click", () => {
 	if (lastScore) {
-		showRunInfo(lastScore)
+		showRunInfo(lastScore);
 	}
-})
+});
 
 export function applyBorder(obj) {
 	if (obj == player) damagePlayer(calcBorder(obj).mag * clampTime * 0.15, "border");
-	obj.vel["+="]((calcBorder(obj))["*"](0.1));
+	obj.vel["+="](calcBorder(obj)["*"](0.1));
 }
 export function getRandomBox(size) {
 	let d = Math.floor(Math.random() * 4);
@@ -1026,17 +1218,23 @@ function bar(p, w, val, bgCol, col, s) {
 export function set(prop, val) {
 	// window[prop] = val;
 	switch (prop) {
-		case "screenshake": return screenshake = val;
-		case "cursorContract": return cursorContract = val;
-		case "isFirstLevelup": return isFirstLevelup = val;
+		case "screenshake":
+			return (screenshake = val);
+		case "cursorContract":
+			return (cursorContract = val);
+		case "isFirstLevelup":
+			return (isFirstLevelup = val);
 	}
 }
 export function get(prop) {
 	// return window[prop];
 	switch (prop) {
-		case "screenshake": return screenshake;
-		case "cursorContract": return cursorContract;
-		case "isFirstLevelup": return isFirstLevelup;
+		case "screenshake":
+			return screenshake;
+		case "cursorContract":
+			return cursorContract;
+		case "isFirstLevelup":
+			return isFirstLevelup;
 	}
 }
 export function damagePlayer(amount, source) {
@@ -1047,17 +1245,17 @@ export function damagePlayer(amount, source) {
 			shieldVignetteOpacity += Math.min(amount / 20, 1 - shieldVignetteOpacity);
 			rumble(0.15, 0.35);
 			player.shield.value -= amount;
-			playSound("shield")
+			playSound("shield");
 			return;
 		}
-		shieldVignetteOpacity += Math.min(amount / 20 * 0.5, 1 - shieldVignetteOpacity);
+		shieldVignetteOpacity += Math.min((amount / 20) * 0.5, 1 - shieldVignetteOpacity);
 		amount -= player.shield.value;
 		player.shield.value = 0;
 	}
 	amount *= player.damageFactor;
 	vignetteOpacity += Math.min(amount / 20, 1 - vignetteOpacity);
 	player.hp -= amount;
-	playSound(source == "border" ? "border" : "hurt")
+	playSound(source == "border" ? "border" : "hurt");
 	if (player.hp > 0) {
 		rumble(0.2, 0.5);
 	}
@@ -1065,17 +1263,26 @@ export function damagePlayer(amount, source) {
 
 export function getVersion(version) {
 	version = version.slice(1);
-	return version.split(".").map(split => parseInt(split));
+	return version.split(".").map((split) => parseInt(split));
 }
 
 export function updateStars() {
 	stars = [];
 	let starSize = settings.starDetail == 0 ? 1 : settings.starDetail == 1 ? 2 : settings.starDetail == 2 ? 3 : 0;
-	for (let i = 0; i < (settings.starDetail == 0 ? 10000 : settings.starDetail == 1 ? 5000 : settings.starDetail == 2 ? 3000 : 0); i++) {
+	for (
+		let i = 0;
+		i < (settings.starDetail == 0 ? 10000 : settings.starDetail == 1 ? 5000 : settings.starDetail == 2 ? 3000 : 0);
+		i++
+	) {
 		// let layer = Math.ceil(Math.random() * 3) / 3;
 		let layer = Math.random();
 		let data = getStarData();
-		stars.push({ layer: 0.5 + layer * 0.2, col: `rgb(${data.col.x}, ${data.col.y}, ${data.col.z})`, size: (starSize + Math.random() * starSize / 2) * data.size * (1 - layer * 0.8), pos: new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1)["*"](currentLevel.size) });
+		stars.push({
+			layer: 0.5 + layer * 0.2,
+			col: `rgb(${data.col.x}, ${data.col.y}, ${data.col.z})`,
+			size: (starSize + (Math.random() * starSize) / 2) * data.size * (1 - layer * 0.8),
+			pos: new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1)["*"](currentLevel.size),
+		});
 	}
 	/*for (let i = 0; i < 100; i++) {
 		// let layer = Math.ceil(Math.random() * 3) / 3;
@@ -1087,7 +1294,13 @@ export function updateStars() {
 }
 
 function getStarData() {
-	let stops = [{ col: new Vector(200, 50, 0), size: 0.5, pos: 0 }, { col: new Vector(250, 100, 0), size: 2, pos: 0.1 }, { col: new Vector(255, 200, 0), size: 1, pos: 0.3 }, { col: new Vector(255, 255, 255), size: 1, pos: 0.7 }, { col: new Vector(200, 200, 255), size: 1.5, pos: 1 }];
+	let stops = [
+		{ col: new Vector(200, 50, 0), size: 0.5, pos: 0 },
+		{ col: new Vector(250, 100, 0), size: 2, pos: 0.1 },
+		{ col: new Vector(255, 200, 0), size: 1, pos: 0.3 },
+		{ col: new Vector(255, 255, 255), size: 1, pos: 0.7 },
+		{ col: new Vector(200, 200, 255), size: 1.5, pos: 1 },
+	];
 	let t = Math.random();
 	let data;
 	stops.forEach((stop, stopI) => {
@@ -1095,7 +1308,11 @@ function getStarData() {
 			let nextStop = stops[stopI + 1];
 			if (t >= stop.pos && t < nextStop.pos) {
 				let dif = (t - stop.pos) / (nextStop.pos - stop.pos);
-				data = { col: Vector.lerp(stop.col, nextStop.col, dif), size: lerp(stop.size, nextStop.size, dif), pos: t };
+				data = {
+					col: Vector.lerp(stop.col, nextStop.col, dif),
+					size: lerp(stop.size, nextStop.size, dif),
+					pos: t,
+				};
 			}
 		}
 	});
@@ -1107,31 +1324,31 @@ function lerp(a, b, t) {
 }
 
 // ********************  event listeners  ******************** //
-[...document.querySelectorAll(".noClose")].forEach(elem => {
+[...document.querySelectorAll(".noClose")].forEach((elem) => {
 	elem.addEventListener("cancel", (event) => {
 		event.preventDefault();
 		setTimeout(() => {
 			if (!event.target.open) {
 				event.target.showModal();
 			}
-		}, 1)
+		}, 1);
 	});
 });
 
-[...document.querySelectorAll("button,input[type='checkbox'],input[type='radio'],select")].forEach(elem => {
+[...document.querySelectorAll("button,input[type='checkbox'],input[type='radio'],select")].forEach((elem) => {
 	elem.addEventListener("mouseenter", () => {
 		playSound("hover");
-	})
-})
+	});
+});
 
-document.addEventListener("keydown", event => setKey(event, true));
-document.addEventListener("keyup", event => setKey(event, false));
-document.addEventListener("mousedown", () => mouseDown = true);
-document.addEventListener("mouseup", () => mouseDown = false);
-document.addEventListener("click", () => mouseDown = false);
-document.addEventListener("mousemove", event => {
+document.addEventListener("keydown", (event) => setKey(event, true));
+document.addEventListener("keyup", (event) => setKey(event, false));
+document.addEventListener("mousedown", () => (mouseDown = true));
+document.addEventListener("mouseup", () => (mouseDown = false));
+document.addEventListener("click", () => (mouseDown = false));
+document.addEventListener("mousemove", (event) => {
 	mouse = new Vector(event.clientX, event.clientY);
-	mouse["-="]((size)["/"](2));
+	mouse["-="](size["/"](2));
 });
 
 document.getElementById("restart").addEventListener("click", restart);
@@ -1141,22 +1358,22 @@ document.getElementById("quit").addEventListener("click", () => {
 });
 document.getElementById("runDataClose").addEventListener("click", () => {
 	document.getElementById("runData").close(); // this looks bad with an animation
-})
+});
 document.getElementById("runData").addEventListener("close", () => {
 	document.getElementById("gameOver").showModal();
 	document.getElementById("runDataContent").innerHTML = "";
 	document.getElementById("runDataUpgrades").innerHTML = "";
 	document.getElementById("runDataWeapons").innerHTML = "";
-})
+});
 
 // Snapshot mode
 
 let wasMuted = false;
 function prepareSnapshot() {
 	if (!document.getElementById("snapshot-show-hud").checked) {
-		let hudWasShown = showHud
-		showHud = false
-		pauseLogic = true
+		let hudWasShown = showHud;
+		showHud = false;
+		pauseLogic = true;
 		wasMuted = settingsStore.get("isMuted", false);
 		settingsStore.set("isMuted", true);
 		if (hudWasShown !== showHud) {
@@ -1171,9 +1388,9 @@ function finishSnapshot() {
 	if (!document.getElementById("snapshot-show-hud").checked) {
 		showHud = true;
 	}
-	document.getElementById("snapshot-options").close()
+	document.getElementById("snapshot-options").close();
 	document.getElementById("pause").showModal();
-	pauseLogic = false
+	pauseLogic = false;
 }
 
 document.getElementById("snapshot").addEventListener("click", () => {
@@ -1184,9 +1401,9 @@ document.getElementById("snapshot").addEventListener("click", () => {
 		document.getElementById("pause").showModal();
 		setTimeout(() => {
 			registerBackAction(unpause);
-		})
-	})
-})
+		});
+	});
+});
 document.getElementById("snapshot-save").addEventListener("click", () => {
 	let link = document.createElement("a");
 	link.href = prepareSnapshot();
@@ -1194,24 +1411,27 @@ document.getElementById("snapshot-save").addEventListener("click", () => {
 	link.click();
 	link.remove();
 	finishSnapshot();
-})
+});
 document.getElementById("snapshot-copy").addEventListener("click", async () => {
 	const url = prepareSnapshot();
 	const blob = await (await fetch(url)).blob();
 	const item = new ClipboardItem({ "image/png": blob });
-	navigator.clipboard.write([item]).then(() => {
-		alert("Snapshot copied to clipboard");
-		finishSnapshot();
-	}).catch(err => {
-		console.error(err);
-		alert("Failed to copy snapshot, try downloading instead.");
-		finishSnapshot();
-	});
-})
+	navigator.clipboard
+		.write([item])
+		.then(() => {
+			alert("Snapshot copied to clipboard");
+			finishSnapshot();
+		})
+		.catch((err) => {
+			console.error(err);
+			alert("Failed to copy snapshot, try downloading instead.");
+			finishSnapshot();
+		});
+});
 document.getElementById("snapshot-cancel").addEventListener("click", () => {
 	document.getElementById("snapshot-options").close();
 	document.getElementById("pause").showModal();
-})
+});
 
 document.getElementById("pause").addEventListener("cancel", unpause);
 document.getElementById("resume").addEventListener("click", unpause);
@@ -1227,15 +1447,15 @@ document.getElementById("settings-button").addEventListener("click", () => {
 		document.getElementById("settings-menu").close();
 		setTimeout(() => {
 			registerBackAction(unpause);
-		})
+		});
 	});
-})
+});
 document.getElementById("settings-menu").addEventListener("close", () => {
 	document.getElementById("pause").showModal();
-})
+});
 document.getElementById("settings-exit").addEventListener("click", () => {
 	document.getElementById("settings-menu").close();
-})
+});
 
 function pause() {
 	if (!paused && started && !document.querySelector("dialog[open].noPause")) {
@@ -1244,8 +1464,21 @@ function pause() {
 			sketch.noLoop();
 			paused = true;
 			document.getElementById("currentUpgrades").innerHTML = [
-				`<p> Player Upgrades </p> <div> ${playerUpgrades.map(e => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`).join("")} </div>`,
-				...player.weapons.map(weapon => `<hr> <p> ${weapon.name} <span> lvl ${weapon.level} </span> </p> <div>  ${weapon.upgrades.filter(upgrade => upgrade.times > 0).map(upgrade => `<p> ${upgrade.name} <span> ${upgrade.times}/${upgrade.max} </span> </p>`).join("")} </div>`).join("")
+				`<p> Player Upgrades </p> <div> ${playerUpgrades
+					.map((e) => `<p> ${e.name} <span> ${e.times}/${e.max} </span> </p>`)
+					.join("")} </div>`,
+				...player.weapons
+					.map(
+						(weapon) =>
+							`<hr> <p> ${weapon.name} <span> lvl ${weapon.level} </span> </p> <div>  ${weapon.upgrades
+								.filter((upgrade) => upgrade.times > 0)
+								.map(
+									(upgrade) =>
+										`<p> ${upgrade.name} <span> ${upgrade.times}/${upgrade.max} </span> </p>`
+								)
+								.join("")} </div>`
+					)
+					.join(""),
 			].join("");
 			registerBackAction(unpause);
 		}, 100);
@@ -1260,9 +1493,9 @@ function unpause() {
 	}
 }
 function restart() {
-	isFirstLevelup = true
-	cheated = false
-	fpsHistory = []
+	isFirstLevelup = true;
+	cheated = false;
+	fpsHistory = [];
 	unpause();
 	stopGame();
 	startGame(0);
@@ -1275,9 +1508,9 @@ function getSettings() {
 
 addEventListener("resize", () => {
 	size["="](innerWidth, innerHeight);
-	pauseLogic = true
+	pauseLogic = true;
 	if (sketch) sketch.resizeCanvas(size.x, size.y);
-	pauseLogic = false
+	pauseLogic = false;
 });
 addEventListener("blur", pause);
 
@@ -1285,17 +1518,25 @@ function setKey(event, state) {
 	keys[event.key] = state;
 
 	//extra keybinds
-	if ((event.key == "ArrowUp" || event.key == "w" || event.key == "a") && document.querySelector("dialog[open]") && state) {
+	if (
+		(event.key == "ArrowUp" || event.key == "w" || event.key == "a") &&
+		document.querySelector("dialog[open]") &&
+		state
+	) {
 		previousButton();
 	}
-	if ((event.key == "ArrowDown" || event.key == "s" || event.key == "d") && document.querySelector("dialog[open]") && state) {
+	if (
+		(event.key == "ArrowDown" || event.key == "s" || event.key == "d") &&
+		document.querySelector("dialog[open]") &&
+		state
+	) {
 		nextButton();
 	}
 	if (started) {
 		if (document.querySelector("input[type='text']:focus")) return;
 
 		if (event.key == "z" && state) {
-			settings.toggleFire = !settings.toggleFire
+			settings.toggleFire = !settings.toggleFire;
 			settingsStore.set("toggleFire", settings.toggleFire);
 		}
 
@@ -1307,22 +1548,22 @@ function setKey(event, state) {
 			const mousePos = new Vector(mouse.x + player.pos.x, player.pos.y + mouse.y);
 			switch (event.key) {
 				case "x":
-					enemies.forEach(enemy => enemy.hp = 0);
-					cheated = true
+					enemies.forEach((enemy) => (enemy.hp = 0));
+					cheated = true;
 					break;
 
 				case "c":
-					enemies.forEach(enemy => {
-						enemy.pos.x = mousePos.x
-						enemy.pos.y = mousePos.y
+					enemies.forEach((enemy) => {
+						enemy.pos.x = mousePos.x;
+						enemy.pos.y = mousePos.y;
 					});
-					cheated = true
+					cheated = true;
 					break;
 
 				case "v":
-					player.pos.x = mousePos.x
-					player.pos.y = mousePos.y
-					cheated = true
+					player.pos.x = mousePos.x;
+					player.pos.y = mousePos.y;
+					cheated = true;
 					break;
 
 				case "b":
@@ -1353,15 +1594,15 @@ function setKey(event, state) {
 				case "g":
 					player.maxHp = Infinity;
 					player.hp = Infinity;
-					cheated = true
+					cheated = true;
 					break;
 				case "h":
 					player.hp = player.maxHp;
-					cheated = true
+					cheated = true;
 					break;
 				case "i":
 					player.xp = player.levelUp;
-					cheated = true
+					cheated = true;
 					break;
 				case "`":
 					player.kills = 500;
@@ -1370,7 +1611,14 @@ function setKey(event, state) {
 				default:
 					if ("1234567890".split("").includes(event.key)) {
 						if (enemyTypes[parseInt(event.key)]) {
-							enemyTypes[parseInt(event.key)].create({ mode: 0, index: 0, max: 1, pos: mousePos, vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI), size: 60 });
+							enemyTypes[parseInt(event.key)].create({
+								mode: 0,
+								index: 0,
+								max: 1,
+								pos: mousePos,
+								vel: new Vector(10 + Math.random() * 30, 0).rotate(Math.random() * 2 * Math.PI),
+								size: 60,
+							});
 							cheated = true;
 						}
 					}
@@ -1391,9 +1639,12 @@ function setKey(event, state) {
 }
 
 export function getRunInfo() {
-	const result = {}
+	const result = {};
 	result.playerUpgrades = playerUpgrades.map(({ name, times, max }) => ({ name, times, max }));
-	result.weapons = player.weapons.map(({ name, upgrades }) => ({ name, upgrades: upgrades.map(({ name, times, max }) => ({ name, times, max })) }));
+	result.weapons = player.weapons.map(({ name, upgrades }) => ({
+		name,
+		upgrades: upgrades.map(({ name, times, max }) => ({ name, times, max })),
+	}));
 	result.enemyCount = enemies.length;
 	result.kills = player.kills;
 	if (fpsHistory.length > 0) {
@@ -1401,11 +1652,15 @@ export function getRunInfo() {
 		result.minFps = Math.min(...fpsHistory);
 		result.maxFps = Math.max(...fpsHistory);
 	}
-	return result
+	return result;
 }
 
 function nextButton() {
-	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox'], dialog[open] input[type='range']"), ...document.querySelectorAll("dialog[open] select")];
+	let btns = [
+		...document.querySelectorAll("dialog[open] button"),
+		...document.querySelectorAll("dialog[open] input[type='checkbox'], dialog[open] input[type='range']"),
+		...document.querySelectorAll("dialog[open] select"),
+	];
 	if (btns.length == 0) return;
 	let activeI = btns.indexOf(document.activeElement);
 	if (activeI == -1) activeI = 0;
@@ -1418,7 +1673,11 @@ function nextButton() {
 	btns[activeI].focus();
 }
 function previousButton() {
-	let btns = [...document.querySelectorAll("dialog[open] button"), ...document.querySelectorAll("dialog[open] input[type='checkbox'], dialog[open] input[type='range']"), ...document.querySelectorAll("dialog[open] select")];
+	let btns = [
+		...document.querySelectorAll("dialog[open] button"),
+		...document.querySelectorAll("dialog[open] input[type='checkbox'], dialog[open] input[type='range']"),
+		...document.querySelectorAll("dialog[open] select"),
+	];
 	if (btns.length == 0) return;
 	let activeI = btns.indexOf(document.activeElement);
 	if (activeI == -1) activeI = 0;
@@ -1431,7 +1690,7 @@ function previousButton() {
 	btns[activeI].focus();
 }
 
-let backAction
+let backAction;
 export function registerBackAction(callback) {
 	backAction = callback;
 }
@@ -1463,11 +1722,14 @@ export function onGamepadButton(button, state) {
 	}
 	if (document.activeElement.tagName == "SELECT") {
 		if (button == "dpadLeft" && state) {
-			document.activeElement.selectedIndex = (document.activeElement.selectedIndex - 1 + document.activeElement.options.length) % document.activeElement.options.length
+			document.activeElement.selectedIndex =
+				(document.activeElement.selectedIndex - 1 + document.activeElement.options.length) %
+				document.activeElement.options.length;
 			document.activeElement.dispatchEvent(new Event("change"));
 		}
 		if (button == "dpadRight" && state) {
-			document.activeElement.selectedIndex = (document.activeElement.selectedIndex + 1) % document.activeElement.options.length
+			document.activeElement.selectedIndex =
+				(document.activeElement.selectedIndex + 1) % document.activeElement.options.length;
 			document.activeElement.dispatchEvent(new Event("change"));
 		}
 	}
