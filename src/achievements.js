@@ -159,23 +159,12 @@ const achievements = [
 				},
 			}),
 			new Achievement({
-				desc: "Survive for 3 minutes",
+				desc: "Survive for 4 minutes",
 				reward: "Unlocks shield upgrade",
 				id: "survivor-2",
-				max: 3 * 60,
-				get: (unlocks) => {
-					unlocks.playerUpgrades.shield = true;
-					return unlocks;
-				},
-			}),
-			new Achievement({
-				desc: "Survive for 4 minutes",
-				reward: "Unlocks resistance and recovery upgrades",
-				id: "survivor-3",
 				max: 4 * 60,
 				get: (unlocks) => {
-					unlocks.playerUpgrades.resistance = true;
-					unlocks.playerUpgrades.recovery = true;
+					unlocks.playerUpgrades.shield = true;
 					return unlocks;
 				},
 			}),

@@ -8,7 +8,8 @@ import weapons from "./weapon-types";
 import achievements from "./achievements";
 
 export var user,
-	signedIn = false;
+	signedIn = false,
+	usersCollection = __IS_DEVELOPMENT__ ? "testUsers" : "users";
 
 // pb.authStore.clear();
 
@@ -17,17 +18,17 @@ user = {
 };
 
 if (pb.authStore.model) {
-	try {
-		(async () => {
-			user = await pb.collection("users").getOne(pb.authStore.model.id);
+	(async () => {
+		try {
+			user = await pb.collection(usersCollection).getOne(pb.authStore.model.id);
 			userUpdated();
-		})();
-		signedIn = true;
-	} catch (err) {
-		console.error(err);
-		reportError(err);
-		signOut();
-	}
+			signedIn = true;
+		} catch (err) {
+			console.error(err);
+			reportError(err);
+			signOut();
+		}
+	})();
 }
 
 export async function postScore(score, time, dev, version) {
@@ -54,7 +55,7 @@ export async function updateStats({ score, level, kills, time, enemyKills }) {
 			if (!(enemy in newEnemyKills)) newEnemyKills[enemy] = 0;
 			newEnemyKills[enemy] += enemyKills[enemy];
 		}
-		await pb.collection("users").update(user.id, {
+		await pb.collection(usersCollection).update(user.id, {
 			stats: {
 				deaths: (user.stats?.deaths || user.deaths || 0) + 1,
 				score: (user.stats?.score || user.score || 0) + score,
@@ -65,7 +66,7 @@ export async function updateStats({ score, level, kills, time, enemyKills }) {
 				enemyKills: newEnemyKills,
 			},
 		});
-		user = await pb.collection("users").getOne(pb.authStore.model.id);
+		user = await pb.collection(usersCollection).getOne(pb.authStore.model.id);
 		userUpdated();
 		return user;
 	} catch (err) {
@@ -153,7 +154,7 @@ export async function subscribeToFeed() {
 
 export async function getUsers() {
 	try {
-		return await pb.collection("users").getFullList({});
+		return await pb.collection(usersCollection).getFullList({});
 	} catch (err) {
 		console.error(err);
 		reportError(err);
@@ -183,7 +184,7 @@ export async function signIn() {
 		let password = await getPassword("Enter your password");
 		if (!password) return;
 		try {
-			let authData = await pb.collection("users").authWithPassword(username, password);
+			let authData = await pb.collection(usersCollection).authWithPassword(username, password);
 			user = authData.record;
 			userUpdated();
 			signedIn = true;
@@ -196,9 +197,11 @@ export async function signIn() {
 	} else {
 		let password = await getPassword("Create a password");
 		if (!password) return;
-		user = await pb.collection("users").create({ username, password, name: username, passwordConfirm: password });
+		user = await pb
+			.collection(usersCollection)
+			.create({ username, password, name: username, passwordConfirm: password });
 		try {
-			let authData = await pb.collection("users").authWithPassword(username, password);
+			let authData = await pb.collection(usersCollection).authWithPassword(username, password);
 			user = authData.record;
 			userUpdated();
 			signedIn = true;
@@ -212,7 +215,7 @@ export async function signIn() {
 }
 
 export async function signInWithGoogle() {
-	const authData = await pb.collection("users").authWithOAuth2({ provider: "google" });
+	const authData = await pb.collection(usersCollection).authWithOAuth2({ provider: "google" });
 }
 
 export async function getUsername(prompt) {

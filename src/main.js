@@ -122,6 +122,22 @@ document.getElementById("openAchievements").addEventListener("click", () => {
 	updateAchievementsScreen();
 });
 let updateAchievementsScreen = () => {
+	if (!signedIn) {
+		document.getElementById("achievements").innerHTML =
+			"<p>Sign in to view achievements</p> <button class='signInBtn'>Sign in</button>";
+		setTimeout(() => {
+			document.querySelector("#achievements>.signInBtn").addEventListener("click", async () => {
+				let res = await signIn();
+				if (res) {
+					updateAchievementsScreen();
+				} else {
+					document.getElementById("achievements").innerHTML = "<p>Sign in failed</p>";
+				}
+			});
+		}, 100);
+		document.querySelector("#achievements>.signInBtn").addEventListener("mouseenter", () => playSound("hover"));
+		return;
+	}
 	document.getElementById("achievements").innerHTML = "";
 	achievements
 		.toSorted((a, b) => (a.check() ? 1 : b.check() ? -1 : b.progress() / b.max - a.progress() / a.max))
@@ -1005,10 +1021,10 @@ async function die(silent) {
 	if (signedIn) {
 		document.getElementById("signInDiv").innerHTML = `<p> <b> Signed in as ${xssFilters.inHTMLData(
 			user.name
-		)} </b> </p> <button id="signOutBtn"> Sign out </button>`;
-		document.getElementById("signOutBtn").addEventListener("mouseenter", () => playSound("hover"));
+		)} </b> </p> <button class="signOutBtn"> Sign out </button>`;
+		document.querySelector("#signInDiv .signOutBtn").addEventListener("mouseenter", () => playSound("hover"));
 		setTimeout(() => {
-			document.getElementById("signOutBtn").addEventListener("click", () => {
+			document.querySelector("#signInDiv .signOutBtn").addEventListener("click", () => {
 				signOut();
 				die(true);
 			});
@@ -1093,10 +1109,10 @@ async function die(silent) {
 		}
 	} else {
 		document.getElementById("signInDiv").innerHTML =
-			`<p><b>Sign in to submit your score to the leaderboard</b></p><button id="signInBtn">Sign in</button><!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
+			`<p><b>Sign in to submit your score to the leaderboard</b></p><button class="signInBtn">Sign in</button><!-- <button id="signInWithGoogleButton"> Sign in with Google </button> -->`;
 		document.getElementById("stats").innerHTML = "<p><b>Sign in to see your stats</b></p>";
 		setTimeout(() => {
-			document.getElementById("signInBtn").addEventListener("click", async () => {
+			document.querySelector("#signInDiv .signInBtn").addEventListener("click", async () => {
 				let res = await signIn();
 				if (res) {
 					die(true);
@@ -1106,7 +1122,8 @@ async function die(silent) {
 			});
 			// document.getElementById("signInWithGoogleButton").addEventListener("click", async () => await signInWithGoogle());
 		}, 100);
-		document.getElementById("signInBtn").addEventListener("mouseenter", () => playSound("hover"));
+		document.querySelector("#signInDiv .signInBtn").addEventListener("mouseenter", () => playSound("hover"));
+		document.getElementById("newAchievements").classList.add("no-display");
 	}
 
 	let page = 1;
