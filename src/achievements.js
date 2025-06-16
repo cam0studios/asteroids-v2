@@ -200,16 +200,6 @@ const achievements = [
 					return unlocks;
 				},
 			}),
-			new Achievement({
-				desc: "Score 15,000 in one run",
-				reward: "Unlocks guardian",
-				id: "highscore-3",
-				max: 15000,
-				get: (unlocks) => {
-					unlocks.weapons.guardian.unlock = true;
-					return unlocks;
-				},
-			}),
 		],
 	}),
 	new AchievementSet({
@@ -243,6 +233,38 @@ const achievements = [
 				},
 				get: (unlocks) => {
 					unlocks.playerUpgrades.recovery = true;
+					return unlocks;
+				},
+			}),
+		],
+	}),
+	new AchievementSet({
+		id: "runner",
+		props: {
+			name: "Runner",
+			desc: "Complete runs",
+			progress: () => user.stats?.deaths || 0,
+			reward: "Guardian and upgrades",
+		},
+		levels: [
+			new Achievement({
+				desc: "Complete 15 runs",
+				reward: "Unlocks guardian",
+				id: "runner-1",
+				max: 15,
+				get: (unlocks) => {
+					unlocks.weapons.guardian.unlock = true;
+					return unlocks;
+				},
+			}),
+			new Achievement({
+				desc: "Complete 50 runs",
+				reward: "Unlocks guardian upgrades",
+				id: "runner-2",
+				max: 50,
+				get: (unlocks) => {
+					unlocks.weapons.guardian.reload = true;
+					unlocks.weapons.guardian.speed = true;
 					return unlocks;
 				},
 			}),

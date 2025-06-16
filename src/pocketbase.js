@@ -57,7 +57,7 @@ export async function updateStats({ score, level, kills, time, enemyKills }) {
 		}
 		await pb.collection(usersCollection).update(user.id, {
 			stats: {
-				deaths: (user.stats?.deaths || user.deaths || 0) + 1,
+				deaths: (user.stats?.deaths || user.deaths || 0) + (score < 250 || time < 60) ? 0 : 1,
 				score: (user.stats?.score || user.score || 0) + score,
 				levelups: (user.stats?.levelups || user.levelups || 0) + level,
 				kills: (user.stats?.kills || user.kills || 0) + kills,

@@ -219,7 +219,7 @@ const weapons = [
 		name: "Guardian",
 		id: "guardian",
 		desc: "Spawns spinning blades that orbit you",
-		weight: 0.3,
+		weight: 0.5,
 		defaultUnlocked: false,
 		props: {
 			reload: 0,
@@ -235,9 +235,10 @@ const weapons = [
 			{
 				id: "damage",
 				name: "Damage",
-				desc: "Increase damage dealt by guardians",
+				desc: "Increase damage and size of guardians",
 				func: (w) => {
 					w.damage *= 1.45;
+					w.size *= 1.5;
 				},
 				max: 3,
 				weight: 1,
@@ -249,6 +250,7 @@ const weapons = [
 				desc: "Decrease time between guardian spawns",
 				func: (w) => {
 					w.reloadTime -= 1;
+					w.duration += 1;
 				},
 				max: 3,
 				weight: 1,
@@ -262,7 +264,7 @@ const weapons = [
 					w.speed *= 1.3;
 				},
 				max: 3,
-				weight: 1,
+				weight: 0.8,
 				defaultUnlocked: false,
 			},
 			{
@@ -271,29 +273,7 @@ const weapons = [
 				desc: "Spawn more guardians",
 				func: (w) => {
 					w.amount++;
-					w.dist *= 1.2;
-				},
-				max: 3,
-				weight: 0.4,
-				defaultUnlocked: true,
-			},
-			{
-				id: "duration",
-				name: "Duration",
-				desc: "Increase duration guardians stay",
-				func: (w) => {
-					w.duration += 1;
-				},
-				max: 3,
-				weight: 0.6,
-				defaultUnlocked: false,
-			},
-			{
-				id: "size",
-				name: "Size",
-				desc: "Increase guardian size",
-				func: (w) => {
-					w.size *= 1.5;
+					w.dist *= 1.1;
 				},
 				max: 3,
 				weight: 0.4,

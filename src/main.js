@@ -214,9 +214,9 @@ function stopGame() {
 }
 
 export function getRarity(weight) {
-	if (weight < 0.25) {
+	if (weight <= 0.25) {
 		return "epic";
-	} else if (weight < 0.5) {
+	} else if (weight <= 0.5) {
 		return "rare";
 	} else {
 		return "common";
@@ -1046,15 +1046,15 @@ async function die(silent) {
 				})
 			);
 
-			if (player.score > 150 && time > 10 && settingsStore.get("submitScores", true)) {
-				promises.push(postScore(player.score, Math.round(time), devMode, version));
-			} else if (player.score <= 150 || time <= 10) {
+			if (!settingsStore.get("submitScores", true)) {
+				document.getElementById("score-not-submitted").classList.toggle("no-display", false);
+				document.getElementById("score-not-submitted").innerText = "Score submission is disabled";
+			} else if (player.score < 250 || time < 60) {
 				document.getElementById("score-not-submitted").classList.toggle("no-display", false);
 				document.getElementById("score-not-submitted").innerText =
 					"Your score was not submitted because it was too low";
 			} else {
-				document.getElementById("score-not-submitted").classList.toggle("no-display", false);
-				document.getElementById("score-not-submitted").innerText = "Score submission is disabled";
+				promises.push(postScore(player.score, Math.round(time), devMode, version));
 			}
 
 			/*if (!devMode)*/ promises.push(
